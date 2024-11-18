@@ -1,0 +1,42 @@
+#Generating source browse information for project iap_proj
+
+
+#Abbreviations
+cc = C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 8.4\common\bin\SourceIndexer.exe
+ll = C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 8.4\common\bin\PbdLink.exe
+bd = C$:\Program$ Files$ (x86)\IAR$ Systems\Embedded$ Workbench$ 8.4\common\bin\makeBrowseData.exe
+
+
+
+#Rules
+rule index
+  depfile = $out.dep
+  command = $cc -out=$out -f $in
+rule link
+  command = $ll -M $out $in
+rule browsedata
+  command = $bd $in -output  $out
+
+
+
+#Build steps
+build common.pbi : index common.xcl
+build download.pbi : index download.xcl
+build main.pbi : index main.xcl
+build stm32f10x_it.pbi : index stm32f10x_it.xcl
+build ymodem.pbi : index ymodem.xcl
+build stm32f10x_vector.pbi : index stm32f10x_vector.xcl
+build stm32f10x_flash.pbi : index stm32f10x_flash.xcl
+build stm32f10x_gpio.pbi : index stm32f10x_gpio.xcl
+build stm32f10x_lib.pbi : index stm32f10x_lib.xcl
+build stm32f10x_rcc.pbi : index stm32f10x_rcc.xcl
+build stm32f10x_usart.pbi : index stm32f10x_usart.xcl
+build stm32f10x_wwdg.pbi : index stm32f10x_wwdg.xcl
+build iap_proj_part0.pbi : link common.pbi download.pbi main.pbi
+build iap_proj_part1.pbi : link stm32f10x_it.pbi ymodem.pbi stm32f10x_vector.pbi
+build iap_proj_part2.pbi : link stm32f10x_flash.pbi stm32f10x_gpio.pbi stm32f10x_lib.pbi
+build iap_proj_part3.pbi : link stm32f10x_rcc.pbi stm32f10x_usart.pbi stm32f10x_wwdg.pbi
+build iap_proj.pbd : link iap_proj_part0.pbi iap_proj_part1.pbi iap_proj_part2.pbi iap_proj_part3.pbi
+build iap_proj.pbw : browsedata iap_proj.pbd
+
+

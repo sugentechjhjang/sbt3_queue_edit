@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<workspace>
+  <project>
+    <path>$WS_DIR$\..\boot\IAP\project\EWARM\iap_proj.ewp</path>
+  </project>
+  <project>
+    <path>$WS_DIR$\KBlot_supreme_I.ewp</path>
+  </project>
+  <batchBuild/>
+</workspace>
+
+

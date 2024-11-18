@@ -1,0 +1,30 @@
+
+define symbol __VECTOR_ADDRESS__   = 0x08000000;
+define symbol __ROM_ADDRESS__   = __VECTOR_ADDRESS__;
+define symbol __RAM_ADDRESS__   = 0x20000000;
+
+
+define memory Mem with size = 4G;
+
+define region ROM = Mem:[from __ROM_ADDRESS__ size 0x00020000];
+define region RAM = Mem:[from __RAM_ADDRESS__ size 0x00005000];
+
+place in ROM   { readonly };
+place in ROM   { readonly section .text};			
+place in ROM   { readonly section .rodata};			
+place in ROM   { readonly section .data_init};			
+place in ROM   { readonly section .textrw_init};			
+
+
+define block CSTACK	with alignment=8, size=0x800 {};
+place in RAM    { readwrite };
+place in RAM    { readwrite section .data};
+//place at address Mem:0x20000100 { readwrite section .data };
+place in RAM    { readwrite section .bss};
+place in RAM    { readwrite section .textrw};
+place in RAM    { block CSTACK };
+
+place at address Mem:__VECTOR_ADDRESS__ { readonly section INTVEC };
+
+/* Initialize RW sections, exlude zero-initialized sections */
+initialize by copy { readwrite };

@@ -1,0 +1,13 @@
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.4\arm\bin\armproc.dll" 
+
+"C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.4\arm\bin\armstlink2.dll" 
+
+"D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\Debug\Exe\iap_proj.out" 
+
+--plugin="C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.4\arm\bin\armbat.dll" 
+
+--flash_loader="C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.4\arm\config\flashloader\ST\FlashSTM32F10xxE.board" 
+
+
+
+

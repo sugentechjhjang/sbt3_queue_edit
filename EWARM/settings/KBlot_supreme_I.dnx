@@ -1,0 +1,302 @@
+<?xml version="1.0"?>
+<settings>
+    <Stack>
+        <FillEnabled>0</FillEnabled>
+        <OverflowWarningsEnabled>1</OverflowWarningsEnabled>
+        <WarningThreshold>90</WarningThreshold>
+        <SpWarningsEnabled>1</SpWarningsEnabled>
+        <WarnLogOnly>1</WarnLogOnly>
+        <UseTrigger>1</UseTrigger>
+        <TriggerName>main</TriggerName>
+        <LimitSize>0</LimitSize>
+        <ByteLimit>50</ByteLimit>
+    </Stack>
+    <StLinkDriver>
+        <stlinkserialNo>57FF6B066686525234420787</stlinkserialNo>
+        <stlinkfoundProbes />
+        <stlinkResetStyle>0</stlinkResetStyle>
+        <stlinkResetStrategy>0</stlinkResetStrategy>
+        <CStepIntDis>_ 0</CStepIntDis>
+        <LeaveTargetRunning>_ 0</LeaveTargetRunning>
+    </StLinkDriver>
+    <DebugChecksum>
+        <Checksum>139300601</Checksum>
+    </DebugChecksum>
+    <Exceptions>
+        <StopOnUncaught>_ 0</StopOnUncaught>
+        <StopOnThrow>_ 0</StopOnThrow>
+    </Exceptions>
+    <CallStack>
+        <ShowArgs>0</ShowArgs>
+    </CallStack>
+    <Disassembly>
+        <MixedMode>1</MixedMode>
+        <InstrCount>0</InstrCount>
+    </Disassembly>
+    <CodeCoverage>
+        <Enabled>0</Enabled>
+        <ShowSource>0</ShowSource>
+        <HideCovered>0</HideCovered>
+    </CodeCoverage>
+    <SWOTraceHWSettings>
+        <OverrideDefaultClocks>0</OverrideDefaultClocks>
+        <CpuClock>72000000</CpuClock>
+        <ClockAutoDetect>0</ClockAutoDetect>
+        <ClockWanted>2000000</ClockWanted>
+        <JtagSpeed>2000000</JtagSpeed>
+        <Prescaler>36</Prescaler>
+        <TimeStampPrescIndex>0</TimeStampPrescIndex>
+        <TimeStampPrescData>0</TimeStampPrescData>
+        <PcSampCYCTAP>1</PcSampCYCTAP>
+        <PcSampPOSTCNT>15</PcSampPOSTCNT>
+        <PcSampIndex>0</PcSampIndex>
+        <DataLogMode>0</DataLogMode>
+        <ITMportsEnable>0</ITMportsEnable>
+        <ITMportsTermIO>0</ITMportsTermIO>
+        <ITMportsLogFile>0</ITMportsLogFile>
+        <ITMlogFile>$PROJ_DIR$\ITM.log</ITMlogFile>
+    </SWOTraceHWSettings>
+    <Breakpoints>
+        <Count>0</Count>
+    </Breakpoints>
+    <TraceHelper>
+        <Enabled>0</Enabled>
+        <ShowSource>1</ShowSource>
+    </TraceHelper>
+    <Interrupts>
+        <Enabled>1</Enabled>
+    </Interrupts>
+    <MemoryMap>
+        <Enabled>0</Enabled>
+        <Base>0</Base>
+        <UseAuto>0</UseAuto>
+        <TypeViolation>1</TypeViolation>
+        <UnspecRange>1</UnspecRange>
+        <ActionState>1</ActionState>
+    </MemoryMap>
+    <Trace1>
+        <Enabled>0</Enabled>
+        <ShowSource>1</ShowSource>
+    </Trace1>
+    <Log_file>
+        <LoggingEnabled>_ 0</LoggingEnabled>
+        <LogFile>_ ""</LogFile>
+        <Category>_ 0</Category>
+    </Log_file>
+    <Disassemble_mode>
+        <mode>0</mode>
+    </Disassemble_mode>
+    <struct_types>
+        <Fmt0>SPI_TypeDef-CR1	4	0</Fmt0>
+        <Fmt1>SPI_TypeDef-CR2	4	0</Fmt1>
+        <Fmt2>SPI_TypeDef-CRCPR	4	0</Fmt2>
+        <Fmt3>SPI_TypeDef-DR	4	0</Fmt3>
+        <Fmt4>SPI_TypeDef-I2SCFGR	4	0</Fmt4>
+        <Fmt5>SPI_TypeDef-I2SPR	4	0</Fmt5>
+        <Fmt6>SPI_TypeDef-RXCRCR	4	0</Fmt6>
+        <Fmt7>SPI_TypeDef-SR	4	0</Fmt7>
+        <Fmt8>SPI_TypeDef-TXCRCR	4	0</Fmt8>
+        <Fmt9>struct disp_asp-pump_num	1	0</Fmt9>
+        <Fmt10>struct prime-disp_pump_num	1	0</Fmt10>
+        <Fmt11>struct sample_prime-pm_num	1	0</Fmt11>
+        <Fmt12>struct sample_prime-pm_time	3	0</Fmt12>
+        <Fmt13>struct sample_strip-manual	4	0</Fmt13>
+        <Fmt14>struct sample_strip-smpl	3	0</Fmt14>
+        <Fmt15>struct sample_strip-strip	3	0</Fmt15>
+        <Fmt16>struct shake_pram-accel_rpm	4	0</Fmt16>
+        <Fmt17>struct shake_pram-aly_pos	4	0</Fmt17>
+        <Fmt18>struct shake_pram-dasp_pos	4	0</Fmt18>
+        <Fmt19>struct shake_pram-down_ang_pos	4	0</Fmt19>
+        <Fmt20>struct shake_pram-dry_pos	4	0</Fmt20>
+        <Fmt21>struct shake_pram-hoiz_pos	4	0</Fmt21>
+        <Fmt22>struct shake_pram-run_time_s	4	0</Fmt22>
+        <Fmt23>struct shake_pram-speed_rpm	4	0</Fmt23>
+        <Fmt24>struct shake_pram-up_ang_pos	4	0</Fmt24>
+        <Fmt25>struct sq-stNum	4	0</Fmt25>
+        <Fmt26>struct st_motor-bath_pos	3	0</Fmt26>
+        <Fmt27>struct st_motor-speed_rpm	4	0</Fmt27>
+        <Fmt28>struct syringe_param-air_gap	3	0</Fmt28>
+    </struct_types>
+    <array_types>
+        <Fmt0>byte[1000]	3	0</Fmt0>
+        <Fmt1>byte[100]	5	0</Fmt1>
+        <Fmt2>byte[10]	3	0</Fmt2>
+        <Fmt3>byte[4]	4	0</Fmt3>
+        <Fmt4>uint32_t[20]	4	0</Fmt4>
+        <Fmt5>uint32_t[2]	1	0</Fmt5>
+        <Fmt6>uint8_t[200]	4	0</Fmt6>
+        <Fmt7>uint8_t[4]	4	0</Fmt7>
+        <Fmt8>uint8_t[9]	4	0</Fmt8>
+        <Fmt9>unsigned char[100]	4	0</Fmt9>
+        <Fmt10>unsigned char[1]	4	0</Fmt10>
+        <Fmt11>unsigned char[200]	4	0</Fmt11>
+        <Fmt12>unsigned char[4]	4	0</Fmt12>
+        <Fmt13>unsigned char[50]	4	0</Fmt13>
+        <Fmt14>unsigned char[9]	4	0</Fmt14>
+        <Fmt15>unsigned short[10]	4	0</Fmt15>
+    </array_types>
+    <watch_formats>
+        <Fmt0>{W}1:adc_bat_average	3	0</Fmt0>
+        <Fmt1>{W}1:addr	4	0</Fmt1>
+        <Fmt2>{W}1:asfasd	4	0</Fmt2>
+        <Fmt3>{W}1:asffasdfaasd	4	0</Fmt3>
+        <Fmt4>{W}1:barcode_data_temp[0]	4	0</Fmt4>
+        <Fmt5>{W}1:barcode_data_temp[1]	4	0</Fmt5>
+        <Fmt6>{W}1:barcode_data_temp[2]	4	0</Fmt6>
+        <Fmt7>{W}1:barcode_data_temp[3]	4	0</Fmt7>
+        <Fmt8>{W}1:barcode_data_temp[4]	4	0</Fmt8>
+        <Fmt9>{W}1:barcode_data_temp[5]	4	0</Fmt9>
+        <Fmt10>{W}1:barcode_data_temp[6]	4	0</Fmt10>
+        <Fmt11>{W}1:bat_vol	3	0</Fmt11>
+        <Fmt12>{W}1:byte	4	0</Fmt12>
+        <Fmt13>{W}1:c3000_checksum	4	0</Fmt13>
+        <Fmt14>{W}1:check_sum	4	0</Fmt14>
+        <Fmt15>{W}1:check_sum_temp	4	0</Fmt15>
+        <Fmt16>{W}1:cl1	4	0</Fmt16>
+        <Fmt17>{W}1:cl2	4	0</Fmt17>
+        <Fmt18>{W}1:commnad_list	3	0</Fmt18>
+        <Fmt19>{W}1:data	4	0</Fmt19>
+        <Fmt20>{W}1:data_length_temp	3	0</Fmt20>
+        <Fmt21>{W}1:device_busy_flag	4	0</Fmt21>
+        <Fmt22>{W}1:diasp_cnt	3	0</Fmt22>
+        <Fmt23>{W}1:edb2000_command_send_process	3	0</Fmt23>
+        <Fmt24>{W}1:eeprom_add_temp	3	0</Fmt24>
+        <Fmt25>{W}1:eeprom_test	4	0</Fmt25>
+        <Fmt26>{W}1:event	4	0</Fmt26>
+        <Fmt27>{W}1:event_cmd	4	0</Fmt27>
+        <Fmt28>{W}1:flag_test	5	0</Fmt28>
+        <Fmt29>{W}1:i	3	0</Fmt29>
+        <Fmt30>{W}1:init_clld_vol	3	0</Fmt30>
+        <Fmt31>{W}1:instruction_type	4	0</Fmt31>
+        <Fmt32>{W}1:lld_check_sum	4	0</Fmt32>
+        <Fmt33>{W}1:lld_check_sum_b	4	0</Fmt33>
+        <Fmt34>{W}1:lld_timeout_cnt	3	0</Fmt34>
+        <Fmt35>{W}1:main_rx_cmd	4	0</Fmt35>
+        <Fmt36>{W}1:motor_acc_speed	3	0</Fmt36>
+        <Fmt37>{W}1:motor_no	1	0</Fmt37>
+        <Fmt38>{W}1:motor_retry_count	3	0</Fmt38>
+        <Fmt39>{W}1:motor_send_data[1]	4	0</Fmt39>
+        <Fmt40>{W}1:motor_speed	3	0</Fmt40>
+        <Fmt41>{W}1:p_max	3	0</Fmt41>
+        <Fmt42>{W}1:pause_eve	4	0</Fmt42>
+        <Fmt43>{W}1:pm_check_sum	4	0</Fmt43>
+        <Fmt44>{W}1:pm_check_sum_b	4	0</Fmt44>
+        <Fmt45>{W}1:pmin	4	0</Fmt45>
+        <Fmt46>{W}1:pr_time_sec	3	0</Fmt46>
+        <Fmt47>{W}1:pump_channel	1	0</Fmt47>
+        <Fmt48>{W}1:pump_data_temp[5]	4	0</Fmt48>
+        <Fmt49>{W}1:ra	3	0</Fmt49>
+        <Fmt50>{W}1:return_vl	4	0</Fmt50>
+        <Fmt51>{W}1:serve_amp	3	0</Fmt51>
+        <Fmt52>{W}1:shake_command_retry_flag	3	0</Fmt52>
+        <Fmt53>{W}1:smp_prime_pm_ch	1	0</Fmt53>
+        <Fmt54>{W}1:smple_rack_cnt	4	0</Fmt54>
+        <Fmt55>{W}1:sq[full_step_cnt].dword[full_pr_cnt]	4	0</Fmt55>
+        <Fmt56>{W}1:syg_prime_oper_cnt	4	0</Fmt56>
+        <Fmt57>{W}1:syringe_rx_data_temp[1]	4	0</Fmt57>
+        <Fmt58>{W}1:syringe_rx_data_temp[2]	4	0</Fmt58>
+        <Fmt59>{W}1:syringe_rx_data_temp[3]	4	0</Fmt59>
+        <Fmt60>{W}1:syringe_rx_data_temp[4]	4	0</Fmt60>
+        <Fmt61>{W}1:syringe_rx_data_temp[5]	4	0</Fmt61>
+        <Fmt62>{W}1:syringe_rx_data_temp[6]	4	0</Fmt62>
+        <Fmt63>{W}1:temp	4	0</Fmt63>
+        <Fmt64>{W}1:temper	4	0</Fmt64>
+        <Fmt65>{W}1:usb_checksum	4	0</Fmt65>
+        <Fmt66>{W}1:usb_checksum_b	4	0</Fmt66>
+        <Fmt67>{W}1:value	3	0</Fmt67>
+        <Fmt68>{W}42:sq_strp_mach	4	0</Fmt68>
+        <Fmt69>{W}42:usb_checksum_b	4	0</Fmt69>
+    </watch_formats>
+    <Trace2>
+        <Enabled>0</Enabled>
+        <ShowSource>0</ShowSource>
+    </Trace2>
+    <SWOTraceWindow>
+        <PcSampling>0</PcSampling>
+        <InterruptLogs>0</InterruptLogs>
+        <ForcedTimeStamps>0</ForcedTimeStamps>
+        <EventCPI>0</EventCPI>
+        <EventEXC>0</EventEXC>
+        <EventFOLD>0</EventFOLD>
+        <EventLSU>0</EventLSU>
+        <EventSLEEP>0</EventSLEEP>
+    </SWOTraceWindow>
+    <DataLog>
+        <LogEnabled>0</LogEnabled>
+        <GraphEnabled>0</GraphEnabled>
+        <ShowTimeLog>1</ShowTimeLog>
+        <SumEnabled>0</SumEnabled>
+        <ShowTimeSum>1</ShowTimeSum>
+    </DataLog>
+    <InterruptLog>
+        <LogEnabled>0</LogEnabled>
+        <GraphEnabled>0</GraphEnabled>
+        <ShowTimeLog>1</ShowTimeLog>
+        <SumEnabled>0</SumEnabled>
+        <ShowTimeSum>1</ShowTimeSum>
+        <SumSortOrder>0</SumSortOrder>
+    </InterruptLog>
+    <EventLog>
+        <Title_0>Ch3</Title_0>
+        <Symbol_0>0 4 1</Symbol_0>
+        <Title_1>Ch2</Title_1>
+        <Symbol_1>0 4 1</Symbol_1>
+        <Title_2>Ch1</Title_2>
+        <Symbol_2>0 4 1</Symbol_2>
+        <Title_3>Ch0</Title_3>
+        <Symbol_3>0 4 1</Symbol_3>
+        <LogEnabled>0</LogEnabled>
+        <GraphEnabled>0</GraphEnabled>
+        <ShowTimeLog>1</ShowTimeLog>
+        <SumEnabled>0</SumEnabled>
+        <ShowTimeSum>1</ShowTimeSum>
+        <SumSortOrder>0</SumSortOrder>
+    </EventLog>
+    <TermIOLog>
+        <LoggingEnabled>_ 0</LoggingEnabled>
+        <LogFile>_ ""</LogFile>
+    </TermIOLog>
+    <LogFile>
+        <LoggingEnabled>_ 0</LoggingEnabled>
+        <LogFile>_ ""</LogFile>
+        <Category>_ 0</Category>
+    </LogFile>
+    <DriverProfiling>
+        <Enabled>0</Enabled>
+        <Mode>3</Mode>
+        <Graph>0</Graph>
+        <Symbiont>0</Symbiont>
+        <Exclusions />
+    </DriverProfiling>
+    <CallStackLog>
+        <Enabled>0</Enabled>
+    </CallStackLog>
+    <CallStackStripe>
+        <ShowTiming>1</ShowTiming>
+    </CallStackStripe>
+    <DisassembleMode>
+        <mode>0</mode>
+    </DisassembleMode>
+    <Breakpoints2>
+        <Bp0>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\uart_pc.c}.483.3" 0 0 1 "" 0 "" 0</Bp0>
+        <Bp1>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\sys_func.c}.366.5" 0 0 1 "" 0 "" 0</Bp1>
+        <Bp2>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\sys_func.c}.367.5" 0 0 1 "" 0 "" 0</Bp2>
+        <Bp3>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\sys_func.c}.368.5" 0 0 1 "" 0 "" 0</Bp3>
+        <Bp4>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\sys_func.c}.369.5" 0 0 1 "" 0 "" 0</Bp4>
+        <Bp5>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\hlld.c}.214.5" 0 0 1 "" 0 "" 0</Bp5>
+        <Bp6>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\hlld.c}.218.3" 0 0 1 "" 0 "" 0</Bp6>
+        <Bp7>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\hlld.c}.338.3" 0 0 1 "" 0 "" 0</Bp7>
+        <Count>8</Count>
+    </Breakpoints2>
+    <Aliases>
+        <A0>_ "C:\Users\smkan\OneDrive\project\sugen\project\suprimeI\fw\main\K_Blot_Supreme_Main_211022_DR4\CUBE\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\iar\startup_stm32f103xe.s" ""</A0>
+        <A1>_ "D:\CUBE\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_adc.c" ""</A1>
+        <A2>_ "D:\CUBE\Src\adc.c" ""</A2>
+        <A3>_ "D:\backup\Blot3_MotorVersion_final240208\sb3\S-Blot-3_FW-1.0.0.8_42P\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\iar\startup_stm32f103xe.s" ""</A3>
+        <A4>_ "D:\backup\Blot3_MotorVersion_final240208\sb3\S-Blot-3_FW-1.0.0.8_42P\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_adc.c" ""</A4>
+        <A5>_ "D:\smkang\K-BLOT_Supreme\1_Program\sm\K_Blot_Supreme_Main_170823_emb_source\CUBE\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_i2c.c" ""</A5>
+        <A6>_ "D:\smkang\K-BLOT_Supreme\1_Program\sm\K_Blot_Supreme_Main_170823_emb_source\CUBE\Src\main.c" ""</A6>
+        <Count>7</Count>
+        <SuppressDialog>1</SuppressDialog>
+    </Aliases>
+</settings>

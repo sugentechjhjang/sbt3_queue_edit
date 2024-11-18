@@ -1,0 +1,462 @@
+#include "main.h"
+
+enum shake_state sk_state=stShkrStby;
+struct shake_pram shk_pram;
+SPI_HandleTypeDef hspi1;
+
+
+
+dSPIN_RegsStruct_TypeDef dSPIN_RegsStruct;
+
+
+
+/*__packed  struct shake_pram
+{
+int32_t speed_rpm;
+int32_t accel_rpm;
+int32_t run_time_s;
+int32_t hoiz_pos;
+int32_t asp_pos;
+int32_t dsp_pos;
+int32_t dry_pos;
+  int32_t up_ang_pos;
+  int32_t down_ang_pos;
+
+ };*/
+struct shake_pram shk_pram ={
+  7000,
+  10000,
+  8000,
+  7000,
+  6000,
+  500,
+  600,
+  15000,
+  -15000,
+};
+
+
+
+void MX_SPI1_Init(void)
+{
+  
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_HIGH;
+  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLED;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLED;
+  hspi1.Init.CRCPolynomial = 10;
+  HAL_SPI_Init(&hspi1);
+  shaker_spi_handle(&hspi1);
+  cam_led_spi_init();
+  
+}
+
+
+void shaker_spi_handle(SPI_HandleTypeDef *hspi)
+{
+  set_spi_handle(hspi);
+  
+}
+
+
+
+void shaker_Init(void)
+{
+  
+  err_tmout_set(errShaker);
+  MX_SPI1_Init();
+  
+  //  HAL_GPIO_WritePin(L6470_STB_RST_GPIO_Port, L6470_STB_RST_Pin, GPIO_PIN_RESET);
+  //  HAL_Delay(100);
+  //  HAL_GPIO_WritePin(L6470_STB_RST_GPIO_Port, L6470_STB_RST_Pin, GPIO_PIN_SET);
+  //  HAL_Delay(100);
+  //  HAL_GPIO_WritePin(L6470_SW_GPIO_Port, L6470_SW_Pin, GPIO_PIN_SET);
+  //  HAL_Delay(100);
+  //  dSPIN_Regs_Struct_Reset(&dSPIN_RegsStruct);
+  dSPIN_Reset_And_Standby();
+  
+  /* Acceleration rate settings to 466 steps/s2, range 14.55 to 59590 steps/s2 */
+  dSPIN_RegsStruct.ACC 		= AccDec_Steps_to_Par(10000);
+  /* Deceleration rate settings to 466 steps/s2, range 14.55 to 59590 steps/s2 */
+  dSPIN_RegsStruct.DEC 		= AccDec_Steps_to_Par(10000); 
+  /* Maximum speed settings to 488 steps/s, range 15.25 to 15610 steps/s */
+  dSPIN_RegsStruct.MAX_SPEED 	= MaxSpd_Steps_to_Par(600);
+  /* Minimum speed settings to 0 steps/s, range 0 to 976.3 steps/s */
+  dSPIN_RegsStruct.MIN_SPEED	= MinSpd_Steps_to_Par(150);//MinSpd_Steps_to_Par(100);
+  /* Full step speed settings 252 steps/s, range 7.63 to 15625 steps/s */
+  dSPIN_RegsStruct.FS_SPD 	= FSSpd_Steps_to_Par(10000);;//FSSpd_Steps_to_Par(10000); //655
+  /* Hold duty cycle (torque) settings to 10%, range 0 to 99.6% */
+  dSPIN_RegsStruct.KVAL_HOLD 	= 0x15;//Kval_Perc_to_Par(5);
+  /* Run duty cycle (torque) settings to 10%, range 0 to 99.6% */
+  dSPIN_RegsStruct.KVAL_RUN 	=0x46;//Kval_Perc_to_Par(5);
+  /* Acceleration duty cycle (torque) settings to 10%, range 0 to 99.6% */
+  dSPIN_RegsStruct.KVAL_ACC 	= 0x46;//0x36;//Kval_Perc_to_Par(5);
+  /* Deceleration duty cycle (torque) settings to 10%, range 0 to 99.6% */
+  dSPIN_RegsStruct.KVAL_DEC 	= 0x46;//0x36;//Kval_Perc_to_Par(5);		
+  /* Intersect speed settings for BEMF compensation to 200 steps/s, range 0 to 3906 steps/s */
+  dSPIN_RegsStruct.INT_SPD 	= 0x1BD0;//IntSpd_Steps_to_Par(200);
+  /* BEMF start slope settings for BEMF compensation to 0.038% step/s, range 0 to 0.4% s/step */
+  dSPIN_RegsStruct.ST_SLP 	= 0x18;//BEMF_Slope_Perc_to_Par(0.038);
+  /* BEMF final acc slope settings for BEMF compensation to 0.063% step/s, range 0 to 0.4% s/step */
+  dSPIN_RegsStruct.FN_SLP_ACC = 0x36;//0x39;//BEMF_Slope_Perc_to_Par(0.063);
+  /* BEMF final dec slope settings for BEMF compensation to 0.063% step/s, range 0 to 0.4% s/step */
+  dSPIN_RegsStruct.FN_SLP_DEC = 0x36;//0x39; //BEMF_Slope_Perc_to_Par(0.063);
+  /* Thermal compensation param settings to 1, range 1 to 1.46875 */
+  dSPIN_RegsStruct.K_THERM 	= KTherm_to_Par(1);
+  /* Overcurrent threshold settings to 1500mA */
+  dSPIN_RegsStruct.OCD_TH 	= dSPIN_OCD_TH_6000mA;//dSPIN_OCD_TH_3000mA;
+  /* Stall threshold settings to 1000mA, range 31.25 to 4000mA */
+  dSPIN_RegsStruct.STALL_TH 	= StallTh_to_Par(3000);//StallTh_to_Par(1000);
+  /* Step mode settings to 128 microsteps */
+  dSPIN_RegsStruct.STEP_MODE 	= dSPIN_STEP_SEL_1;//dSPIN_STEP_SEL_1_128;
+  /* Alarm settings - all alarms enabled */
+  dSPIN_RegsStruct.ALARM_EN 	= dSPIN_ALARM_EN_OVERCURRENT | dSPIN_ALARM_EN_THERMAL_SHUTDOWN
+    | dSPIN_ALARM_EN_THERMAL_WARNING | dSPIN_ALARM_EN_UNDER_VOLTAGE | dSPIN_ALARM_EN_STALL_DET_A
+      | dSPIN_ALARM_EN_STALL_DET_B | dSPIN_ALARM_EN_SW_TURN_ON | dSPIN_ALARM_EN_WRONG_NPERF_CMD;
+  /* Internal oscillator, 2MHz OSCOUT clock, supply voltage compensation disabled, *
+  * overcurrent shutdown enabled, slew-rate = 290 V/us, PWM frequency = 15.6kHz   */
+  //  dSPIN_RegsStruct.CONFIG 	= (uint16_t)dSPIN_CONFIG_INT_16MHZ_OSCOUT_2MHZ | (uint16_t)dSPIN_CONFIG_SW_HARD_STOP
+  //      | (uint16_t)dSPIN_CONFIG_VS_COMP_DISABLE | (uint16_t)dSPIN_CONFIG_OC_SD_ENABLE | (uint16_t)dSPIN_CONFIG_SR_290V_us
+  //      | (uint16_t)dSPIN_CONFIG_PWM_DIV_2 | (uint16_t)dSPIN_CONFIG_PWM_MUL_1;	
+  dSPIN_RegsStruct.CONFIG 	= dSPIN_CONFIG_INT_16MHZ_OSCOUT_2MHZ | dSPIN_CONFIG_SW_HARD_STOP
+    | dSPIN_CONFIG_VS_COMP_DISABLE | dSPIN_CONFIG_OC_SD_ENABLE | dSPIN_CONFIG_SR_110V_us
+      | dSPIN_CONFIG_PWM_DIV_2 | dSPIN_CONFIG_PWM_MUL_1;  
+  
+  /* Program all dSPIN registers */
+  dSPIN_Registers_Set(&dSPIN_RegsStruct);
+  sk_state=stShkrStby;
+ 
+  err_tmout_en(FALSE);
+}
+
+void shake_mem_init()
+{
+  shk_param_read();
+  if(shk_pram.speed_rpm==0||shk_pram.speed_rpm==(~0)){
+    shk_pram.hoiz_pos=7200;
+    shk_pram.dasp_pos=-8500;
+    shk_pram.aly_pos=1000;
+    shk_pram.dry_pos=-18000;
+    shk_pram.speed_rpm=60;
+    shk_pram.accel_rpm=600;
+    shk_pram.run_time_s=5;
+    shk_pram.up_ang_pos=-8200;
+    shk_pram.down_ang_pos=-12000;
+    
+    shk_param_write();
+  }
+   shake_speed_set(shk_pram.speed_rpm, shk_pram.speed_rpm/2,shk_pram.speed_rpm/2);
+}
+
+
+void shake_speed_set(uint32_t Nowspeed, uint32_t Maxspeed, uint32_t acc)
+{
+  dSPIN_Set_Param(dSPIN_MAX_SPEED, MaxSpd_Steps_to_Par(Nowspeed));
+  dSPIN_Delay(50000);
+  dSPIN_Set_Param(dSPIN_ACC, AccDec_Steps_to_Par(acc));
+  dSPIN_Delay(50000);
+  dSPIN_Set_Param(dSPIN_DEC, AccDec_Steps_to_Par(acc));
+}
+
+
+
+byte shake_home()
+{
+  
+  if(sk_state==stShkrStby)
+  {
+    give_event(eventSkrRollBack,0);
+    sk_state=stShkrOper;
+    err_tmout_cnt_set(errShaker,10);
+  }else if(sk_state==stShkrOperEnd)
+  {
+    sk_state=stShkrStby;
+    err_tmout_en(FALSE);
+  }
+  
+  
+  return sk_state;
+}
+
+
+int32_t run_time_cnt=0;
+byte shake_run()
+{
+  com_time_out_set(DISEN);
+  if(sk_state==stShkrStby){
+    run_time_cnt=shk_pram.run_time_s;
+    give_event(eventSkrRun,0);
+    sk_state=stShkrOper;
+  }else if(sk_state==stShkrOperEnd)
+    sk_state=stShkrStby;
+  
+  
+  return sk_state;
+}
+
+
+#define SHKER_INIT_PARM 40000
+int32_t shker_parm_temp=0;
+int home_sen_polling_cnt=5;
+event execute_shake_ctrl(event event)
+{
+
+  byte dev_send_buf[4]={0,}; 
+  static bool angle_flg=false;
+  switch (event)
+  {
+  case eventSkrRun:
+    set_timer_(eventSkrRunUpAngle,100,0);
+    break;
+  case eventSkrRunUpAngle:
+    dSPIN_Go_To(shk_pram.up_ang_pos);
+    angle_flg=false;
+    if(state==stPause)
+      set_timer_pause(eventSkrRunChk,100,0);
+    else 
+    set_timer_(eventSkrRunChk,100,0);
+    break;
+  case eventSkrRunDownAngle:
+    dSPIN_Go_To(shk_pram.down_ang_pos);
+    angle_flg=true;
+    if(state==stPause)
+      set_timer_pause(eventSkrRunChk,100,0);
+    else 
+    set_timer_(eventSkrRunChk,100,0);
+    break;
+  case eventSkrRunChk:
+    if(run_time_cnt){
+      if(!dSPIN_Busy_HW()){
+        if(angle_flg)
+          set_timer_(eventSkrRunUpAngle,300,0);
+        else
+          set_timer_(eventSkrRunDownAngle,300,0);
+      }else
+        set_timer_(eventSkrRunChk,100,0);
+    }else{
+      dSPIN_Hard_Stop();
+      dSPIN_Delay(1000000);
+      dSPIN_Go_To(0);
+      sk_state=stShkrOperEnd;
+      // set_timer_(eventSkrHome,100,0);
+      run_time_cnt=shk_pram.run_time_s;
+      switch(state)
+      {
+      case stStEng:
+        break;
+      case stReady:
+        set_timer_(eventSqNext,1000,0);
+        break;
+      case stStby:
+        set_timer_(eventSqNext,100,0);
+        break;
+      }
+      
+    }
+    break;
+  case eventSkrRollBack:
+    if(HAL_GPIO_ReadPin(SHAKE_HOME_S_GPIO_Port, SHAKE_HOME_S_Pin))
+      dSPIN_Go_To(SHKER_INIT_PARM);
+    
+      set_timer_(eventSkrHome,1000,0);
+    break;
+  case eventSkrHome:
+    if(!HAL_GPIO_ReadPin(SHAKE_HOME_S_GPIO_Port, SHAKE_HOME_S_Pin)){ // ���� check- ���� �����Ǿ��ٸ�{
+      dSPIN_Run(REV, Speed_Steps_to_Par(10));  //1           
+      set_timer_(eventSkrHomeChk,5,0);
+    }else {
+      dSPIN_Go_To(shk_pram.hoiz_pos);
+      set_timer_(eventSkAbsrHome,100,0);
+    }
+    break;
+  case eventSkrHomeChk:
+    if(HAL_GPIO_ReadPin(SHAKE_HOME_S_GPIO_Port, SHAKE_HOME_S_Pin)) {//���� check - �������� ���� �������� ���
+      dSPIN_Hard_Stop();
+      dSPIN_Delay(1000000);
+      dSPIN_Set_Param(dSPIN_ABS_POS , 0);
+      dSPIN_Delay(1000000);
+      dSPIN_Go_To(shk_pram.hoiz_pos);
+      set_timer_(eventSkAbsrHome,100,0);
+    }
+    else
+      set_timer_(eventSkrHomeChk,5,0);
+    break;
+  case eventSkAbsrHome:
+    if(dSPIN_Busy_HW()){
+    //  dSPIN_Set_Param(dSPIN_ABS_POS , 0);
+      set_timer_(eventSkAbsrHome,100,0);
+    }else{
+      dSPIN_Set_Param(dSPIN_ABS_POS , 0);
+      shker_parm_temp=shk_pram.hoiz_pos;
+      sk_state=stShkrOperEnd;
+    }
+    break;
+    //pc_cmd--------------------------
+    
+  case hseTrayPage:
+    state=stStEng;
+    usb_send_pack(hseTrayPage, 0);
+    break;
+  case hseTrayHome:
+    shk_param_write();
+    shk_param_read();
+    sk_state=stShkrStby;
+    shake_home();
+    usb_send_pack(hseTrayHome, usb_data_buf);
+    break;
+  case hseTraySpeedSet:
+    shk_pram.speed_rpm=merge_32bit( shk_pram.speed_rpm,usb_data_buf);
+    shk_param_write();
+  // dSPIN_Set_Param(dSPIN_MAX_SPEED, MaxSpd_Steps_to_Par(shk_pram.speed_rpm));
+  shake_speed_set(shk_pram.speed_rpm, shk_pram.speed_rpm/2,shk_pram.speed_rpm/2);
+    usb_send_pack(hseTraySpeedSet, usb_data_buf);
+    break;
+  case hseTraySpeedSave:
+    shk_pram.speed_rpm=merge_32bit(shk_pram.speed_rpm,usb_data_buf);
+    shk_param_write();
+    usb_send_pack(hseTraySpeedSave, usb_data_buf);
+    break;    
+  case hseTraySpeedRead:
+    shk_param_read();
+    sort_8bit(shk_pram.speed_rpm,dev_send_buf);
+    usb_send_pack(hseTraySpeedRead, dev_send_buf);
+    break;
+  case hseTrayAccelSet:
+    shk_pram.accel_rpm=merge_32bit( shk_pram.accel_rpm,usb_data_buf);
+    shk_param_write();
+    dSPIN_Set_Param(dSPIN_ACC, AccDec_Steps_to_Par(shk_pram.accel_rpm));
+    dSPIN_Delay(50000);
+    dSPIN_Set_Param(dSPIN_DEC, AccDec_Steps_to_Par(shk_pram.accel_rpm));
+    usb_send_pack(hseTrayAccelSet, usb_data_buf);
+    break;
+  case hseTrayAccelSave:
+    shk_pram.accel_rpm=merge_32bit(shk_pram.accel_rpm,usb_data_buf);
+    shk_param_write();
+    usb_send_pack(hseTrayAccelSave, usb_data_buf);
+    break;    
+  case hseTrayAccelRead:
+    shk_param_read();
+    sort_8bit(shk_pram.accel_rpm,dev_send_buf);
+    usb_send_pack(hseTrayAccelRead, dev_send_buf);
+    break;
+  case hseTrayRunTimeMove:
+    shk_pram.run_time_s=merge_32bit( shk_pram.run_time_s,usb_data_buf);
+    sk_state=stShkrStby;
+    shake_run();
+    usb_send_pack(hseTrayRunTimeMove,usb_data_buf);
+    break;
+  case hseTrayHorizPosSet:
+    shk_pram.hoiz_pos=merge_32bit(shk_pram.hoiz_pos,usb_data_buf);
+    shk_param_write();
+    dSPIN_Go_To( shk_pram.hoiz_pos-shker_parm_temp);
+    usb_send_pack(hseTrayHorizPosSet,usb_data_buf);
+    break;
+  case hseTrayHorizPosSave:
+    shk_pram.hoiz_pos=merge_32bit(shk_pram.hoiz_pos,usb_data_buf);
+    shk_param_write();
+    usb_send_pack(hseTrayHorizPosSave,usb_data_buf);
+    break;
+  case hseTrayHorizPosRead:
+    shk_param_read();
+    sort_8bit(shk_pram.hoiz_pos,dev_send_buf);
+    usb_send_pack(hseTrayHorizPosRead, dev_send_buf);
+    break;
+  case hseTrayDAspPosSet:
+    shk_pram.dasp_pos=merge_32bit( shk_pram.dasp_pos,usb_data_buf);
+    shk_param_write();
+    dSPIN_Go_To( shk_pram.dasp_pos);
+    usb_send_pack(hseTrayDAspPosSet, usb_data_buf);
+    break;
+  case hseTrayDAspPosSave:
+    shk_pram.dasp_pos=merge_32bit( shk_pram.dasp_pos,usb_data_buf);
+    shk_param_write();
+    usb_send_pack(hseTrayDAspPosSave, usb_data_buf);
+    break;    
+  case hseTrayDAspPosRead:
+    shk_param_read();
+    sort_8bit(shk_pram.dasp_pos,dev_send_buf);
+    usb_send_pack(hseTrayDAspPosRead, dev_send_buf);
+    break;
+  case hseTrayAlyPosSet:
+    shk_pram.aly_pos=merge_32bit( shk_pram.aly_pos,usb_data_buf);
+    shk_param_write();
+    dSPIN_Go_To( shk_pram.aly_pos);
+    usb_send_pack(hseTrayAlyPosSet, usb_data_buf);
+    break;
+   case hseTrayAlyPosSave:
+    shk_pram.aly_pos=merge_32bit( shk_pram.aly_pos,usb_data_buf);
+    shk_param_write();
+    usb_send_pack(hseTrayAlyPosSave, usb_data_buf);
+    break;   
+  case hseTrayAlyPosRead:
+    shk_param_read();
+    sort_8bit(shk_pram.aly_pos,dev_send_buf);
+    usb_send_pack(hseTrayAlyPosRead, dev_send_buf);
+    break;
+  case hseTrayDryPosSet:
+    shk_pram.dry_pos=merge_32bit( shk_pram.dry_pos,usb_data_buf);
+    shk_param_write();
+    dSPIN_Go_To( shk_pram.dry_pos);
+    usb_send_pack(hseTrayDryPosSet, usb_data_buf);
+    break;
+  case hseTrayDryPosSave:
+    shk_pram.dry_pos=merge_32bit( shk_pram.dry_pos,usb_data_buf);
+    shk_param_write();
+    usb_send_pack(hseTrayDryPosSave, usb_data_buf);
+    break;    
+  case hseTrayDryPosRead:
+    shk_param_read();
+    sort_8bit(shk_pram.dry_pos,dev_send_buf);
+    usb_send_pack(hseTrayDryPosRead, dev_send_buf);
+    break;
+  case hseTrayAngUpPosSet:
+    shk_pram.up_ang_pos=merge_32bit( shk_pram.up_ang_pos,usb_data_buf);
+    shk_param_write();
+    dSPIN_Go_To( shk_pram.up_ang_pos);
+    usb_send_pack(hseTrayAngUpPosSet, usb_data_buf);
+    break;
+  case hseTrayAngUpPosSave:
+    shk_pram.up_ang_pos=merge_32bit( shk_pram.up_ang_pos,usb_data_buf);
+    shk_param_write();
+    usb_send_pack(hseTrayAngUpPosSave, usb_data_buf);
+    break;    
+  case hseTrayAngUpPosRead:
+    shk_param_read();
+    sort_8bit(shk_pram.up_ang_pos,dev_send_buf);
+    usb_send_pack(hseTrayAngUpPosRead, dev_send_buf);
+    break;
+  case hseTrayAngDownPosSet:
+    shk_pram.down_ang_pos=merge_32bit( shk_pram.down_ang_pos,usb_data_buf);
+    shk_param_write();
+    dSPIN_Go_To( shk_pram.down_ang_pos);
+    usb_send_pack(hseTrayAngDownPosSet, usb_data_buf);
+    break;
+  case hseTrayAngDownPosSave:
+    shk_pram.down_ang_pos=merge_32bit( shk_pram.down_ang_pos,usb_data_buf);
+    shk_param_write();
+    usb_send_pack(hseTrayAngDownPosSave, usb_data_buf);
+    break;    
+  case hseTrayAngDownPosRead:
+    shk_param_read();
+    sort_8bit(shk_pram.down_ang_pos,dev_send_buf);
+    usb_send_pack(hseTrayAngDownPosRead, dev_send_buf);
+    break;
+  case eventTimer1s:
+    if(state!=stPause)
+      if(sk_state==stShkrOper){
+        run_time_cnt--;
+      }
+    break;
+  default: break;
+  }
+  return event;
+}
+
+

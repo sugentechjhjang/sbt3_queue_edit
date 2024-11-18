@@ -1,0 +1,542 @@
+
+
+#include "main.h"
+
+#define PLLD_TOTAL_INDEX 110
+
+enum lld_com_state lld_state=lldStanby;
+enum lld_func lld_fc=lldFuncNone;
+struct smple_pram smp_pram;
+unsigned char hlld_rx_index =0;
+unsigned char hlld_rx_data_buffer[100] = {0,};
+
+
+void  hlld_mem_init()
+{
+  hlld_param_read();
+  
+}
+
+void UART5_Hlld_RxCpltCallback(byte chr) 
+{
+  hlld_rx_index++;
+  hlld_rx_data_buffer[hlld_rx_index]=chr;
+//  HAL_UART_Receive_IT(&huart5, &pump_rx_data_buffer[pump_rx_index], 1);
+}
+void hlld_485_Direction_Set(GPIO_PinState pin_state)
+{
+  HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, pin_state);  // DIR RS-485
+}
+HAL_StatusTypeDef Hlld_Uart5_Data_Send(unsigned char *data, unsigned char data_length)
+{ 
+  return HAL_UART_Transmit(&huart5, data, data_length, 100);
+
+}
+unsigned char hex2ascii(unsigned char code)
+{
+  unsigned char result = 0;
+  
+  result = code + 0x30;
+  if(result > 0x39)
+    result += 7;
+  return result;
+}
+
+#define HLLD_STX 0x3A
+#define FIRST_HLLD_ETX 0x0D
+#define END_HLLD_ETX   0x0A
+#define HLLD_NO_RECIVED 0xFF
+
+byte lld_escap=0;
+byte lld_currnt_rec_buf_ind=0;
+byte lld_check_sum=0,lld_check_sum_b=0;
+byte lld_receive_bufs[100]={0,};
+byte *lld_receive_buf;
+byte *lld_pnt;
+byte lld_recived_rec_buf_ind=0xff;
+
+//byte TestClld[100]={0,};
+void lld_pack_aly(byte lld_chr)
+{ 
+  byte lld_temp_chr=0;
+  lld_temp_chr=lld_chr;//get_pm_buf();
+  
+  if(HLLD_STX==lld_temp_chr&&!lld_escap){
+    lld_currnt_rec_buf_ind=0;
+    lld_escap=1;
+    lld_check_sum_b=0;
+    lld_check_sum=0;
+    lld_pnt=lld_receive_buf=lld_receive_bufs;
+  }else if(lld_pnt&&lld_escap){ 
+    *(lld_pnt++)=lld_temp_chr;
+    lld_currnt_rec_buf_ind++;
+    //if((lld_currnt_rec_buf_ind<13)||(lld_currnt_rec_buf_ind>16))
+    if(lld_currnt_rec_buf_ind==2||lld_currnt_rec_buf_ind==4||lld_currnt_rec_buf_ind==8||lld_currnt_rec_buf_ind==12)
+    lld_check_sum+=lld_temp_chr;
+    
+    if(lld_currnt_rec_buf_ind>16){
+      if(FIRST_HLLD_ETX==*(lld_receive_buf+14)&&END_HLLD_ETX==*(lld_receive_buf+15)){
+        lld_check_sum=(lld_check_sum&0xff)*-1;
+       // lld_check_sum=hex2ascii((byte)(lld_check_sum&0xff));
+        //lld_check_sum_b=hex2ascii(*(lld_receive_buf+12))<<4;
+        //lld_check_sum_b|=hex2ascii(*(lld_receive_buf+13));
+       lld_check_sum_b=math_uint(*(lld_receive_buf+12),*(lld_receive_buf+13));
+       // if((lld_check_sum&0x0f)==(lld_check_sum_b&0x0f)){
+          lld_escap=0;
+          lld_check_sum_b=0;
+          lld_check_sum=0;
+          lld_pnt=0;
+          lld_state=lldStanby;
+          lld_recived_rec_buf_ind=lld_currnt_rec_buf_ind;
+       /* }else{
+          lld_escap=0;
+          lld_check_sum_b=0;
+          lld_check_sum=0;
+          lld_pnt=0;
+          lld_currnt_rec_buf_ind=0;
+          return;
+        }*/
+      }else{
+        lld_escap=0;
+        lld_check_sum_b=0;
+        lld_check_sum=0;
+        lld_pnt=0;
+        lld_currnt_rec_buf_ind=0;
+        return;
+      }
+    }
+    
+    
+    
+  }else
+  {
+    lld_escap=0;
+    lld_check_sum_b=0;
+    lld_check_sum=0;
+    lld_pnt=0;
+    lld_currnt_rec_buf_ind=0;
+  }
+  
+  
+  
+}
+
+
+
+
+void hlld_send_pack(unsigned char addr, unsigned char cmd, unsigned short int content, unsigned short int data)
+{
+  signed char lrc = 0;
+  unsigned char tx_buffer[17];
+  err_tmout_cnt_set(errHlld,10);
+ 
+  lrc = (addr + cmd + (content >> 8) + (content & 0xFF) + (data >> 8) + (data & 0xFF)) * -1;
+LLD_COM_BACK:
+  tx_buffer[0] = ':';
+  tx_buffer[1] = hex2ascii((addr >> 4) & 0x0F);
+  tx_buffer[2] = hex2ascii(addr & 0x0F);
+  tx_buffer[3] = hex2ascii((cmd >> 4) & 0x0F);
+  tx_buffer[4] = hex2ascii(cmd & 0x0F);
+  tx_buffer[5] = hex2ascii((content >> 12) & 0x0F);
+  tx_buffer[6] = hex2ascii((content >> 8) & 0x0F);
+  tx_buffer[7] = hex2ascii((content >> 4) & 0x0F);
+  tx_buffer[8] = hex2ascii(content & 0x0F);
+  tx_buffer[9] = hex2ascii((data >> 12) & 0x0F);
+  tx_buffer[10] = hex2ascii((data >> 8) & 0x0F);
+  tx_buffer[11] = hex2ascii((data >> 4) & 0x0F);
+  tx_buffer[12] = hex2ascii(data & 0x0F);
+  tx_buffer[13] = hex2ascii((lrc >> 4) & 0x0F);
+  tx_buffer[14] = hex2ascii(lrc & 0x0F);
+  tx_buffer[15] = 0x0D;
+  tx_buffer[16] = 0x0A;
+  lld_state=lldBusy;
+  hlld_485_Direction_Set(GPIO_PIN_SET);
+  Hlld_Uart5_Data_Send(tx_buffer, 17);
+  hlld_485_Direction_Set(GPIO_PIN_RESET); 
+
+   com_time_out_set();
+  while(lld_state==lldBusy){
+    if(!call_com_timeout_cnt())
+      goto LLD_COM_BACK;
+  }
+  err_tmout_en(FALSE);
+}
+
+
+uint16_t lld_event_cmd=0;
+//bool get_sens_flg=false;
+void hlld_rs232()
+{
+  byte i=0;
+   if(lld_recived_rec_buf_ind!=HLLD_NO_RECIVED)
+      {
+
+        for(i=0;i<16;i++)
+        lld_receive_bufs[i]=(ascii2hex(lld_receive_bufs[i]));//&0x0f);
+        
+      //  if(!get_sens_flg){
+          switch(lld_receive_bufs[3])
+          {
+          case 0:
+            break;
+          case HLLD_CLLD_RES:
+            // lld_event_cmd=hseClldSensControl;
+            break;
+          case HLLD_CLLD_VOL:
+            clld_vol=lld_receive_bufs[8]<<12;
+            clld_vol|=(lld_receive_bufs[9]&0x0f)<<8;
+            clld_vol|=lld_receive_bufs[10]<<4;
+            clld_vol|=(lld_receive_bufs[11]&0x0f);
+            // lld_event_cmd=hseClldOutputVol;
+            break;
+          case HLLD_PLLD_RESULT:
+            p_min=lld_receive_bufs[4]<<12;
+            p_min|=(lld_receive_bufs[5]&0x0f)<<8;
+            p_min|=lld_receive_bufs[6]<<4;
+            p_min|=(lld_receive_bufs[7]&0x0f);
+            
+            p_max=lld_receive_bufs[8]<<12;
+            p_max|=(lld_receive_bufs[9]&0x0f)<<8;
+            p_max|=lld_receive_bufs[10]<<4;
+            p_max|=(lld_receive_bufs[11]&0x0f);
+            
+            give_event(eventSmpPlldJude,0);
+            
+            break;
+          case HLLD_PLLD_STREAM:
+            if(lld_receive_bufs[11]==1)
+              give_event(eventSmpPlldJude,0);
+            break;
+          case HLLD_PLLD_GET_SENS:
+         //   get_sens_flg=true;
+            give_event(eventSmpQcStreamGo,0);
+            break;
+          case HLLD_PLLD_SLOP_RESULT:
+            slope_vol=lld_receive_bufs[8]<<12;
+            slope_vol|=(lld_receive_bufs[9]&0x0f)<<8;
+            slope_vol|=lld_receive_bufs[10]<<4;
+            slope_vol|=(lld_receive_bufs[11]&0x0f);
+            give_event(hsePlldJudgSlope,0);
+            break;
+          default:break;  
+          
+          }
+       
+          
+      //  give_event(lld_event_cmd,0);
+        lld_recived_rec_buf_ind=HLLD_NO_RECIVED;
+    // for the testing
+         //print("recived cmd=%d ", received_buf[1]);
+      }
+      
+  
+
+}
+
+byte  rb=255,ra=100;
+uint16_t clld_indx=0;
+uint16_t hlld_vol=0;
+byte sws_arry[10]={0,};
+uint16_t sws_sum=0;
+
+byte plld_min=0,plld_max=0, plld_slope=0;
+bool plld_qc=false;
+byte plld_index=0;
+event execute_hlld_ctrl(event event)
+{
+ byte dev_send_buf[4]={0,}; 
+  hlld_rs232();
+  switch(event)
+  {
+  case hseClldPage:
+    state=stStEng;
+    lld_fc=lldFuncClld;
+    smpl_prime.pm_num=SMP_PRME_PP;
+    set_timer_(eventSmpPrimeInit,10,0);
+    usb_send_pack(hseClldPage, 0);
+    break;
+  case hseClldSensControl:
+    dev_send_buf[0]=lld_receive_bufs[8]<<4;
+    dev_send_buf[0]|=lld_receive_bufs[9];
+    dev_send_buf[1]=lld_receive_bufs[10]<<4;
+    dev_send_buf[1]|=lld_receive_bufs[11];
+    
+    dev_send_buf[2]=clld_indx>>8;
+    dev_send_buf[3]=clld_indx&0x00ff;
+    
+    hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
+    usb_send_pack(hseClldSensControlResp, dev_send_buf);
+   
+    break;
+  
+  case hseClldOutputVol:
+   /* hlld_vol=lld_receive_bufs[10]<<8;
+    hlld_vol|=lld_receive_bufs[11];
+    if(hlld_vol>1000)
+      hlld_vol=0;*/
+    dev_send_buf[0]=lld_receive_bufs[8]<<4;
+    dev_send_buf[0]|=lld_receive_bufs[9]&0x0f;
+    
+    dev_send_buf[1]=lld_receive_bufs[10]<<4;
+    dev_send_buf[1]|=lld_receive_bufs[11]&0x0f;
+    
+    dev_send_buf[2]=0;
+    dev_send_buf[3]=1;
+    
+    if(!ra--){
+      rb--;ra=100;
+    } 
+    usb_send_pack(hseClldOutputVolResp, dev_send_buf);
+    break;
+
+  case hseClldOffSet:
+    smp_pram.off_set=usb_data_buf[0];
+    hlld_param_write();
+    usb_send_pack(hseClldOffSetResp, usb_data_buf);  
+    break;
+    
+  case hseClldOffRead:
+    hlld_param_read();
+    dev_send_buf[0]=smp_pram.off_set;
+    usb_send_pack(hseClldOffReadResp, dev_send_buf);  
+    break;
+    
+  case hseClldTestRun:
+    clld_indx=0;
+    give_event(eventClldVarResCtrl,0);
+    break;
+    
+  case eventClldVarResCtrl:
+    clld_indx++;
+    hlld_send_pack(HLLD_ADD, HLLD_CLLD_RES,20, (unsigned short int)((rb<<8)|ra));
+    usb_send_pack(hseClldTestRunResp, 0);
+    
+   // if(!clld_maching_stop)
+   // give_event(hseClldSensControl,0);
+    //else  beep(80, 1);
+   
+    break;
+  
+  case hseLLDPage:
+    usb_send_pack(hseLLDPage, 0);
+    break;
+  case hseLLDQcStart:
+   // set_timer_(eventSmpInit,10,0);
+    state=stStby;
+    lld_fc=lldFullFunc;
+    smpl_pr.sample_num=usb_data_buf[0];
+    smple_rack_cnt=0;
+    jude_cnt=smpl_pr.sensing_cnt;
+    smpl_prime.pm_num=SMP_PRME_PP;
+    set_timer_(eventSmpPrimeInit,10,0);
+    usb_send_pack(hseLLDQcStartResp, 0);
+    break;
+  case hseClldTestStop:
+     beep(80, 1);
+     rb=255,ra=100;
+     usb_send_pack(hseClldTestStopResp, 0);
+    break;
+  case hseClldRaRbSet:
+    dev_send_buf[1]=smp_pram.ra=usb_data_buf[1];
+    dev_send_buf[0]=smp_pram.rb=usb_data_buf[0];
+    hlld_send_pack(HLLD_ADD, HLLD_CLLD_RES,20, (unsigned short int)((smp_pram.rb<<8)|smp_pram.ra));
+    clld_indx=1;
+    dev_send_buf[2]=clld_indx>>8;
+    dev_send_buf[3]=clld_indx&0x00ff;
+    hlld_param_write();
+    usb_send_pack(hseClldRaRbReadResp, usb_data_buf);
+  //  usb_send_pack(hseClldSensControl, dev_send_buf);
+    break;
+  case hseClldRaRbRead:
+    hlld_param_read();
+    dev_send_buf[1]=smp_pram.ra;
+    dev_send_buf[0]=smp_pram.rb;
+    usb_send_pack(hseClldRaRbReadResp, dev_send_buf);
+    break;
+  default: break;
+
+
+// sws search  
+  case hseClldSWSSet:
+    cll_state=0;
+    ra=100;
+  if(!clld_indx){
+    rb=usb_data_buf[1];
+    usb_send_pack(hseClldSWSResp, dev_send_buf);
+  }
+   hlld_send_pack(HLLD_ADD, HLLD_CLLD_RES,20, (unsigned short int)((rb<<8)|ra));
+   edbmt_cmd_send(ADDR_MOTOR_Z,INST_SGP,0,2,SWS_OP);
+   give_event(eventSWSVarResCtrl,0);
+
+    break;
+  case eventSWSVarResCtrl:
+    hlld_send_pack(HLLD_ADD, HLLD_CLLD_RES,20, (unsigned short int)((rb<<8)|ra));
+    give_event(eventSWSVarCheck,0);
+
+    break;
+  case eventSWSVarCheck:
+    if(cll_state==5){
+      hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
+      edbmt_cmd_send(ADDR_MOTOR_Z,INST_SGP,2,2,0);
+      give_event(eventSWSVarEnd,0);
+    }else { 
+      edbmt_cmd_send(ADDR_MOTOR_Z, INST_GGP, 2, 2, 0);
+      ra--;
+      give_event(eventSWSVarResCtrl,0);
+    }
+    
+    if(!ra)
+      give_event(eventSWSVarFail,0);
+    break;
+  case eventSWSVarEnd:
+    //dev_send_buf[0]=lld_receive_bufs[8]<<4;
+    //dev_send_buf[0]|=lld_receive_bufs[9]&0x0f;
+    dev_send_buf[0]=lld_receive_bufs[10]<<4;
+    dev_send_buf[0]|=lld_receive_bufs[11]&0x0f;
+    sws_arry[clld_indx]=dev_send_buf[0];
+    clld_indx++;
+    if(clld_indx==10){
+      clld_indx=0;
+      for(int i=0; i<10; i++)
+      sws_sum+=sws_arry[i];
+      sws_sum=sws_sum/10;
+      dev_send_buf[0]=(byte)sws_sum;
+      usb_send_pack(hseClldSWSReadResp, dev_send_buf);
+      smp_pram.sws=sws_sum;
+      beep(80, 2);
+      hlld_param_write();
+      memset(sws_arry,0,sizeof(sws_arry));
+      sws_sum=0;
+    }else
+      give_event(hseClldSWSSet,0); 
+    
+     break;
+  case eventSWSVarFail:
+    dev_send_buf[0]=0xff; dev_send_buf[1]=0xff;
+    usb_send_pack(hseClldSWSReadResp, dev_send_buf);
+    beep(10, 10);
+    break;
+  case hseClldSWSRead:
+     hlld_param_read();
+     dev_send_buf[0]=smp_pram.sws<<8;
+     dev_send_buf[1]|=smp_pram.sws;
+     usb_send_pack(hseClldSWSReadResp, dev_send_buf);
+    break;
+  case hseClldSWSReadResp:
+    break;
+  case hseClldSWSWrite: 
+    smp_pram.sws=usb_data_buf[0];
+    smp_pram.sws|=usb_data_buf[1];
+    hlld_param_write();
+    usb_send_pack(hseClldSWSWriteResp, 0);
+    break;
+    
+    
+ // plld
+  case hsePlldPage:
+    state=stStby;
+    usb_send_pack(hsePlldPage, 0);
+    break;
+  case hsePlldQcStart:
+    plld_qc=true;
+    smple_rack_cnt=0;
+    lld_fc=lldFuncPlld;
+    smpl_prime.pm_num=SMP_PRME_PP;
+    set_timer_(eventSmpPrimeInit,10,0);
+    usb_send_pack(hseClldSWSReadResp, 0);
+    break;
+  case hsePlldJudgResult:
+    break;
+  case hsePlldStreamStart:
+    break;
+  case hsePlldStreamData:
+    break;
+  case eventSmpQcStreamInit:
+    dev_send_buf[3]=PLLD_TOTAL_INDEX;
+    plld_index=0;
+    usb_send_pack(hsePlldStreamStart, dev_send_buf);
+    break;
+  case hsePlldStreamStartResp:
+     hlld_send_pack(HLLD_ADD, HLLD_PLLD_GET_SENS,0, plld_index);
+     ///give_event(eventSmpQcStreamGo,0);
+    break;
+  case eventSmpQcStreamGo:
+ //   get_sens_flg=false;
+    dev_send_buf[0]=lld_receive_bufs[4]<<4;
+    dev_send_buf[0]|=(lld_receive_bufs[5]&0x0f);
+    dev_send_buf[1]=lld_receive_bufs[6]<<4;
+    dev_send_buf[1]|=(lld_receive_bufs[7]&0x0f);
+    
+    dev_send_buf[2]=lld_receive_bufs[8]<<4;
+    dev_send_buf[2]|=(lld_receive_bufs[9]&0x0f);
+    dev_send_buf[3]=lld_receive_bufs[10]<<4;
+    dev_send_buf[3]|=(lld_receive_bufs[11]&0x0f);
+    
+    usb_send_pack(hsePlldStreamData, dev_send_buf);  
+    break;
+  case hsePlldStreamDataResp:
+    plld_index+=2;
+    
+     
+    if(PLLD_TOTAL_INDEX > plld_index )
+      give_event(hsePlldStreamStartResp,0);
+    else
+      give_event(eventSmpPass,0);
+    
+    break;
+    
+    
+  case hsePlldMinPramSet:
+    smp_pram.min_std=usb_data_buf[0]<<8;
+    smp_pram.min_std|=usb_data_buf[1];
+    hlld_param_write();
+    usb_send_pack(hsePlldMinPramSetResp, 0);  
+    break;
+    //  hsePlldMinPramSetResp,
+  case  hsePlldMinPramRead:
+    hlld_param_read();
+    //sort_8bit(smp_pram.min_std,dev_send_buf);
+    dev_send_buf[0]=smp_pram.min_std>>8;
+    dev_send_buf[1]=smp_pram.min_std;
+    usb_send_pack(hsePlldMinPramReadResp, dev_send_buf); 
+    break;
+    //case hsePlldMinPramReadResp:
+    //break;
+  case hsePlldMaxPramSet:
+    //smp_pram.max_std=merge_32bit(smp_pram.max_std,usb_data_buf);
+    smp_pram.max_std=usb_data_buf[0]<<8;
+    smp_pram.max_std|=usb_data_buf[1];
+    hlld_param_write();
+    usb_send_pack(hsePlldMaxPramSetResp, 0); 
+    break;
+    //case hsePlldMaxPramSetResp:
+    // break;
+  case hsePlldMaxPramRead:
+    hlld_param_read();  
+    dev_send_buf[0]=smp_pram.max_std>>8;
+    dev_send_buf[1]=smp_pram.max_std;
+    usb_send_pack(hsePlldMaxPramReadResp, dev_send_buf);
+    break;
+    //hsePlldMaxPramReadResp,
+  case hsePlldSlopPramSet:
+    smp_pram.slop_min_std=usb_data_buf[0]<<8;
+    smp_pram.slop_min_std|=usb_data_buf[1];
+    smp_pram.slop_max_std=usb_data_buf[2]<<8;
+    smp_pram.slop_max_std|=usb_data_buf[3];
+    hlld_param_write();
+    usb_send_pack(hsePlldMaxPramSetResp, 0); 
+    break;
+    //hsePlldSlopPramSetResp,
+  case hsePlldSlopPramRead:
+    hlld_param_read();
+    dev_send_buf[0]=smp_pram.slop_min_std>>8;
+    dev_send_buf[1]=smp_pram.slop_min_std;
+    dev_send_buf[2]=smp_pram.slop_max_std>>8;
+    dev_send_buf[3]=smp_pram.slop_max_std;
+    usb_send_pack(hsePlldSlopPramReadResp, dev_send_buf); 
+    break;
+    //hsePlldSlopPramReadResp,
+    
+  }
+  return event;
+}

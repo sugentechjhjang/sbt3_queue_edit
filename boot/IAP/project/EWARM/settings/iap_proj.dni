@@ -1,0 +1,151 @@
+[RecentFlashDownload]
+Path=D:\개발용툴\배포용\공통\STM32-OAK\STM32-OAK IAP (ewarm 5.x)\IAP\project\EWARM\Debug\Exe\iap_proj.out
+[DebugChecksum]
+Checksum=-531320302
+[DisAssemblyWindow]
+NumStates=_ 1
+State 1=_ 1
+[InstructionProfiling]
+Enabled=_ 0
+[CodeCoverage]
+Enabled=_ 0
+[Profiling]
+Enabled=0
+[StackPlugin]
+Enabled=1
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnHow=0
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[Stack]
+FillEnabled=0
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnLogOnly=1
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[Exceptions]
+StopOnUncaught=_ 0
+StopOnThrow=_ 0
+[CallStack]
+ShowArgs=0
+[Disassembly]
+MixedMode=1
+[SWOTraceHWSettings]
+OverrideDefaultClocks=0
+CpuClock=72000000
+ClockAutoDetect=0
+ClockWanted=2000000
+JtagSpeed=2000000
+Prescaler=36
+TimeStampPrescIndex=0
+TimeStampPrescData=0
+PcSampCYCTAP=1
+PcSampPOSTCNT=15
+PcSampIndex=0
+DataLogMode=0
+ITMportsEnable=0
+ITMportsTermIO=0
+ITMportsLogFile=0
+ITMlogFile=$PROJ_DIR$\ITM.log
+[StLinkDriver]
+CStepIntDis=_ 0
+stlinkserialNo=600ED0D6
+stlinkfoundProbes=
+[Breakpoints]
+Count=0
+[TraceHelper]
+Enabled=0
+ShowSource=1
+[Interrupts]
+Enabled=1
+[MemoryMap]
+Enabled=0
+Base=0
+UseAuto=0
+TypeViolation=1
+UnspecRange=1
+ActionState=1
+[Trace1]
+Enabled=0
+ShowSource=1
+[Trace2]
+Enabled=0
+ShowSource=0
+[SWOTraceWindow]
+PcSampling=0
+InterruptLogs=0
+ForcedTimeStamps=0
+EventCPI=0
+EventEXC=0
+EventFOLD=0
+EventLSU=0
+EventSLEEP=0
+[DataLog]
+LogEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+SumEnabled=0
+ShowTimeSum=1
+[EventLog]
+Title_0=Ch3
+Symbol_0=0 4 1
+Title_1=Ch2
+Symbol_1=0 4 1
+Title_2=Ch1
+Symbol_2=0 4 1
+Title_3=Ch0
+Symbol_3=0 4 1
+LogEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+SumEnabled=0
+ShowTimeSum=1
+SumSortOrder=0
+[InterruptLog]
+LogEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+SumEnabled=0
+ShowTimeSum=1
+SumSortOrder=0
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
+[DriverProfiling]
+Enabled=0
+Mode=3
+Graph=0
+Symbiont=0
+Exclusions=
+[CallStackLog]
+Enabled=0
+[CallStackStripe]
+ShowTiming=1
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Bp0=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\..\source\main.c}.128.3" 0 0 1 "" 0 "" 0
+Bp1=_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\..\source\main.c}.424.2" 0 0 1 "" 0 "" 0
+Count=2
+[Aliases]
+A0=_ "C:\Users\elnote3\OneDrive\project\sugen\project\suprimeI\fw\main\K_Blot_Supreme_Main_190305_DR4\CUBE\boot\FWLib\library\src\stm32f10x_rcc.c" ""
+A1=_ "C:\Users\elnote3\OneDrive\project\sugen\project\suprimeI\fw\main\K_Blot_Supreme_Main_190305_DR4\CUBE\boot\IAP\source\main.c" ""
+A2=_ "C:\sm_kang\K_Blot_Light\FW\KBL_v1.1\K-Blot_Light_v1.1.21\boot\FWLib\library\src\stm32f10x_rcc.c" ""
+A3=_ "C:\sm_kang\K_Blot_Light\FW\KBL_v1.1\K-Blot_Light_v1.1.21\boot\IAP\source\main.c" ""
+A4=_ "F:\yhh\K-MAC\2013\3_Product\2_YHLO\Bootload\KMAC_IAP_YD_MainV2_0\FWLib\library\src\stm32f10x_rcc.c" ""
+A5=_ "F:\yhh\K-MAC\2013\3_Product\2_YHLO\Bootload\KMAC_IAP_YD_MainV2_0\IAP\source\main.c" ""
+A6=_ "H:\yhh\K-MAC\5_PROJECT\6_____PROJECT\3_Allostation_S_NEW\PROGRAM\Allostation_S_V1\BOOT\KMAC_IAP_AlloS_MainV1\FWLib\library\src\stm32f10x_rcc.c" ""
+Count=7
+SuppressDialog=1

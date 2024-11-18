@@ -1,0 +1,245 @@
+[Stack]
+FillEnabled=0
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnLogOnly=1
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[StLinkDriver]
+CStepIntDis=_ 0
+stlinkserialNo=600ED0D6
+stlinkfoundProbes=
+[DebugChecksum]
+Checksum=1555004940
+[Exceptions]
+StopOnUncaught=_ 0
+StopOnThrow=_ 0
+[CallStack]
+ShowArgs=0
+[Disassembly]
+MixedMode=1
+[CodeCoverage]
+Enabled=_ 0
+[SWOTraceHWSettings]
+OverrideDefaultClocks=0
+CpuClock=72000000
+ClockAutoDetect=0
+ClockWanted=2000000
+JtagSpeed=2000000
+Prescaler=36
+TimeStampPrescIndex=0
+TimeStampPrescData=0
+PcSampCYCTAP=1
+PcSampPOSTCNT=15
+PcSampIndex=0
+DataLogMode=0
+ITMportsEnable=0
+ITMportsTermIO=0
+ITMportsLogFile=0
+ITMlogFile=$PROJ_DIR$\ITM.log
+[Breakpoints]
+Count=0
+[TraceHelper]
+Enabled=0
+ShowSource=1
+[Interrupts]
+Enabled=1
+[MemoryMap]
+Enabled=0
+Base=0
+UseAuto=0
+TypeViolation=1
+UnspecRange=1
+ActionState=1
+[Trace1]
+Enabled=0
+ShowSource=1
+[struct_types]
+Fmt0=SPI_TypeDef-CR1	4	0
+Fmt1=SPI_TypeDef-CR2	4	0
+Fmt2=SPI_TypeDef-CRCPR	4	0
+Fmt3=SPI_TypeDef-DR	4	0
+Fmt4=SPI_TypeDef-I2SCFGR	4	0
+Fmt5=SPI_TypeDef-I2SPR	4	0
+Fmt6=SPI_TypeDef-RXCRCR	4	0
+Fmt7=SPI_TypeDef-SR	4	0
+Fmt8=SPI_TypeDef-TXCRCR	4	0
+Fmt9=struct disp_asp-pump_num	1	0
+Fmt10=struct prime-disp_pump_num	1	0
+Fmt11=struct sample_prime-pm_num	1	0
+Fmt12=struct sample_prime-pm_time	3	0
+Fmt13=struct sample_strip-manual	4	0
+Fmt14=struct sample_strip-smpl	3	0
+Fmt15=struct sample_strip-strip	3	0
+Fmt16=struct shake_pram-accel_rpm	4	0
+Fmt17=struct shake_pram-aly_pos	4	0
+Fmt18=struct shake_pram-dasp_pos	4	0
+Fmt19=struct shake_pram-down_ang_pos	4	0
+Fmt20=struct shake_pram-dry_pos	4	0
+Fmt21=struct shake_pram-hoiz_pos	4	0
+Fmt22=struct shake_pram-run_time_s	4	0
+Fmt23=struct shake_pram-speed_rpm	4	0
+Fmt24=struct shake_pram-up_ang_pos	4	0
+Fmt25=struct sq-stNum	4	0
+Fmt26=struct st_motor-bath_pos	3	0
+Fmt27=struct st_motor-speed_rpm	4	0
+Fmt28=struct syringe_param-air_gap	3	0
+Fmt29=struct temper-config	4	0
+[array_types]
+Fmt0=byte[1000]	3	0
+Fmt1=byte[100]	5	0
+Fmt2=byte[10]	3	0
+Fmt3=byte[4]	4	0
+Fmt4=uint32_t[20]	4	0
+Fmt5=uint32_t[2]	1	0
+Fmt6=uint8_t[200]	4	0
+Fmt7=uint8_t[4]	4	0
+Fmt8=uint8_t[9]	4	0
+Fmt9=unsigned char[100]	4	0
+Fmt10=unsigned char[1]	4	0
+Fmt11=unsigned char[200]	4	0
+Fmt12=unsigned char[4]	4	0
+Fmt13=unsigned char[50]	4	0
+Fmt14=unsigned char[9]	4	0
+Fmt15=unsigned short[10]	4	0
+[watch_formats]
+Fmt0={W}1:adc_bat_average	3	0
+Fmt1={W}1:addr	4	0
+Fmt2={W}1:asfasd	4	0
+Fmt3={W}1:asffasdfaasd	4	0
+Fmt4={W}1:barcode_data_temp[0]	4	0
+Fmt5={W}1:barcode_data_temp[1]	4	0
+Fmt6={W}1:barcode_data_temp[2]	4	0
+Fmt7={W}1:barcode_data_temp[3]	4	0
+Fmt8={W}1:barcode_data_temp[4]	4	0
+Fmt9={W}1:barcode_data_temp[5]	4	0
+Fmt10={W}1:barcode_data_temp[6]	4	0
+Fmt11={W}1:bat_vol	3	0
+Fmt12={W}1:byte	4	0
+Fmt13={W}1:c3000_checksum	4	0
+Fmt14={W}1:check_sum	4	0
+Fmt15={W}1:check_sum_temp	4	0
+Fmt16={W}1:cl1	4	0
+Fmt17={W}1:cl2	4	0
+Fmt18={W}1:commnad_list	3	0
+Fmt19={W}1:data	4	0
+Fmt20={W}1:data_length_temp	3	0
+Fmt21={W}1:device_busy_flag	4	0
+Fmt22={W}1:diasp_cnt	3	0
+Fmt23={W}1:edb2000_command_send_process	3	0
+Fmt24={W}1:eeprom_add_temp	3	0
+Fmt25={W}1:eeprom_test	4	0
+Fmt26={W}1:event	4	0
+Fmt27={W}1:event_cmd	4	0
+Fmt28={W}1:flag_test	5	0
+Fmt29={W}1:i	3	0
+Fmt30={W}1:init_clld_vol	3	0
+Fmt31={W}1:instruction_type	4	0
+Fmt32={W}1:lld_check_sum	4	0
+Fmt33={W}1:lld_check_sum_b	4	0
+Fmt34={W}1:lld_timeout_cnt	3	0
+Fmt35={W}1:main_rx_cmd	4	0
+Fmt36={W}1:motor_acc_speed	3	0
+Fmt37={W}1:motor_no	1	0
+Fmt38={W}1:motor_retry_count	3	0
+Fmt39={W}1:motor_send_data[1]	4	0
+Fmt40={W}1:motor_speed	3	0
+Fmt41={W}1:p_max	3	0
+Fmt42={W}1:pause_eve	4	0
+Fmt43={W}1:pm_check_sum	4	0
+Fmt44={W}1:pm_check_sum_b	4	0
+Fmt45={W}1:pmin	4	0
+Fmt46={W}1:pr_time_sec	3	0
+Fmt47={W}1:pump_channel	1	0
+Fmt48={W}1:pump_data_temp[5]	4	0
+Fmt49={W}1:ra	3	0
+Fmt50={W}1:return_vl	4	0
+Fmt51={W}1:serve_amp	3	0
+Fmt52={W}1:shake_command_retry_flag	3	0
+Fmt53={W}1:smp_prime_pm_ch	1	0
+Fmt54={W}1:smple_rack_cnt	4	0
+Fmt55={W}1:sq[full_step_cnt].dword[full_pr_cnt]	4	0
+Fmt56={W}1:syg_prime_oper_cnt	4	0
+Fmt57={W}1:syringe_rx_data_temp[1]	4	0
+Fmt58={W}1:syringe_rx_data_temp[2]	4	0
+Fmt59={W}1:syringe_rx_data_temp[3]	4	0
+Fmt60={W}1:syringe_rx_data_temp[4]	4	0
+Fmt61={W}1:syringe_rx_data_temp[5]	4	0
+Fmt62={W}1:syringe_rx_data_temp[6]	4	0
+Fmt63={W}1:temp	4	0
+Fmt64={W}1:temper	4	0
+Fmt65={W}1:usb_checksum	4	0
+Fmt66={W}1:usb_checksum_b	4	0
+Fmt67={W}1:value	3	0
+Fmt68={W}42:sq_strp_mach	4	0
+Fmt69={W}42:usb_checksum_b	4	0
+[Trace2]
+Enabled=0
+ShowSource=0
+[SWOTraceWindow]
+PcSampling=0
+InterruptLogs=0
+ForcedTimeStamps=0
+EventCPI=0
+EventEXC=0
+EventFOLD=0
+EventLSU=0
+EventSLEEP=0
+[DataLog]
+LogEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+SumEnabled=0
+ShowTimeSum=1
+[EventLog]
+Title_0=Ch3
+Symbol_0=0 4 1
+Title_1=Ch2
+Symbol_1=0 4 1
+Title_2=Ch1
+Symbol_2=0 4 1
+Title_3=Ch0
+Symbol_3=0 4 1
+LogEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+SumEnabled=0
+ShowTimeSum=1
+SumSortOrder=0
+[InterruptLog]
+LogEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+SumEnabled=0
+ShowTimeSum=1
+SumSortOrder=0
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
+[DriverProfiling]
+Enabled=0
+Mode=3
+Graph=0
+Symbiont=0
+Exclusions=
+[CallStackLog]
+Enabled=0
+[CallStackStripe]
+ShowTiming=1
+[Disassemble mode]
+mode=0
+[Breakpoints2]
+Bp0=_ 1 "EMUL_CODE" "{$PROJ_DIR$\..\Src\uart_pc.c}.283.19" 0 0 1 "" 0 "" 0
+Count=1
+[Aliases]
+A0=_ "D:\smkang\K-BLOT_Supreme\1_Program\sm\K_Blot_Supreme_Main_170823_emb_source\CUBE\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_i2c.c" ""
+A1=_ "D:\smkang\K-BLOT_Supreme\1_Program\sm\K_Blot_Supreme_Main_170823_emb_source\CUBE\Src\main.c" ""
+Count=2
+SuppressDialog=0

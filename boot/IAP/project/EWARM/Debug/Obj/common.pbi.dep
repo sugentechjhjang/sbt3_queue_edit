@@ -1,0 +1,24 @@
+common.pbi: \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\source\common.c \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\include\common.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.4\arm\inc\c\stdio.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.4\arm\inc\c\ycheck.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.4\arm\inc\c\yvals.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.4\arm\inc\c\DLib_Defaults.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.4\arm\inc\c\DLib_Config_Normal.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.4\arm\inc\c\DLib_Product.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.4\arm\inc\c\ysizet.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.4\arm\inc\c\string.h \
+  C:\Program\ Files\ (x86)\IAR\ Systems\Embedded\ Workbench\ 8.4\arm\inc\c\DLib_Product_string.h \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\..\FWLib\library\inc\stm32f10x_lib.h \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\..\FWLib\library\inc/stm32f10x_map.h \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\include\stm32f10x_conf.h \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\..\FWLib\library\inc\stm32f10x_type.h \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\..\FWLib\library\inc/stm32f10x_type.h \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\..\FWLib\library\inc/cortexm3_macro.h \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\..\FWLib\library\inc/stm32f10x_flash.h \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\..\FWLib\library\inc/stm32f10x_gpio.h \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\..\FWLib\library\inc/stm32f10x_rcc.h \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\..\FWLib\library\inc/stm32f10x_usart.h \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\..\FWLib\library\inc/stm32f10x_wwdg.h \
+  D:\backup\Blot3_MotorVersion_final240117\sb3\S-Blot-3_FW-1.0.08_42P\boot\IAP\project\EWARM\..\..\include/ymodem.h

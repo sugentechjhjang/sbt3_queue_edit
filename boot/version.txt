@@ -1,0 +1,15 @@
+/******************** (C) COPYRIGHT 2007 STMicroelectronics ********************
+* File Name          : version.txt
+* Author             : MCD Application Team
+* Date First Issued  : 05/21/2007
+* Description        : Version file for STM32F10x In-Application Programming (IAP)
+*                      firmware.
+********************************************************************************
+
+* 05/21/2007 : V0.1
+===================
+  Created.
+
+******************* (C) COPYRIGHT 2007 STMicroelectronics *****END OF FILE******
+
+
