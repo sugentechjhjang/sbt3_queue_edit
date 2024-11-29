@@ -490,6 +490,7 @@ event sq_ctrl(event event)
     break;
   case eventSqSamplNumMach:
     com_time_out_set(DISEN);
+    sq_retry_count = 0;
     if(sq_smp_strp_mach_cnt<full_total_strip-1){
       sq_smp_strp_mach_cnt++;
       smple_rack_cnt=smp_strip[sq_smp_strp_mach_cnt].smpl-1;
@@ -515,7 +516,7 @@ event sq_ctrl(event event)
       pr_time_sec=0;
       beep(80, 2);
       smpl_pr.sample_num=0;
-      stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos);
+      stmt_abs_move(ADDR_MOTOR_X,0);
       if((full_pr==Sample_LLD)&&(full_step==Sample)){
         smp_retime_pr_cnt=full_pr_cnt;
         for(;;){
@@ -557,6 +558,8 @@ event sq_ctrl(event event)
     break;
   case eventSqNext:
     com_time_out_set(DISEN);
+    sq_retry_count = 0;
+    rollback_flag = true;
     if(state==stReady){
       if((smp_reult_bit[0]||smp_reult_bit[1])&&!manual_check_state)
         if(sq[full_step_cnt].prNum[full_pr_cnt]==Sample_LLD){
@@ -736,7 +739,7 @@ event sq_ctrl(event event)
         lld_fc=lldFuncNone;
         probe_disp_enable=false;
         auto_prime_flg=true;
-        give_event(eventSmpPrimeInit,0);
+        set_timer_(eventSmpPrimeInit,1000,0);
         give_event(eventAutoCleanInit,0);
        // set_timer_(eventSqFullSqAly,300,0);
       }else

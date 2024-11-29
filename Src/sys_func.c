@@ -312,7 +312,7 @@ event execute_sys_ctrl(event event)
     smpl_prime.pm_num=0x01<<WS_PUMP;//SMP_PRME_PP;
     smple_rack_cnt=0;
     lld_fc=lldFuncNone;
-    give_event(eventSmpPrimeInit,0);
+    set_timer_(eventSmpPrimeInit,1000,0);
     give_event(eventAutoCleanInit,0);
     usb_send_pack(eventAutoCleanFunc, 0);
     break;

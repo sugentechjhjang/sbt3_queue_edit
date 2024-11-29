@@ -196,18 +196,18 @@ int32_t UART5_ReceiveGetQue(uint8_t *p_uGetData)
 
 void UART5_QueReset(void)
 {
-  __disable_irq();
+  NVIC_DisableIRQ(UART5_IRQn);
   g_tUART5_Que_Handle.dwHead = 0;
   g_tUART5_Que_Handle.dwTail = 0;
   memset(g_tUART5_Que_Handle.uQueBuf,0,UART5_QUE_SZ);
-  __enable_irq();
+  NVIC_EnableIRQ(UART5_IRQn);
 }
 
 int32_t UART5_QueHaveDataSize(void)
 {
   int32_t dwReturnData;
   
-  __disable_irq();
+  NVIC_DisableIRQ(UART5_IRQn);
   if(g_tUART5_Que_Handle.dwHead <= g_tUART5_Que_Handle.dwTail){
     dwReturnData = g_tUART5_Que_Handle.dwTail - g_tUART5_Que_Handle.dwHead;
   }
@@ -216,7 +216,7 @@ int32_t UART5_QueHaveDataSize(void)
     dwReturnData = UART5_QUE_SZ - g_tUART5_Que_Handle.dwHead;
     dwReturnData = dwReturnData + g_tUART5_Que_Handle.dwTail;
   }  
-  __enable_irq();
+  NVIC_EnableIRQ(UART5_IRQn);
 
   return dwReturnData;
 }

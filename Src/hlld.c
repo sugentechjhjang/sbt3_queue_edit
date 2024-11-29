@@ -104,7 +104,7 @@ typedef struct
   uint8_t uCmd;
   uint16_t wContent;
   uint16_t wData;
-  uint8_t ReceiveLRC; 
+  uint16_t ReceiveLRC; 
 }hsCOM_hLLD_Cmd_t;
 
 #define COM_hLLD_OK                 0

@@ -8,9 +8,9 @@
 
 typedef enum edb2000_motor_address
 {
-  ADDR_MOTOR_X =0x0B,
-  ADDR_MOTOR_Y =0x0C,
-  ADDR_MOTOR_Z =0x0D 
+  ADDR_MOTOR_X =1,
+  ADDR_MOTOR_Y =2,
+  ADDR_MOTOR_Z =3 
 }edb2000_motor_address;
 
 

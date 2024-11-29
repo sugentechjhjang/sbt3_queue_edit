@@ -190,6 +190,7 @@ int32_t run_time_cnt=0;
 byte shake_run()
 {
   com_time_out_set(DISEN);
+  sq_retry_count = 0;
   if(sk_state==stShkrStby){
     run_time_cnt=shk_pram.run_time_s;
     give_event(eventSkrRun,0);

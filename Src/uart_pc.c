@@ -17,7 +17,6 @@ extern DMA_HandleTypeDef hdma_usart1_tx;
 #define PC_ETX 0x5D
 
 byte pc_chr=0;
-static byte const NO_RECIVED=0xFF;
 byte pc_escap=0;
 byte usb_currnt_rec_buf_ind=0;
 byte usb_recived_rec_buf_ind=0xff;
@@ -96,9 +95,7 @@ void dbg_serial(char *s)
    debug_serial_mode = true;
    uint8_t buffer[256];
    sprintf((char *)buffer, "DEV<-%s\n", s);
-   HAL_NVIC_DisableIRQ(USART1_IRQn);
    HAL_UART_Transmit(&huart1, buffer, strlen((char *)buffer), 100);
-   HAL_NVIC_EnableIRQ(USART1_IRQn); 
    debug_serial_mode = false;
 }
 
@@ -131,11 +128,10 @@ char *pnt;
 //char *date;
 event dev_cfg_ctrl(event event)
 {
-byte dev_send_buf[4]={0,}; 
+  byte dev_send_buf[4]={0,}; 
+  uint16_t year=0,date=0;
 
 
-//uint32_t start_time, end_time;
-//char buffer[50];
   switch(event)
   {
   case eventEquiSN:
@@ -152,8 +148,8 @@ byte dev_send_buf[4]={0,};
     break;
 
   case MCU_FW_DATE_CHECK:
-    uint16_t year = (uint16_t)atoi(FW_YEAR);
-    uint16_t date = (uint16_t)atoi(FW_DATE);
+    year = (uint16_t)atoi(FW_YEAR);
+    date = (uint16_t)atoi(FW_DATE);
 
     dev_send_buf[0] = (uint8_t)((year >> 8) & 0xFF); 
     dev_send_buf[1] = (uint8_t)(year & 0xFF);       
@@ -251,10 +247,10 @@ int32_t hsDevToPC_GetQue(uint8_t *p_uGetData)
 
 void hsDevToPC_QueReset(void)
 {
-  __disable_irq();
+  NVIC_DisableIRQ(USART1_IRQn);
   g_tDevToPC_QueHandle.dwHead = 0;
   g_tDevToPC_QueHandle.dwTail = 0;
-  __enable_irq();
+  NVIC_EnableIRQ(USART1_IRQn);
 }
 
 uint32_t hsDevToPC_QueUseCheck(void)
@@ -504,24 +500,24 @@ int32_t hsPC_ToDev_GetQue(uint8_t *p_uGetData)
 
 void hsPC_ToDev_QueReset(void)
 {
-  __disable_irq();
+  NVIC_DisableIRQ(USART1_IRQn);
   g_tPC_ToDev_QueHandle.dwHead = 0;
   g_tPC_ToDev_QueHandle.dwTail = 0;
-  __enable_irq();
+  NVIC_EnableIRQ(USART1_IRQn);
 }
 
 int32_t hsPC_ToDev_QueHaveDataSize(void)
 {
   int32_t dwReturnData;
   
-  __disable_irq();
+  NVIC_DisableIRQ(USART1_IRQn);
   if(g_tPC_ToDev_QueHandle.dwHead <= g_tPC_ToDev_QueHandle.dwTail) dwReturnData = g_tPC_ToDev_QueHandle.dwTail - g_tPC_ToDev_QueHandle.dwHead;
   else
   {
     dwReturnData = hsPC_TO_DEV_QUE_SZ - g_tPC_ToDev_QueHandle.dwHead;
     dwReturnData = dwReturnData + g_tPC_ToDev_QueHandle.dwTail;
   }  
-  __enable_irq();
+  NVIC_EnableIRQ(USART1_IRQn);
 
   return dwReturnData;
 }

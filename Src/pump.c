@@ -608,7 +608,7 @@ int32_t hsPump_Communication_Handle(uint16_t *p_wOriginDatBuf)
     //Packet Send
     UART5_QueReset();
     HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, (GPIO_PinState)SET);
-    dwCheck = HAL_UART_Transmit(&huart5, uSendPacket, 14, 100);
+    dwCheck = HAL_UART_Transmit(&huart5, uSendPacket, dwSendDataSZ, 100);
     HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, (GPIO_PinState)RESET);
     if(dwCheck)
     {
@@ -704,7 +704,7 @@ int32_t hsPump_COM_PacketGeneration(uint16_t *p_wOriginDatBuf, uint8_t *p_uSendP
 int32_t hsPump_COM_ReceivPacketHandle(uint8_t *p_uReceivPacketBuf, hsPump_COM_Convert_t *p_tConvertData)
 {
   int32_t dwCheck = 0;
-  uint32_t dwCnt, dwReceivDataSZ,dwReadQueHaveDataSZ,dwDataLen; 
+  uint32_t dwCnt, dwReceivDataSZ,dwDataLen; 
   int16_t CheckCnt,rCheckSum=0,rCheckSumCompare=0;
   //Tail Packet 수신 대기
   HAL_Delay(5);

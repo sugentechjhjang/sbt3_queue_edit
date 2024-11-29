@@ -89,17 +89,17 @@ int32_t SYRINGE_ReceiveGetQue(uint8_t *p_uGetData)
 
 void SYRINGE_QueReset(void)
 {
-  __disable_irq();
+  NVIC_DisableIRQ(USART3_IRQn);
   Syringe_Que_Handle.sy_Head = 0;
   Syringe_Que_Handle.sy_Tail = 0;
   memset(Syringe_Que_Handle.sy_QueBuf,0,SYRINGE_QUE_SZ);
-  __enable_irq();
+  NVIC_EnableIRQ(USART3_IRQn);
 }
 
 uint32_t SYRINGE_QueHaveDataSize(void)
 {
     uint32_t dwReturnData;
-    __disable_irq(); 
+    NVIC_DisableIRQ(USART3_IRQn); 
 
     if (Syringe_Que_Handle.sy_Head <= Syringe_Que_Handle.sy_Tail)
     {
@@ -111,7 +111,7 @@ uint32_t SYRINGE_QueHaveDataSize(void)
         dwReturnData += Syringe_Que_Handle.sy_Tail;
     }
     
-    __enable_irq(); 
+    NVIC_EnableIRQ(USART3_IRQn);
 
     return dwReturnData;
 }

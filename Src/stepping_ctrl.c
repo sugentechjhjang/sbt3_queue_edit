@@ -762,8 +762,7 @@ event execute_stepping_ctrl(event event)
     ymt_ctrl.bath_pos=merge_32bit(ymt_ctrl.bath_pos,usb_data_buf);
     ymt_param_write();
     ymt_param_read();
-    //stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos-bath_ypos_temp);
-    stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos);
+    stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos-bath_ypos_temp);
     usb_send_pack(hseProbeBathYSet,usb_data_buf);
     break;
   
@@ -1087,10 +1086,10 @@ int32_t EDB_ReceiveGetQue(uint8_t *p_uGetData)
 
 void EDB_QueReset(void)
 {
-  __disable_irq();
+  NVIC_DisableIRQ(UART4_IRQn);
   g_tEDB_Que_Handle.dwHead = 0;
   g_tEDB_Que_Handle.dwTail = 0;
-  __enable_irq();
+  NVIC_EnableIRQ(UART4_IRQn);
   memset(g_tEDB_Que_Handle.uQueBuf,0,sizeof(g_tEDB_Que_Handle.uQueBuf));
 }
 
@@ -1098,7 +1097,7 @@ uint32_t EDB_QueueHaveSize(void)
 {
   
   uint32_t dwReturnData;
-  __disable_irq(); 
+  NVIC_DisableIRQ(UART4_IRQn); 
 
   if (g_tEDB_Que_Handle.dwHead <= g_tEDB_Que_Handle.dwTail)
       dwReturnData = g_tEDB_Que_Handle.dwTail - g_tEDB_Que_Handle.dwHead;
@@ -1107,7 +1106,7 @@ uint32_t EDB_QueueHaveSize(void)
       dwReturnData = EDB_QUE_SZ - g_tEDB_Que_Handle.dwHead;
       dwReturnData = dwReturnData + g_tEDB_Que_Handle.dwTail;
   }
-  __enable_irq(); 
+  NVIC_EnableIRQ(UART4_IRQn);
   
   return dwReturnData;
 

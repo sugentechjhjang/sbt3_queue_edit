@@ -28,6 +28,11 @@ uint8_t math_uint(uint8_t lsb, uint8_t hsb );
 extern bool pause_flag;
 extern bool debug_serial_mode;
 
+extern uint32_t hsDevToPC_QueUseCheck();
+extern void hsDevToPC_ErrHandle();
+extern void hsDevToPC_PacketSendHandle(); 
+extern void hsPC_To_DevRxPacket_Handle(void);
+
 void dbg_serial(char *s);
 void feedback_motor_packet(uint8_t *p_uGetPacketBuf, uint32_t dwCount);
 void save_puque();

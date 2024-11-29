@@ -132,8 +132,8 @@ int32_t hsErr_GetQue(uint8_t *p_uGetData)
 
 void hsErr_QueReset(void)
 {
-  __disable_irq();
+  NVIC_DisableIRQ(USART1_IRQn);
   g_tErr_QueHandle.dwHead = 0;
   g_tErr_QueHandle.dwTail = 0;
-  __enable_irq();
+  NVIC_EnableIRQ(USART1_IRQn);
 }

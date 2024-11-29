@@ -1,25 +1,25 @@
-"D:\Github\sb3\S-Blot-3_Leadshine - 복사본\Src\C3000_SYRINGE.c"
+"D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\Src\C3000_SYRINGE.c"
 -std=c11
 -ferror-limit=0
 -fbracket-depth=512
 -funsigned-char
 -MD
 -MF
-D:\Github\sb3\S-Blot-3_Leadshine - 복사본\EWARM\KBlot_supreme_I\Obj\C3000_SYRINGE.pbi.dep
+D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\EWARM\KBlot_supreme_I\Obj\C3000_SYRINGE.pbi.dep
 -o
 C3000_SYRINGE.pbi
 -I
-D:\Github\sb3\S-Blot-3_Leadshine - 복사본\Src
+D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\Src
 -I
-D:\Github\sb3\S-Blot-3_Leadshine - 복사본\EWARM/../Inc\
+D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\EWARM/../Inc\
 -I
-D:\Github\sb3\S-Blot-3_Leadshine - 복사본\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc\
+D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc\
 -I
-D:\Github\sb3\S-Blot-3_Leadshine - 복사본\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy\
+D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\EWARM/../Drivers/STM32F1xx_HAL_Driver/Inc/Legacy\
 -I
-D:\Github\sb3\S-Blot-3_Leadshine - 복사본\EWARM/../Drivers/CMSIS/Include\
+D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\EWARM/../Drivers/CMSIS/Include\
 -I
-D:\Github\sb3\S-Blot-3_Leadshine - 복사본\EWARM/../Drivers/CMSIS/Device/ST/STM32F1xx/Include\
+D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\EWARM/../Drivers/CMSIS/Device/ST/STM32F1xx/Include\
 -I
 C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.4\arm\CMSIS\Core\Include\
 -I
@@ -29,15 +29,15 @@ C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.4\arm\inc
 -I
 C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.4\arm\inc\c
 -I
-D:\Github\sb3\S-Blot-3_Leadshine - 복사본\Inc
+D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\Inc
 -I
-D:\Github\sb3\S-Blot-3_Leadshine - 복사본\Drivers\STM32F1xx_HAL_Driver\Inc
+D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\Drivers\STM32F1xx_HAL_Driver\Inc
 -I
-D:\Github\sb3\S-Blot-3_Leadshine - 복사본\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy
+D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy
 -I
-D:\Github\sb3\S-Blot-3_Leadshine - 복사본\Drivers\CMSIS\Include
+D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\Drivers\CMSIS\Include
 -I
-D:\Github\sb3\S-Blot-3_Leadshine - 복사본\Drivers\CMSIS\Device\ST\STM32F1xx\Include
+D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\Drivers\CMSIS\Device\ST\STM32F1xx\Include
 -I
 C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.4\arm\CMSIS\Core\Include
 -I

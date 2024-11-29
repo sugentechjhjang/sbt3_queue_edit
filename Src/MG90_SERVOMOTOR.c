@@ -169,8 +169,7 @@ event execute_servo_ctrl(event event)
     //servo_param_write();
     servo_param_write2();
     xmt_param_write();
-    //stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos-bath_xpos_temp); //jjh
-    stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos);
+    stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos-bath_xpos_temp); //jjh
     usb_send_pack(hseAspBathXSet,usb_data_buf);
     break;
   case hseAspBathXSave:

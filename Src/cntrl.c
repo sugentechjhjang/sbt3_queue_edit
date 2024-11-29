@@ -52,7 +52,7 @@ byte smp_prime_dw_erorr_cnt=0;
 int32_t lld_strip_gap_qc=0;
 bool press_sens_flg=false;
 bool channel_empty = true; 
-unsigned short int sq_retry_count = 0;
+uint16_t sq_retry_count = 0;
 
 event execute_main_ctrl(event event)
 {
@@ -343,13 +343,14 @@ event execute_main_ctrl(event event)
     bar_indx_oper_flg=false;
     barcode_off();
     stmt_speed_set(ADDR_MOTOR_X,100);
-    stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos);
+    stmt_abs_move(ADDR_MOTOR_X,0);
     usb_send_pack(hseBarSqEnd, 0);
     break;
     
     //----------prime---------------------------   
   case eventPrimeIinit:
     com_time_out_set(DISEN);
+    sq_retry_count = 0;
     prime_eve_cnt=0;
     stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.bath_pos);
     set_timer_(prime.event[++prime_eve_cnt],30,0);
@@ -415,6 +416,7 @@ event execute_main_ctrl(event event)
     //------------sample prime-------------------
   case eventSmpPrimeInit:
     com_time_out_set(DISEN);
+    sq_retry_count = 0;
     smp_prime_dw_check_flg=false;
     smpl_prime.air_asp_pos=syrg_pram.air_gap;
     smp_prime_eve_cnt=0;
@@ -433,7 +435,7 @@ event execute_main_ctrl(event event)
     } 
     break;
   case eventSmpPrimeBathMove:
-    stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos);
+    stmt_abs_move(ADDR_MOTOR_Y,0);
     dbg_serial("[eventSmpPrimeBathMove]"); 
     if(call_com_timeout_cnt())
     { 
@@ -930,7 +932,7 @@ event execute_main_ctrl(event event)
     dSPIN_Go_To( 0);
     //if(!smple_rack_cnt)
     // stmt_abs_move(ADDR_MOTOR_X,0);
-    stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos);
+    stmt_abs_move(ADDR_MOTOR_Y,0);
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
     break;
     
@@ -945,7 +947,7 @@ event execute_main_ctrl(event event)
       }else{
         beep(80, 2);
         smpl_pr.sample_num=0;
-        stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos);
+        stmt_abs_move(ADDR_MOTOR_X,0);
         if(lld_fc==lldFullFunc){
           lld_fc=lldFuncNone;
           set_timer_(eventSmpPrimeInit,100,0);
@@ -980,6 +982,7 @@ event execute_main_ctrl(event event)
     //----------------Aspiration----------------
   case eventAspIinit:
     com_time_out_set(DISEN);
+    sq_retry_count = 0;
     asp_eve_cnt=0;
     asp_cnt=0;
     strip_pcak_cnt=0;
@@ -1030,7 +1033,7 @@ event execute_main_ctrl(event event)
   case eventAspCheck:
     if(asp_cnt>=asp.total_strip){
       dSPIN_Go_To(0);
-      stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos); //jjh
+      stmt_abs_move(ADDR_MOTOR_X,0); //jjh
       // stmt_abs_move(ADDR_MOTOR_Y, ymt_ctrl.sample_width);
       //stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos);
       set_timer_(asp.event[++asp_eve_cnt],100,0);
@@ -1073,6 +1076,7 @@ event execute_main_ctrl(event event)
     //----------------disp 1---------------------
   case eventDspIinit:
     com_time_out_set(DISEN);
+    sq_retry_count = 0;
     disp_eve_cnt=0;
     diasp.xaixs_start_pos=0;
     diasp_xaixs_wide_offset=0;
@@ -1174,7 +1178,7 @@ event execute_main_ctrl(event event)
     break;
   case eventDspCheck:
     if(disp_cnt>=disp_sgl.total_strip){
-      stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos);
+      stmt_abs_move(ADDR_MOTOR_X,0);
       // stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos);
       // stmt_abs_move(ADDR_MOTOR_Y, ymt_ctrl.sample_width);
       dSPIN_Go_To(0);
@@ -1222,6 +1226,7 @@ event execute_main_ctrl(event event)
     
   case eventDspAspIinit:
     com_time_out_set(DISEN);//Retry code
+    sq_retry_count = 0;
     diasp_eve_cnt=0;
     diasp_cnt=0;
     diasp.xaixs_start_pos=0;
@@ -1495,7 +1500,7 @@ event execute_main_ctrl(event event)
       }
       break;
   case eventDspAspFinalEnd:
-    stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos);
+    stmt_abs_move(ADDR_MOTOR_X,0);
     penel_sel=0;
     diasp_eve_cnt=0;
     diasp_cnt=0;
@@ -1583,6 +1588,7 @@ event execute_main_ctrl(event event)
     //----------probe disp-------------------------------
   case eventProbeDispIinit:
     com_time_out_set(DISEN);
+    sq_retry_count = 0;
     probe_disp_enable=false;
     probe_disp_eve_cnt=0;
     strip_pcak_cnt=0;
@@ -1643,8 +1649,8 @@ event execute_main_ctrl(event event)
   case eventProbeDispCheck:
     prob_disp_cnt++;
     if(probe_disp.total_strip-1<prob_disp_cnt){
-      stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos); //jjh
-      stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos);
+      stmt_abs_move(ADDR_MOTOR_X,0); //jjh
+      stmt_abs_move(ADDR_MOTOR_Y,0);
       dSPIN_Go_To(0);
       set_timer_(probe_disp.event[++probe_disp_eve_cnt],100,0);
     }else{
@@ -1726,8 +1732,8 @@ event execute_main_ctrl(event event)
       auto_clean_eve_cnt=2;//eventAutoCleanBathMove
       set_timer_(auto_cl.event[auto_clean_eve_cnt],auto_cl.rootin_delay,0); 
     }else{
-      stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos);
-      stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos);   
+      stmt_abs_move(ADDR_MOTOR_Y,0);
+      stmt_abs_move(ADDR_MOTOR_X,0);   
       usb_send_pack(eventAutoCleanFuncEnd, dev_send_buf);
       auto_cl_re_cunt=0;
       beep(80, 2);
@@ -1754,6 +1760,7 @@ event execute_main_ctrl(event event)
     break;
   case eventdryOper:
     com_time_out_set(DISEN);
+    sq_retry_count = 0;
     dry_cnt=true;
     HAL_GPIO_WritePin(FAN_ARR_GPIO_Port,FAN_ARR_Pin,GPIO_PIN_RESET);
     break;
@@ -1777,8 +1784,7 @@ event execute_main_ctrl(event event)
     //HAL_GPIO_WritePin(M_ASP_DSP_GPIO_Port,M_ASP_DSP_Pin,GPIO_PIN_RESET);
     break;
   case eventTimer100ms:
-    //THERMISTOR1_INT();
-    // HAL_GPIO_WritePin(M_ASP_DSP_GPIO_Port,M_ASP_DSP_Pin);
+    THERMISTOR1_INT();
     break;
   case eventTimer1s:
     if(state!=stPause){
@@ -1797,59 +1803,19 @@ event execute_main_ctrl(event event)
         set_timer_(smpl_pr.event[smple_ev_cnt],300,0);
       }
       
-      static uint32_t last_tick = 0;  // 마지막으로 시간을 체크한 시점
-      static bool wait_for_delay = false;  // 지연 대기 상태 여부
-
-
       if(!call_com_timeout_cnt()) 
       {
-        dbg_serial("[eventSmpPrimeInit_Retry]");
+        dbg_serial("[eventSqFullSqAly_Retry]");
         sq_retry_count++;
+        com_time_out_set(DISEN);  // Retry code
+        set_timer_(eventSqFullSqAly, 200, 0);
         
-        if(sq_retry_count >= 30) 
+        if(sq_retry_count > 10) 
         {
           dbg_serial("[Error: Retry limit reached]");
           while(1);
         } 
-        else 
-        {
-          for (int i = 0; i < 50; i++) 
-          {
-              if (channel[i].event != 0) 
-              {
-                  channel_empty = false; 
-                  break; 
-              }
-              else
-              {
-                channel_empty = true;
-              }  
-          }
-          if (channel_empty) 
-          {
-            if(!wait_for_delay)  // 처음 진입 시, 현재 시간을 저장하고 대기 상태로 전환
-            {
-                last_tick = HAL_GetTick();
-                wait_for_delay = true;
-            }
-            
-            // 500ms가 경과했는지 확인
-            if(HAL_GetTick() - last_tick >= 500)
-            {
-                wait_for_delay = false;  // 대기 상태 해제
-                com_time_out_set(DISEN);  // Retry code
-                set_timer_(eventSqFullSqAly, 200, 0);
-            }
-          }
-          
-        }
-      } 
-      else 
-      {
-        sq_retry_count = 0;
-      }
-      
-      
+      }     
     }
     
     if(heat_pad_en)

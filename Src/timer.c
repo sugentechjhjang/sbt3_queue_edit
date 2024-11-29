@@ -7,7 +7,7 @@ TIM_HandleTypeDef hWORK_TIM_Handle;
 #define TIEMR0_TIK 500
 #define TIMER1_TIK 100
 #define TIMER0_1S_TIK 1
-#define COM_TIME_OUT 3
+#define COM_TIME_OUT 35
 
 #define LLD_TIME_OUT 35
 #define SY_TIME_OUT  10
@@ -49,7 +49,7 @@ void timer_mk_int()
       --timer1;
     else
       {
-        give_event(eventTimer100ms,0);
+        give_event(eventTimer100ms,1);
         timer1=TIMER1_TIK;
         } 
      
@@ -67,7 +67,7 @@ void timer_eve()
    }
    else
    {
-      give_event(eventTimer500ms,0);
+      give_event(eventTimer500ms,1);
       //timer=2000;//timer_freq; 
       timer=TIEMR0_TIK;//timer_freq;
 
@@ -75,7 +75,7 @@ void timer_eve()
         --ad_t_cnt;
       else
       {
-        give_event(eventTimer1s,0);
+        give_event(eventTimer1s,1);
         ad_t_cnt = TIMER0_1S_TIK;
         err_tmout_cnt();
 
@@ -178,7 +178,6 @@ void HAL_SYSTICK_Callback(void)
   timer_mk_int();
   timer_eve();
   br_read_time();
- // THERMISTOR1_INT();
 
 // HAL_GPIO_WritePin(M_ASP_DSP_GPIO_Port,M_ASP_DSP_Pin,GPIO_PIN_SET);
 // HAL_GPIO_WritePin(M_ASP_DSP_GPIO_Port,M_ASP_DSP_Pin,GPIO_PIN_RESET);
@@ -230,12 +229,12 @@ void TIM2_IRQHandler(void)
   /* USER CODE END TIM2_IRQn 1 */
 }
 
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)//1ms
 {
    uint32_t deDevCheck;
    if(htim->Instance == TIM2)
    {
-     THERMISTOR1_INT();
      beep_polling();
      deDevCheck = hsDevToPC_QueUseCheck();
      
