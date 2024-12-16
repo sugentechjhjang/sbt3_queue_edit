@@ -1960,7 +1960,7 @@
                     <item>smp_prime_oper_flg</item>
                     <item>g_tSubRun_hLLD_Data</item>
                     <item>p_tRunData</item>
-                    <item></item>
+                    <item />
                 </expressions>
                 <col-names>
                     <item>Expression</item>
@@ -2049,7 +2049,7 @@
                     <item>xmt_ctrl.bath_pos</item>
                     <item>xmt_ctrl.bath_pos</item>
                     <item>p_tRunData</item>
-                    <item></item>
+                    <item />
                 </expressions>
                 <col-names>
                     <item>Expression</item>

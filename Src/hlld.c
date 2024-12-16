@@ -104,7 +104,7 @@ typedef struct
   uint8_t uCmd;
   uint16_t wContent;
   uint16_t wData;
-  uint16_t ReceiveLRC; 
+  int16_t ReceiveLRC; 
 }hsCOM_hLLD_Cmd_t;
 
 #define COM_hLLD_OK                 0
@@ -136,14 +136,14 @@ void hlld_send_pack(unsigned char addr, unsigned char cmd, unsigned short int co
 
 int32_t hsCommunication_hLLD_Handle(uint8_t uAddress, uint8_t uCmd, uint16_t wContent, uint16_t wData)
 {
-  uint8_t uLRC;
-  uint8_t hLLDSendPacket[COM_hLLD_MAX];
-  uint8_t hLLDReceivPacket[COM_hLLD_MAX];
-
+  int16_t uLRC=0;
+  uint8_t hLLDSendPacket[COM_hLLD_MAX]={0};
+  uint8_t hLLDReceivPacket[UART5_QUE_SZ]={0};
   hsCOM_hLLD_Cmd_t tConvertCOM_Packet;
   int32_t dwCheck = COM_hLLD_OK, dwQueHaveDataSize;
   uint32_t dwCnt, dwReTrayCnt = 0, HAL_Fail_Cnt = 0;
-
+  int32_t i = 0;
+  
   err_tmout_cnt_set(errHlld,20);
 
   //Packet Generator
@@ -187,11 +187,15 @@ int32_t hsCommunication_hLLD_Handle(uint8_t uAddress, uint8_t uCmd, uint16_t wCo
       }
     }
 
-    for(dwCnt = 0; dwCnt < COM_hLLD_RX_MAX_WAIT_CNTMAX ; dwCnt++)
+    for(dwCnt = 0; dwCnt < COM_hLLD_RX_MAX_WAIT_CNTMAX ; dwCnt++) 
     {
-      HAL_Delay(COM_hLLD_RX_MIN_WAIT_DELAY);
+      HAL_Delay(5);
       dwQueHaveDataSize = UART5_QueHaveDataSize();
-      if(dwQueHaveDataSize >= COM_hLLD_MAX) break;
+      for(i=0; i<UART5_QUE_SZ; i++)
+      {
+        if(g_tUART5_Que_Handle.uQueBuf[i] == HLLD_STX) break;
+      }
+      if(dwQueHaveDataSize >= i+COM_hLLD_MAX)  break;
     }
 
     dwCheck = hsGet_hLLD_ReceivPacketHandle(uAddress, hLLDReceivPacket, &tConvertCOM_Packet);
@@ -222,8 +226,9 @@ int32_t hsCommunication_hLLD_Handle(uint8_t uAddress, uint8_t uCmd, uint16_t wCo
 int32_t hsGet_hLLD_ReceivPacketHandle(uint8_t uAddress, uint8_t *p_uGetPacketBuf, hsCOM_hLLD_Cmd_t *p_tReturnConvertData)
 {
   uint32_t dwCnt;
-  int32_t dwQueCheck;
-  uint8_t ReceiveLRC ,uDumy, uConvertBuf[UART5_QUE_SZ];
+  int32_t dwQueCheck=0;
+  int16_t ReceiveLRC=0;
+  uint8_t uDumy, uConvertBuf[UART5_QUE_SZ];
 
   for(dwCnt = 0; ; dwCnt++)
   {
@@ -258,8 +263,10 @@ int32_t hsGet_hLLD_ReceivPacketHandle(uint8_t uAddress, uint8_t *p_uGetPacketBuf
 
       p_tReturnConvertData->ReceiveLRC = (uConvertBuf[Detect_STX + COM_hLLD_CKSM1] << 4)|(uConvertBuf[Detect_STX + COM_hLLD_CKSM2]);
 
-      ReceiveLRC = (p_tReturnConvertData->uAddress + p_tReturnConvertData->uCmd + ((p_tReturnConvertData->wContent>>8)&0x00FF) + (p_tReturnConvertData->wContent&0x00FF)
-        + ((p_tReturnConvertData->wData>>8)&0x00FF) + (p_tReturnConvertData->wData & 0x00FF)) * (-1);
+      ReceiveLRC = (int16_t)(p_tReturnConvertData->uAddress + p_tReturnConvertData->uCmd + ((p_tReturnConvertData->wContent>>8)&0xFF) + (p_tReturnConvertData->wContent&0xFF)
+        + ((p_tReturnConvertData->wData>>8)&0xFF) + (p_tReturnConvertData->wData & 0xFF)) * (-1);
+      
+      ReceiveLRC = ((ReceiveLRC) &0x00FF);         
                                     
       if(uAddress == p_tReturnConvertData->uAddress && ReceiveLRC == p_tReturnConvertData->ReceiveLRC )
       {
@@ -334,8 +341,8 @@ int32_t hsGet_hLLD_ReceivDataExec(hsCOM_hLLD_Cmd_t *p_tRunData)
     break;
     
   case HLLD_PLLD_SLOP_RESULT:
-    slope_vol = p_tRunData->wData;
-    set_timer_(hsePlldJudgSlope,2000,0); 
+    slope_vol = p_tRunData->wData;  
+    set_timer_(hsePlldJudgSlope,100,0);    
     break;
     
   case HLLD_FW_DATE:

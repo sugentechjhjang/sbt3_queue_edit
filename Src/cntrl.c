@@ -804,7 +804,7 @@ event execute_main_ctrl(event event)
     stmt_speed_set(ADDR_MOTOR_X,300);
     stmt_speed_set(ADDR_MOTOR_Y,300);
     C3000_srige_oper(SYRINGE_ACCEL_SET , 20);
-    C3000_srige_oper(SYRINGE_SPEED_SET , 13); //jjh
+    C3000_srige_oper(SYRINGE_SPEED_SET , 6); //jjh
     hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
 
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
@@ -1797,7 +1797,7 @@ event execute_main_ctrl(event event)
           pr_time_sec--;
       
       
-      if( !lld_com_timeout_cnt()){
+      if(!lld_com_timeout_cnt()){
         smple_ev_cnt=0;
         edbmt_cmd_send(ADDR_MOTOR_Z,INST_SGP,2,2,0);
         set_timer_(smpl_pr.event[smple_ev_cnt],300,0);
@@ -1808,13 +1808,14 @@ event execute_main_ctrl(event event)
         dbg_serial("[eventSqFullSqAly_Retry]");
         sq_retry_count++;
         com_time_out_set(DISEN);  // Retry code
-        set_timer_(eventSqFullSqAly, 200, 0);
         
         if(sq_retry_count > 10) 
         {
           dbg_serial("[Error: Retry limit reached]");
           while(1);
         } 
+
+        set_timer_(eventSqFullSqAly, 200, 0);
       }     
     }
     
