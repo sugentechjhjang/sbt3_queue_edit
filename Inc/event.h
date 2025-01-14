@@ -772,9 +772,9 @@ enum cntrl_event
 
 
          // 개발용 프로토콜
-          MCU_FW_DATE_CHECK = 0xF000,  
-          LLD_FW_DATE_CHECK = 0xF001, 
-          AGING_TEST_MODE   = 0xF002,     
+          TEST_MCU_FW_DATE_CHECK = 0xF000,  
+          TEST_LLD_FW_DATE_CHECK = 0xF001, 
+          TEST_AGING_MODE   = 0xF002,     
 };
 
 #endif

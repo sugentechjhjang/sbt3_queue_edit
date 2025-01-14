@@ -154,10 +154,12 @@ event sq_ctrl(event event)
   case eventSqFullSqAly:
  
   //////////////////////////////////////////////////////////////////////      
-    if(aging_mode == true && full_pr_cnt==0x02)  // aging TEST
+    if(aging_mode == true && full_step_cnt==10)  // aging TEST
     {
-      full_step_cnt = 0x08;
-      full_pr_cnt = 0x00;
+      full_step_cnt = 0;
+      full_pr_cnt = 0;
+      smple_rack_cnt=0;
+      sq_strp_mach=0;
     }
   //////////////////////////////////////////////////////////////////////   
 
@@ -370,6 +372,13 @@ event sq_ctrl(event event)
       smpl_prime.pm_num=SMP_PRME_PP;
       lld_fc=lldFullFunc;
       jude_cnt=smpl_pr.sensing_cnt-1;
+
+      if(aging_mode == true)
+      {
+        smple_rack_cnt = 0;
+        sq_strp_mach = 0;
+      }  
+
       if(smp_strip[sq_smp_strp_mach_cnt].manual){
         smp_reult_bit[0]=1<<sq_smp_strp_mach_cnt;
         set_timer_(eventSqSamplNumMach,10,0);
@@ -493,8 +502,22 @@ event sq_ctrl(event event)
     sq_retry_count = 0;
     if(sq_smp_strp_mach_cnt<full_total_strip-1){
       sq_smp_strp_mach_cnt++;
-      smple_rack_cnt=smp_strip[sq_smp_strp_mach_cnt].smpl-1;
-      sq_strp_mach=smp_strip[sq_smp_strp_mach_cnt].strip-1;
+      if(aging_mode==false)
+      {
+        smple_rack_cnt=smp_strip[sq_smp_strp_mach_cnt].smpl-1;
+        sq_strp_mach=smp_strip[sq_smp_strp_mach_cnt].strip-1;
+      }
+      else
+      {
+        smple_rack_cnt++;
+        sq_strp_mach++;
+
+        if(smple_rack_cnt>=48 && sq_strp_mach>=48)
+        {
+          smple_rack_cnt=0;
+          sq_strp_mach=0;
+        }
+      }
       if(smp_strip[sq_smp_strp_mach_cnt].manual)
         set_timer_(eventSqSamplNumMach,10,0);
       else
@@ -778,7 +801,7 @@ event sq_ctrl(event event)
     usb_send_pack(eventDoorAlarm,0);
     break;
   case eventTimer1s: //볼것
-    if(state==stReady && debug_serial_mode==false)
+    if(state==stReady)
     {
       if(full_step!=Analysis && full_pr!=Sample_LLD)
       {
@@ -802,10 +825,10 @@ event sq_ctrl(event event)
     }
     break;
 
-  case AGING_TEST_MODE:
+  case TEST_AGING_MODE:
     state = stReady;
     aging_mode = true;
-    full_step_cnt = 0x08;
+    full_step_cnt = 0x00;
     full_pr_cnt = 0x00;
     full_total_strip = 1;
     set_timer_(eventSqFullSqAly,10,0);

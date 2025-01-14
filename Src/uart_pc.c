@@ -88,41 +88,15 @@ bool pause_flag=false;
 #define TRANSMIT_BUF_LENGTH 50
 byte usb_transmit_bufs[TRANSMIT_BUF_LENGTH];
 
-bool debug_serial_mode=false;
 
 void dbg_serial(char *s)
 {
-   debug_serial_mode = true;
-   uint8_t buffer[256];
-   sprintf((char *)buffer, "DEV<-%s\n", s);
-   HAL_UART_Transmit(&huart1, buffer, strlen((char *)buffer), 100);
-   debug_serial_mode = false;
+    int32_t result = 0;
+    uint8_t buffer[50]; 
+    snprintf((char *)buffer, sizeof(buffer), "DEV<-%s\n", s);
+    result = hsDevToPC_NoConvertSendQueHandle(buffer, strlen((char *)buffer));
 }
 
-void feedback_motor_packet(uint8_t *p_uGetPacketBuf, uint32_t dwCount)
-{
-  debug_serial_mode = true;
-  uint8_t buffer[256]; // 데이터 저장용 버퍼
-  int offset = 0; // 버퍼에 데이터를 쓸 위치를 관리
-
-  // 버퍼에 "DEV<-" 메시지를 먼저 넣음
-  offset += sprintf((char *)buffer, "[");
-
-  // p_uGetPacketBuf의 데이터를 16진수 형식으로 buffer에 저장
-  for (uint32_t i = 0; i < dwCount && offset < sizeof(buffer) - 4; i++) {
-      offset += sprintf((char *)&buffer[offset], "%02X ", p_uGetPacketBuf[i]);
-  }
-
-  // 개행 문자를 추가
-  offset += sprintf((char *)&buffer[offset], "]\n");
-
-  // UART 전송 중 인터럽트를 비활성화
-  HAL_NVIC_DisableIRQ(USART1_IRQn);
-  HAL_UART_Transmit(&huart1, buffer, offset, 100);
-  HAL_NVIC_EnableIRQ(USART1_IRQn); 
-
-  debug_serial_mode = false;
-}
 
 char *pnt;
 //char *date;
@@ -147,7 +121,7 @@ event dev_cfg_ctrl(event event)
     usb_send_pack(eventReserve0,dev_send_buf);
     break;
 
-  case MCU_FW_DATE_CHECK:
+  case TEST_MCU_FW_DATE_CHECK:
     year = (uint16_t)atoi(FW_YEAR);
     date = (uint16_t)atoi(FW_DATE);
 
@@ -155,10 +129,10 @@ event dev_cfg_ctrl(event event)
     dev_send_buf[1] = (uint8_t)(year & 0xFF);       
     dev_send_buf[2] = (uint8_t)((date >> 8) & 0xFF); 
     dev_send_buf[3] = (uint8_t)(date & 0xFF);      
-    usb_send_pack(MCU_FW_DATE_CHECK,dev_send_buf);
+    usb_send_pack(TEST_MCU_FW_DATE_CHECK,dev_send_buf);
     break;
 
-  case LLD_FW_DATE_CHECK:
+  case TEST_LLD_FW_DATE_CHECK:
     hlld_send_pack(HLLD_ADD, HLLD_FW_DATE,0, 0);
     break;
     

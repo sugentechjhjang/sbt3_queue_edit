@@ -4,8 +4,8 @@
 #define FW_VER "1.0.08"
 #define HW_VER "0.0.01"
 #define DEV_SN 1
-#define FW_YEAR "24"
-#define FW_DATE "1212"
+#define FW_YEAR "25"
+#define FW_DATE "0114"
 
 #define BEEP
 

@@ -34,6 +34,5 @@ extern void hsDevToPC_PacketSendHandle();
 extern void hsPC_To_DevRxPacket_Handle(void);
 
 void dbg_serial(char *s);
-void feedback_motor_packet(uint8_t *p_uGetPacketBuf, uint32_t dwCount);
 void save_puque();
 #endif   //__K_BLOT_UART
