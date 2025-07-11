@@ -51,4 +51,5 @@ extern bool smp_prime_dw_check_flg;
 extern bool smp_prime_oper_flg;
 extern bool press_sens_flg;
 extern byte smp_prime_dw_erorr_cnt;
+extern bool LLD_homeing_flag;
 #endif

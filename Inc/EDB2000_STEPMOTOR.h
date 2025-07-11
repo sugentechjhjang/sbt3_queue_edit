@@ -1,9 +1,8 @@
 #ifndef __EDB2000_STEPMOTOR_H
 #define __EDB2000_STEPMOTOR_H
 
+#ifdef Motor_EDB
 
-#include "stm32f1xx_hal.h"
-#include "macro.h"
 
 
 typedef enum edb2000_motor_address
@@ -96,35 +95,6 @@ typedef enum
 } COM_StatusTypeDef;
 
 
-#define LEAD_RUNNING_STATE 0x1003 //bit 0=Faulty, bit 1=Enable, bit 2=Running,  bit 4=Command completed, bit 5=Path completed, bit 6=Homing completed
-
-#define LEAD_READ 0x03
-#define LEAD_WRITE 0x06
-
-#define LEAD_MOVE_ABS 0x6200
-
-#define LEAD_POSITION_H_ABS 0x6201
-#define LEAD_POSITION_L_ABS 0x6202
-#define LEAD_SPEED_ABS 0x6203
-#define LEAD_ACC_ABS 0x6204
-#define LEAD_DEC_ABS 0x6205
-#define LEAD_HOME_OFFSET_H 0x600D
-#define LEAD_HOME_OFFSET_L 0x600E
-
-#define Servo_Address 0x0145
-      #define Servo_On  0x88
-      #define Servo_Off 0x08
-
-#define LEAD_PATH_0_SET 0x6207
-      #define PATH_0 0x10     
-
-#define LEAD_TRIGGER_REG 0x6002
-      #define LEAD_HOMING 0x0020
-      #define LEAD_E_STOP 0x0040
-
-
-
-
 
 #define EDB2000_INST    0
 #define EDB2000_TYPE    1
@@ -194,6 +164,8 @@ typedef enum
 
 #define INST_CLE 36
 
+#define MOTOR_POWER_SWITCH 65
+
 
 #define EDB2000_SUCCESSFULLY            100
 #define EDB2000_COMMAND LOAD            101
@@ -220,11 +192,64 @@ unsigned char EDB2000_Motor_Position_Reached_Check(unsigned char motor_add_temp)
 unsigned char EDB2000_Motor_Homing_Reached_Check(unsigned char motor_add_temp);
 
 
-void edbmt_cmd_send(byte address, byte inst, byte type ,byte bank, signed long int value);
+void motor_cmd_send(byte address, byte inst, byte type ,byte bank, signed long int value);
 void edbmt_cmd_send_no_error(byte address, byte inst, byte type ,byte bank, signed long int value);
 
 
 void EDB2000_Parameter_Define(void);
 
+#endif        //Motor_EDB
+//#endif                  //__EDB2000_MOTOR
+
+
+
+
+
+
+#ifdef Motor_LEAD
+
+typedef enum edb2000_motor_address
+{
+  ADDR_MOTOR_X =0x0B,
+  ADDR_MOTOR_Y =0x0C,
+  ADDR_MOTOR_Z =0x0D 
+}edb2000_motor_address;
+
+#define LEAD_RUNNING_STATE 0x1003 //bit 0=Faulty, bit 1=Enable, bit 2=Running,  bit 4=Command completed, bit 5=Path completed, bit 6=Homing completed
+
+#define LEAD_READ 0x03
+#define LEAD_WRITE 0x06
+
+#define LEAD_MOVE_ABS 0x6200
+
+#define LEAD_POSITION_H_ABS 0x6201
+#define LEAD_POSITION_L_ABS 0x6202
+#define LEAD_SPEED_ABS 0x6203
+#define LEAD_ACC_ABS 0x6204
+#define LEAD_DEC_ABS 0x6205
+#define LEAD_HOME_OFFSET_H 0x600D
+#define LEAD_HOME_OFFSET_L 0x600E
+
+#define Servo_Address 0x0145
+      #define Servo_On  0x88
+      #define Servo_Off 0x08
+
+#define LEAD_PATH_0_SET 0x6207
+      #define PATH_0 0x10     
+
+#define LEAD_TRIGGER_REG 0x6002
+      #define LEAD_HOMING 0x0020
+      #define LEAD_E_STOP 0x0040
+
+
+#define MOTOR_SEND_MAX_RETRY            5
+#define MOTOR_485_DIRECTION_DELAY       50
+
+
+void motor_cmd_send(byte motor_address, byte fc, uint16_t rg_address ,signed long int data);
+
 
 #endif                  //__EDB2000_MOTOR
+
+
+#endif 

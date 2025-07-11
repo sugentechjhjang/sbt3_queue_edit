@@ -23,6 +23,16 @@ void MX_USART5_UART_Init(void)
 }
 
 
+uint8_t ACKBuf[ACK_BUF_SIZE];
+uint8_t ack_idx = 0;
+bool SUB_FW_DOWN_MODE=false;
+bool SubToPC = false;
+bool isAckReceiving = false;
+uint16_t LLDexpectedTotalLength = 0;
+uint16_t ACK_BUF_LENGTH = 0;
+uint16_t SUB_TOTAL_LENGTH = 0;
+uint8_t SUBMatchIdx = 0;
+
 void UART_Pump_LLD_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if(huart == &huart5)
@@ -30,18 +40,71 @@ void UART_Pump_LLD_RxCpltCallback(UART_HandleTypeDef *huart)
     int32_t dwQueCheck;
 
     dwQueCheck = UART5_ReceivePutQue(uart5_chr);
+    
     if(dwQueCheck == UART5_QUE_FULL)
     {
       //Error code;
     }
-    //===================================================
+   
+    if(SUB_FW_DOWN_MODE == true)
+    {
+      // 1. 아직 수신 시작 전 → FWDN 확인
+      if (!isAckReceiving)
+      {
+          const char *header = "FWDN";
+
+          if (uart5_chr == header[SUBMatchIdx])
+          {
+              ACKBuf[SUBMatchIdx++] = uart5_chr;
+
+              if (SUBMatchIdx == PACKET_LENGTH_H)
+              {
+                isAckReceiving = true; // FWDN 완료 → 이후부터는 그냥 채워넣기
+                ack_idx = PACKET_LENGTH_H;
+              }
+          }
+          else
+          {
+              ack_idx = 0; // 매칭 실패 시 다시 처음부터
+              SUBMatchIdx = 0;
+          }
+      }
+      // 2. FWDN 수신 완료 후 → 나머지 5바이트 받기
+      else
+      {
+          if (ack_idx <= ACK_BUF_SIZE)
+          {
+             ACKBuf[ack_idx++] = uart5_chr;
+             
+
+          }
+          
+          if(ack_idx == PACKET_CHECKSUM)
+          {
+             ACK_BUF_LENGTH = (ACKBuf[PACKET_LENGTH_H] << 8) | ACKBuf[PACKET_LENGTH_L];
+             SUB_TOTAL_LENGTH = PACKET_CHECKSUM + ACK_BUF_LENGTH;
+          }
+          
+          if (SUB_TOTAL_LENGTH > 0 && ack_idx >= SUB_TOTAL_LENGTH+1)
+          {
+              ack_idx = 0;
+              SUBMatchIdx = 0;
+              isAckReceiving = false;
+              SubToPC = true;
+          }
+      }
+    }    
+//===================================================
+    
     dwQueCheck = HAL_UART_Receive_IT(&huart5, &uart5_chr, 1);
     if(dwQueCheck)
     {
       while(1);
     }
+
   }
 }
+      
 
 HAL_StatusTypeDef UART5_ReInit(void)
 {
@@ -230,10 +293,10 @@ event execute_pump_ctrl(event event)
     break;    
   case hseP15DispSave:
     pm_pram.vol[PRIME_DW-1]=merge_32bit(pm_pram.vol[PRIME_DW-1],usb_data_buf);
-    // probe_disp.total_strip=diasp.total_strip=full_total_strip;
-   // New_Pump_Run(0x01<<PRIME_DW,pm_pram.vol[PRIME_DW-1]);
-    usb_send_pack(hseP15DispSave,usb_data_buf);
     pump_param_write();
+    pump_param_read();
+    sort_8bit(pm_pram.vol[PRIME_DW-1],dev_send_buf);
+    usb_send_pack(hseP15DispSave, dev_send_buf);
     break;
 
 
@@ -277,8 +340,11 @@ event execute_pump_ctrl(event event)
     pm_pram.vol[WS_PUMP2-1]=merge_32bit(pm_pram.vol[WS_PUMP2-1],usb_data_buf);
     //New_Pump_Run(0x01<<WS_PUMP1,pm_pram.vol[WS_PUMP1-1]);
     disp_sgl.disp_vol=((pm_pram.vol[WS_PUMP1-1]+pm_pram.vol[WS_PUMP2-1])/2);
-    usb_send_pack(hseP7DispSave,usb_data_buf);
+
     pump_param_write();
+    pump_param_read();
+    sort_8bit( pm_pram.vol[WS_PUMP1-1],dev_send_buf);
+    usb_send_pack(hseP7DispSave, dev_send_buf);
     break;
   
   case hseP7DispRead:
@@ -354,8 +420,10 @@ event execute_pump_ctrl(event event)
     break; 
   case hseP1DispSave:
     pm_pram.vol[RD_PUMP1-1]=merge_32bit(pm_pram.vol[RD_PUMP1-1],usb_data_buf);
-    usb_send_pack(hseP1DispSave,usb_data_buf);
     pump_param_write();
+    pump_param_read();
+    sort_8bit( pm_pram.vol[RD_PUMP1-1],dev_send_buf);
+    usb_send_pack(hseP1DispSave, dev_send_buf);
     break; 
 
   case hseP1DispRead:
@@ -371,8 +439,10 @@ event execute_pump_ctrl(event event)
     break;
   case hseP2DispSave:
     pm_pram.vol[RD_PUMP2-1]=merge_32bit(pm_pram.vol[RD_PUMP2-1],usb_data_buf);
-    usb_send_pack(hseP2DispSave,usb_data_buf);
     pump_param_write();
+    pump_param_read();
+    sort_8bit( pm_pram.vol[RD_PUMP2-1],dev_send_buf);
+    usb_send_pack(hseP2DispSave, dev_send_buf);
     break;    
   case hseP2DispRead:
     pump_param_read();
@@ -387,8 +457,10 @@ event execute_pump_ctrl(event event)
     break;
   case hseP3DispSave:
     pm_pram.vol[RD_PUMP3-1]=merge_32bit(pm_pram.vol[RD_PUMP3-1],usb_data_buf);
-    usb_send_pack(hseP3DispSave,usb_data_buf);
     pump_param_write();
+    pump_param_read();
+    sort_8bit( pm_pram.vol[RD_PUMP3-1],dev_send_buf);
+    usb_send_pack(hseP3DispSave, dev_send_buf);
     break;
   case hseP3DispRead:
     pump_param_read();
@@ -403,8 +475,10 @@ event execute_pump_ctrl(event event)
     break;
   case hseP4DispSave:
     pm_pram.vol[RD_PUMP4-1]=merge_32bit(pm_pram.vol[RD_PUMP4-1],usb_data_buf);
-    usb_send_pack(hseP4DispSave,usb_data_buf);
     pump_param_write();
+    pump_param_read();
+    sort_8bit( pm_pram.vol[RD_PUMP4-1],dev_send_buf);
+    usb_send_pack(hseP4DispSave, dev_send_buf);
     break;
   case hseP4DispRead:
     pump_param_read();
@@ -419,8 +493,10 @@ event execute_pump_ctrl(event event)
     break;
    case hseP5DispSave:
     pm_pram.vol[RD_PUMP5-1]=merge_32bit(pm_pram.vol[RD_PUMP5-1],usb_data_buf);
-    usb_send_pack(hseP5DispSave,usb_data_buf);
     pump_param_write();
+    pump_param_read();
+    sort_8bit( pm_pram.vol[RD_PUMP5-1],dev_send_buf);
+    usb_send_pack(hseP5DispSave, dev_send_buf);
     break;   
   case hseP5DispRead:
     pump_param_read();
@@ -435,8 +511,10 @@ event execute_pump_ctrl(event event)
     break;
   case hseP6DispSave:
     pm_pram.vol[RD_PUMP6-1]=merge_32bit(pm_pram.vol[RD_PUMP6-1],usb_data_buf);
-    usb_send_pack(hseP6DispSave,usb_data_buf);
     pump_param_write();
+    pump_param_read();
+    sort_8bit( pm_pram.vol[RD_PUMP6-1],dev_send_buf);
+    usb_send_pack(hseP6DispSave, dev_send_buf);
     break;
 
   case hseP6DispRead:

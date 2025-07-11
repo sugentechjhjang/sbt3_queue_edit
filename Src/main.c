@@ -122,14 +122,17 @@ int main(void)
   HAL_GPIO_WritePin(USB5V_OnOff_GPIO_Port,USB5V_OnOff_Pin,GPIO_PIN_SET);
   HAL_GPIO_WritePin(FAN_ARR_GPIO_Port,FAN_ARR_Pin,GPIO_PIN_SET);
   HAL_GPIO_WritePin(ACC_VALVE_PROBE_GPIO_Port,ACC_VALVE_PROBE_Pin,GPIO_PIN_SET);
-
+  
   // state=stPrepare;
   ASP_PUMP_OFF;
   PRIME_DW_OFF;
   BATH_DW_OFF;
-  HAL_Delay(500); 
-  shaker_Init();
+  HAL_Delay(500);
+  #ifdef Motor_LEAD 
+    stmt_servo_on(); 
+  #endif  
   eeprom_init();
+  shaker_Init();
   HAL_Delay(500);
   beep(80, 1);
   cam_led_on();
@@ -162,25 +165,59 @@ int main(void)
     event=sq_ctrl(event);  
 
     tm_execute();
-  /*
-     while((state==stPause))
-     {
-       if(get_pasue_event(event))
-         break;
-       if(pause_flag)
-        save_puque();
-        pause_flag=false;
-     }
-*/
-    //while(state==stPause);
-    //stepping_rs();
 
-  /* USER CODE BEGIN 3 */
 
-   }
-  /* USER CODE END 3 */
 
+
+
+
+ /////////////////LLD_FW_DOWNLOAD/////////////////////////////////////   
+    
+    while(SUB_FW_DOWN_MODE)
+    {
+      if (PCtoSub) 
+      {
+          if((echoBuf[PACKET_CMD] == FIND_ADDRESS_CMD) || (echoBuf[PACKET_CMD] == END_CMD) )
+          {
+              //HAL_Delay(100);
+              HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, GPIO_PIN_SET);   
+              HAL_UART_Transmit(&huart5, echoBuf, expectedTotalLength, 1000);
+
+              while (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_TC) == RESET);
+
+              HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, GPIO_PIN_RESET);
+          }
+          
+          if((echoBuf[PACKET_CMD] == BODY_CMD))
+          { 
+            HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, GPIO_PIN_SET); 
+            HAL_UART_Transmit(&huart5, echoBuf, sizeof(echoBuf), 1000);
+
+            while (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_TC) == RESET);
+            
+            HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, GPIO_PIN_RESET);
+          }
+          memset(echoBuf,0,sizeof(echoBuf));
+          PCtoSub = false;
+      }
+      
+      if(SubToPC)
+      {
+        send_ack_buf_as_message(ACKBuf, ACK_BUF_SIZE);
+        
+        if(ACKBuf[PACKET_CMD] == END_CMD)
+        {
+          NVIC_SystemReset();
+        }
+        
+        memset(ACKBuf,0,sizeof(ACKBuf));
+        SubToPC = false;
+      }
+    }  
+  }
 }
+//////////////////////////////////////////////////////////////////////
+
 
 
 /** System Clock Configuration

@@ -3,12 +3,11 @@
 #include "main.h"
 #include <string.h>
 
+#ifdef Motor_EDB  //EDB
 
 enum mt_com_state mt_xstate=stanby;
 enum mt_com_state mt_ystate=stanby;
 enum mt_com_state mt_zstate=stanby;
-
-
 
 struct st_motor xmt_ctrl ={
   12000,
@@ -137,23 +136,76 @@ void stm_memory_init()
   }
 }
 
+void probe_Hardware_protect()
+{
+    if((admin_positon_flag == true) && (servo_move_flag == true))
+    {
+      servo_mv(asp_mt.up_pos);
+      HAL_Delay(1000);
+      servo_move_flag = false;
+    }
+    
+    if((admin_positon_flag == true) && (z_homeing_success == false) && (barcode_flag == false))
+    {
+      z_homeing();
+      HAL_Delay(3000);
+    }
+}
+
 void stm_reset()
 {
+  /*motor_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_CL_TURN_ON_CLOSED_LOOP_TYPE,0,0);
+  while(x_closeloop_state)
+  {  
+    motor_cmd_send(ADDR_MOTOR_X,INST_GAP,EDB2000_CL_CLOSED_LOOP_CHECK_TYPE,0,0);
+  }
+  motor_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_CL_TURN_ON_CLOSED_LOOP_TYPE,0,1);
+  while(!x_closeloop_state)
+  {    
+    motor_cmd_send(ADDR_MOTOR_X,INST_GAP,EDB2000_CL_CLOSED_LOOP_CHECK_TYPE,0,1);
+  }  
+//-----------------------------------------------------------------------------------
+  motor_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_CL_TURN_ON_CLOSED_LOOP_TYPE,0,0);
+  while(y_closeloop_state)
+  {  
+    motor_cmd_send(ADDR_MOTOR_Y,INST_GAP,EDB2000_CL_CLOSED_LOOP_CHECK_TYPE,0,0);
+  }
+  motor_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_CL_TURN_ON_CLOSED_LOOP_TYPE,0,1);
+  while(!y_closeloop_state)
+  {    
+    motor_cmd_send(ADDR_MOTOR_Y,INST_GAP,EDB2000_CL_CLOSED_LOOP_CHECK_TYPE,0,1);
+  }  */
+//-----------------------------------------------------------------------------------
 
-  edbmt_cmd_send(ADDR_MOTOR_X,INST_RESET,0,0,0);//Homeing valiable
+  motor_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_CL_TURN_ON_CLOSED_LOOP_TYPE,0,0);
+  HAL_Delay(100);
+  while(z_closeloop_state)
+  {  
+    motor_cmd_send(ADDR_MOTOR_Z,INST_GAP,EDB2000_CL_CLOSED_LOOP_CHECK_TYPE,0,0);
+    HAL_Delay(100);
+  }
+  motor_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_CL_TURN_ON_CLOSED_LOOP_TYPE,0,1);
+  while(!z_closeloop_state)
+  {    
+    motor_cmd_send(ADDR_MOTOR_Z,INST_GAP,EDB2000_CL_CLOSED_LOOP_CHECK_TYPE,0,1);
+    HAL_Delay(100);
+  }  
   
-  HAL_Delay(500);
-  edbmt_cmd_send(ADDR_MOTOR_X,INST_RUNAPP,EDB2000_FROME_SPECIL_ADD,0,ADDR_MOTOR_X);//Homeing valiable
-  HAL_Delay(500);
-  edbmt_cmd_send(ADDR_MOTOR_Y,INST_RESET,0,0,0);//Homeing valiable
-  HAL_Delay(500);
-  edbmt_cmd_send(ADDR_MOTOR_Y,INST_RUNAPP,EDB2000_FROME_SPECIL_ADD,0,ADDR_MOTOR_Y);//Homeing valiable
-  HAL_Delay(500);
-  edbmt_cmd_send(ADDR_MOTOR_Z,INST_RESET,0,0,0);//Homeing valiable
-  HAL_Delay(500);
-
-  edbmt_cmd_send(ADDR_MOTOR_Z,INST_RUNAPP,EDB2000_FROME_SPECIL_ADD,0,ADDR_MOTOR_Z);//Homeing valiable
-
+//-----------------------------------------------------------------------------------
+/*  motor_cmd_send(ADDR_MOTOR_X,INST_RESET,0,0,0);//Homeing valiable
+  motor_cmd_send(ADDR_MOTOR_X,INST_RUNAPP,0,0,ADDR_MOTOR_X);//Homeing valiable
+  
+  motor_cmd_send(ADDR_MOTOR_Y,INST_RESET,0,0,0);//Homeing valiable
+  motor_cmd_send(ADDR_MOTOR_Y,INST_RUNAPP,0,0,ADDR_MOTOR_Y);//Homeing valiable*/
+  
+  motor_cmd_send(ADDR_MOTOR_Z,INST_RESET,0,0,0);//Homeing valiable
+  HAL_Delay(100);
+  motor_cmd_send(ADDR_MOTOR_Z,INST_RUNAPP,0,0,ADDR_MOTOR_Z);//Homeing valiable
+  HAL_Delay(100);
+  /*motor_cmd_send(ADDR_MOTOR_Z,MOTOR_POWER_SWITCH,0,0,0);
+  HAL_Delay(100);
+  motor_cmd_send(ADDR_MOTOR_Z,MOTOR_POWER_SWITCH,0,0,1);
+  HAL_Delay(100);*/
 }
 
 void all_homeing()
@@ -163,8 +215,8 @@ void all_homeing()
 
 void x_homeing()
 {
-
-    edbmt_cmd_send(ADDR_MOTOR_X,INST_SGP,0,2,HOMEING);//Homeing valiable
+    probe_Hardware_protect();
+    motor_cmd_send(ADDR_MOTOR_X,INST_SGP,0,2,HOMEING);//Homeing valiable
     set_timer_(eventXhomeCk,100,0);
   
 }
@@ -172,7 +224,8 @@ void x_homeing()
 
 void y_homeing()
 {
-    edbmt_cmd_send(ADDR_MOTOR_Y,INST_SGP,0,2,HOMEING);//Homeing valiable
+    probe_Hardware_protect();
+    motor_cmd_send(ADDR_MOTOR_Y,INST_SGP,0,2,HOMEING);//Homeing valiable
     set_timer_(eventYhomeCk,100,0);
 }
 
@@ -180,7 +233,7 @@ void y_homeing()
 void z_homeing()
 {
 
-    edbmt_cmd_send(ADDR_MOTOR_Z,INST_SGP,0,2,HOMEING);//Homeing valiable
+    motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,0,2,HOMEING);//Homeing valiable
     set_timer_(eventZhomeCk,100,0);
 
 }
@@ -191,18 +244,18 @@ void stmt_speed_set(byte address,signed long int value)
   
   spd=(value*51200)/60;
   acc=(value*51200)/60;
-  //edbmt_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,xmt_ctrl.cl_amp);
+  //motor_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,xmt_ctrl.cl_amp);
   //dwHsSW_Delay_ms(100);
-  edbmt_cmd_send(address,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
+  motor_cmd_send(address,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
   dwHsSW_Delay_ms(400);
-  edbmt_cmd_send(address,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
+  motor_cmd_send(address,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
   dwHsSW_Delay_ms(400);
 }
 
 void stmt_accel_set(byte address,signed long int value)
 {
    mt_xstate=stanby;
-   edbmt_cmd_send(address,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,value);
+   motor_cmd_send(address,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,value);
    while(mt_xstate==busy);
    
 }
@@ -210,36 +263,42 @@ void stmt_accel_set(byte address,signed long int value)
 void stmt_decel_set(byte address,signed long int value)
 {
   mt_xstate=stanby;
-  edbmt_cmd_send(address,INST_SAP,EDB2000_DECELERATE_TYPE,0,value);
+  motor_cmd_send(address,INST_SAP,EDB2000_DECELERATE_TYPE,0,value);
   while(mt_xstate==busy);
    
 }
 
 
 bool x_reach_pos = true, y_reach_pos = true, z_reach_pos = true;
-signed long int x_prev_value = 0,y_prev_value = 0,z_prev_value = 0;
+bool x_closeloop_state = true,y_closeloop_state = true,z_closeloop_state = true;
 
 
 bool stmt_abs_move(byte address,signed long int value){
   switch(address)
   {
   case ADDR_MOTOR_X:
+
+    probe_Hardware_protect(); //admin mode
+
     if(x_reach_pos){
-      x_prev_value = value;
       x_reach_pos=false;
+      x_homeing_success = false;
       mt_xstate=stanby;
-      edbmt_cmd_send(address,INST_MVP,EDB2000_MOVE_ABS_TYPE,0,value);
+      motor_cmd_send(address,INST_MVP,EDB2000_MOVE_ABS_TYPE,0,value);
       
       set_timer_(eventXAbsPosCk,100,0);
     }
 
     break;
   case ADDR_MOTOR_Y:
+
+    probe_Hardware_protect(); //admin mode
+    
     if(y_reach_pos){
-      y_prev_value = value;
       y_reach_pos=false;
+      y_homeing_success = false;
       mt_ystate=stanby;
-      edbmt_cmd_send(address,INST_MVP,EDB2000_MOVE_ABS_TYPE,0,value);
+      motor_cmd_send(address,INST_MVP,EDB2000_MOVE_ABS_TYPE,0,value);
 
       set_timer_(eventYAbsPosCk,100,0);
     }
@@ -247,10 +306,10 @@ bool stmt_abs_move(byte address,signed long int value){
     break;
   case ADDR_MOTOR_Z:
     if(z_reach_pos){
-      z_prev_value = value;
       z_reach_pos=false;
-      edbmt_cmd_send(address,INST_MVP,EDB2000_MOVE_ABS_TYPE,0,value);
+      z_homeing_success = false;
       mt_zstate=stanby;
+      motor_cmd_send(address,INST_MVP,EDB2000_MOVE_ABS_TYPE,0,value);
       
       set_timer_(eventZAbsPosCk,100,0);
     }
@@ -274,7 +333,7 @@ bool stmt_rel_move(byte address,signed long int value){
     if(x_reach_pos){
       x_reach_pos=false;
       mt_xstate=stanby;
-      edbmt_cmd_send(address,INST_MVP,EDB2000_MOVE_REL_TYPE,0,value);
+      motor_cmd_send(address,INST_MVP,EDB2000_MOVE_REL_TYPE,0,value);
       set_timer_(eventXAbsPosCk,100,0);
     }
     break;
@@ -282,14 +341,14 @@ bool stmt_rel_move(byte address,signed long int value){
     if(y_reach_pos){
       y_reach_pos=false;
       mt_ystate=stanby;
-      edbmt_cmd_send(address,INST_MVP,EDB2000_MOVE_REL_TYPE,0,value);
+      motor_cmd_send(address,INST_MVP,EDB2000_MOVE_REL_TYPE,0,value);
       set_timer_(eventYAbsPosCk,100,0);
     }
     break;
   case ADDR_MOTOR_Z:
     if(z_reach_pos){
       z_reach_pos=false;
-      edbmt_cmd_send(address,INST_MVP,EDB2000_MOVE_REL_TYPE,0,value);
+      motor_cmd_send(address,INST_MVP,EDB2000_MOVE_REL_TYPE,0,value);
       mt_zstate=stanby;
       set_timer_(eventZAbsPosCk,100,0);
     }
@@ -312,21 +371,21 @@ void stmt_abs_home_move(byte address,signed long int value){
   case ADDR_MOTOR_X:
     x_reach_pos=false;
     mt_xstate=stanby;
-    edbmt_cmd_send(address,INST_MVP,EDB2000_MOVE_ABS_TYPE,0,value);
+    motor_cmd_send(address,INST_MVP,EDB2000_MOVE_ABS_TYPE,0,value);
   //  while(mt_xstate==busy);
     set_timer_(eventHomeXAbsPosCk,100,0);
     break;
   case ADDR_MOTOR_Y:
     y_reach_pos=false;
     mt_ystate=stanby;
-    edbmt_cmd_send(address,INST_MVP,EDB2000_MOVE_ABS_TYPE,0,value);
+    motor_cmd_send(address,INST_MVP,EDB2000_MOVE_ABS_TYPE,0,value);
     //while(mt_ystate==busy);
     set_timer_(eventHomeYAbsPosCk,100,0);
     break;
   case ADDR_MOTOR_Z:
     z_reach_pos=false;
     mt_zstate=stanby;
-    edbmt_cmd_send(address,INST_MVP,EDB2000_MOVE_ABS_TYPE,0,value);
+    motor_cmd_send(address,INST_MVP,EDB2000_MOVE_ABS_TYPE,0,value);
     //while(mt_zstate==busy);
     set_timer_(eventHomeZAbsPosCk,100,0);
     break;
@@ -342,7 +401,7 @@ byte mt_stat_chek()
 
 void stm_speed_set(byte address, byte inst, byte type ,byte bank, signed long int value)
 {
-   edbmt_cmd_send(address,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,value);
+   motor_cmd_send(address,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,value);
 }
 
 byte trans_timout_cnt=3;
@@ -356,11 +415,11 @@ byte trans_timout_cnt=3;
   acc=(acc_in*51200)/60*10;
   dcc=(dcc_in*51200)/60*10;
 
-  edbmt_cmd_send(address,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
+  motor_cmd_send(address,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
   dwHsSW_Delay_ms(100);
-  edbmt_cmd_send(address,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
+  motor_cmd_send(address,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
   dwHsSW_Delay_ms(100);
-  edbmt_cmd_send(address,INST_SAP,EDB2000_DECELERATE_TYPE,0,dcc);
+  motor_cmd_send(address,INST_SAP,EDB2000_DECELERATE_TYPE,0,dcc);
   dwHsSW_Delay_ms(100);
 }
 
@@ -373,11 +432,11 @@ void x_pram_set()
   xmt_ctrl.accel_rpm=1000;
   spd=(xmt_ctrl.speed_rpm*51200)/60;
   acc=(xmt_ctrl.accel_rpm*51200)/60;
-  //edbmt_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,xmt_ctrl.cl_amp);
+  //motor_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,xmt_ctrl.cl_amp);
   //dwHsSW_Delay_ms(100);
-  edbmt_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
+  motor_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
   dwHsSW_Delay_ms(100);
-  edbmt_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
+  motor_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
   dwHsSW_Delay_ms(100);
 }
 
@@ -386,11 +445,11 @@ void y_pram_set()
   int32_t spd, acc;
   spd=(ymt_ctrl.speed_rpm*51200)/60;
   acc=(ymt_ctrl.accel_rpm*51200)/60;
- // edbmt_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,ymt_ctrl.cl_amp);
+ // motor_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,ymt_ctrl.cl_amp);
  // dwHsSW_Delay_ms(100);
-  edbmt_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
+  motor_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
   dwHsSW_Delay_ms(100);
-  edbmt_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
+  motor_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
   dwHsSW_Delay_ms(100);
 }
 
@@ -399,18 +458,15 @@ void z_pram_set()
   int32_t spd, acc;
   spd=(zmt_ctrl.speed_rpm*51200)/60;
   acc=(zmt_ctrl.accel_rpm*51200)/60;
-  //edbmt_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,zmt_ctrl.cl_amp);
+  //motor_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,zmt_ctrl.cl_amp);
   //dwHsSW_Delay_ms(100);
-  edbmt_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
+  motor_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
   dwHsSW_Delay_ms(100);
-  edbmt_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
+  motor_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
   dwHsSW_Delay_ms(100);
 }
 
-uint x_mt_send_cnt=0;
-
-uint x_reach_count , y_reach_count , z_reach_count;
-
+bool x_homeing_success=false , y_homeing_success=false , z_homeing_success=false;
 
 void (*fc)(byte , byte , byte ,byte , signed long int );
 int32_t bath_ypos_temp=0,bath_zpos_temp=0;
@@ -429,22 +485,23 @@ event execute_stepping_ctrl(event event)
       asp_home_init();
       break;
     }else{
-      edbmt_cmd_send(ADDR_MOTOR_X, INST_GGP, 1, 2, 0);
+      motor_cmd_send(ADDR_MOTOR_X, INST_GGP, 1, 2, 0);
       set_timer_(eventXhomeCk,200,0);
     }
     
     break;
   case eventHomeXAbsPosCk:
     if(!x_reach_pos){
-      edbmt_cmd_send(ADDR_MOTOR_X, INST_GAP, EDB2000_POSITION_REACHED_TYPE,0, 0);
+      motor_cmd_send(ADDR_MOTOR_X, INST_GAP, EDB2000_POSITION_REACHED_TYPE,0, 0);
       set_timer_(eventHomeXAbsPosCk,100,0);  
     }else{
-      edbmt_cmd_send(ADDR_MOTOR_X, INST_SAP, EDB2000_ACTUAL_POSITION_TYPE,0,0);//position 0
+      motor_cmd_send(ADDR_MOTOR_X, INST_SAP, EDB2000_ACTUAL_POSITION_TYPE,0,0);//position 0
+      x_homeing_success = true;
     }  
     break;
   case eventXAbsPosCk:
     if(!x_reach_pos){
-      edbmt_cmd_send(ADDR_MOTOR_X, INST_GAP, EDB2000_POSITION_REACHED_TYPE,0, 0);
+      motor_cmd_send(ADDR_MOTOR_X, INST_GAP, EDB2000_POSITION_REACHED_TYPE,0, 0);
       set_timer_(eventXAbsPosCk,150,0);  
     }else
       x_reach_pos=true;
@@ -456,21 +513,25 @@ event execute_stepping_ctrl(event event)
       //y_pram_set();
       break;
     }else{
-      edbmt_cmd_send(ADDR_MOTOR_Y, INST_GGP, 1, 2, 0);
+      motor_cmd_send(ADDR_MOTOR_Y, INST_GGP, 1, 2, 0);
       set_timer_(eventYhomeCk,200,0);
     }    
     break;
   case eventHomeYAbsPosCk:
     if(!y_reach_pos){
-      edbmt_cmd_send(ADDR_MOTOR_Y, INST_GAP, EDB2000_POSITION_REACHED_TYPE,0, 0);
+      motor_cmd_send(ADDR_MOTOR_Y, INST_GAP, EDB2000_POSITION_REACHED_TYPE,0, 0);
       set_timer_(eventHomeYAbsPosCk,100,0);  
-    }else{
-      edbmt_cmd_send(ADDR_MOTOR_Y, INST_SAP, EDB2000_ACTUAL_POSITION_TYPE,0,0);//position 0
+    }
+    else
+    {
+      motor_cmd_send(ADDR_MOTOR_Y, INST_STOP, 0,0,0);
+      motor_cmd_send(ADDR_MOTOR_Y, INST_SAP, EDB2000_ACTUAL_POSITION_TYPE,0,0);//position 0
+      y_homeing_success = true;
     }  
     break;
   case eventYAbsPosCk:
     if(!y_reach_pos){
-      edbmt_cmd_send(ADDR_MOTOR_Y, INST_GAP, EDB2000_POSITION_REACHED_TYPE,0, 0);
+      motor_cmd_send(ADDR_MOTOR_Y, INST_GAP, EDB2000_POSITION_REACHED_TYPE,0, 0);
       set_timer_(eventYAbsPosCk,150,0);  
     }else
       y_reach_pos=true;
@@ -483,21 +544,25 @@ event execute_stepping_ctrl(event event)
      // z_pram_set();
       break;
     }else{
-      edbmt_cmd_send(ADDR_MOTOR_Z, INST_GGP, 1, 2, 0);
+      motor_cmd_send(ADDR_MOTOR_Z, INST_GGP, 1, 2, 0);
       set_timer_(eventZhomeCk,200,0);
     }     
     break;
   case eventHomeZAbsPosCk:
     if(!z_reach_pos){
-      edbmt_cmd_send(ADDR_MOTOR_Z, INST_GAP, EDB2000_POSITION_REACHED_TYPE,0, 0);
+      motor_cmd_send(ADDR_MOTOR_Z, INST_GAP, EDB2000_POSITION_REACHED_TYPE,0, 0);
       set_timer_(eventHomeZAbsPosCk,100,0);  
-    }else{
-      edbmt_cmd_send(ADDR_MOTOR_Z, INST_SAP, EDB2000_ACTUAL_POSITION_TYPE,0,0);//position 0
+    }
+    else
+    {
+      motor_cmd_send(ADDR_MOTOR_Z, INST_STOP, 0,0,0);
+      motor_cmd_send(ADDR_MOTOR_Z, INST_SAP, EDB2000_ACTUAL_POSITION_TYPE,0,0);//position 0
+      z_homeing_success = true;
     }  
     break;
   case eventZAbsPosCk:
     if(!z_reach_pos){
-      edbmt_cmd_send(ADDR_MOTOR_Z, INST_GAP, EDB2000_POSITION_REACHED_TYPE,0, 0);
+      motor_cmd_send(ADDR_MOTOR_Z, INST_GAP, EDB2000_POSITION_REACHED_TYPE,0, 0);
       set_timer_(eventZAbsPosCk,100,0);  
     }else
       z_reach_pos=true;
@@ -523,7 +588,7 @@ event execute_stepping_ctrl(event event)
   case hseXaxiSpeedSet:
     xmt_ctrl.speed_rpm=merge_32bit(xmt_ctrl.speed_rpm,usb_data_buf);
     spd=(xmt_ctrl.speed_rpm*51200)/60;
-    edbmt_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
+    motor_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
     usb_send_pack(hseXaxiSpeedSet,usb_data_buf);
     break;
   case hseXaxiSpeedRead:
@@ -533,7 +598,7 @@ event execute_stepping_ctrl(event event)
   case hseXaxiAccelSet:
     xmt_ctrl.accel_rpm=merge_32bit(xmt_ctrl.accel_rpm,usb_data_buf);
     acc=(xmt_ctrl.accel_rpm*51200)/60;
-    edbmt_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
+    motor_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
     usb_send_pack(hseXaxiAccelSet,usb_data_buf);
     break;
   case  hseXaxiAccelRead:
@@ -566,12 +631,18 @@ event execute_stepping_ctrl(event event)
     usb_send_pack(hseProbeTrayXSet,usb_data_buf);
     break;
   case hseProbeTrayXSave:
-    usb_send_pack(hseProbeTrayXSave,usb_data_buf);
+    xmt_ctrl.dsp_pos=merge_32bit(xmt_ctrl.dsp_pos,usb_data_buf);
+    xmt_param_write();
+    xmt_param_read();
+    sort_8bit(xmt_ctrl.dsp_pos,dev_send_buf);
+    usb_send_pack(hseProbeTrayXSave, dev_send_buf);
     break;
   case hseXaxiDspPosSave:
     xmt_ctrl.dsp_pos=merge_32bit(xmt_ctrl.dsp_pos,usb_data_buf);
     xmt_param_write();
-    usb_send_pack(hseXaxiDspPosSave,usb_data_buf);
+    xmt_param_read();
+    sort_8bit(xmt_ctrl.dsp_pos,dev_send_buf);
+    usb_send_pack(hseXaxiDspPosSave, dev_send_buf);
     break;  
   
   case hseProbeTrayXRead:
@@ -596,12 +667,18 @@ event execute_stepping_ctrl(event event)
     usb_send_pack(hseProbeStripGapSet,usb_data_buf);
     break;
   case hseProbeStripGapSave:
-    usb_send_pack(hseProbeStripGapSave,usb_data_buf);
+    xmt_ctrl.cam_pos=merge_32bit(xmt_ctrl.cam_pos,usb_data_buf);
+    xmt_param_write();
+    xmt_param_read();
+    sort_8bit(xmt_ctrl.cam_pos,dev_send_buf);
+    usb_send_pack(hseProbeStripGapSave, dev_send_buf);
     break;  
   case hseXaxiCamPosSave:
     xmt_ctrl.cam_pos=merge_32bit(xmt_ctrl.cam_pos,usb_data_buf);
     xmt_param_write();
-    usb_send_pack(hseXaxiCamPosSave,usb_data_buf);
+    xmt_param_read();
+    sort_8bit(xmt_ctrl.cam_pos,dev_send_buf);
+    usb_send_pack(hseXaxiCamPosSave, dev_send_buf);
     break;  
 
   case hseProbeStripGapRead:
@@ -627,13 +704,19 @@ event execute_stepping_ctrl(event event)
     break;
 
   case hseProbeSmplXSave:
-    usb_send_pack(hseProbeSmplXSave,usb_data_buf);
+    xmt_ctrl.sample_pos=merge_32bit(xmt_ctrl.sample_pos,usb_data_buf);
+    xmt_param_write();
+    xmt_param_read();
+    sort_8bit(xmt_ctrl.sample_pos,dev_send_buf);
+    usb_send_pack(hseProbeSmplXSave, dev_send_buf);
     break;
 
   case hseXaxiSamplePosSave:
     xmt_ctrl.sample_pos=merge_32bit(xmt_ctrl.sample_pos,usb_data_buf);
     xmt_param_write();
-    usb_send_pack(hseXaxiSamplePosSave,usb_data_buf);
+    xmt_param_read();
+    sort_8bit(xmt_ctrl.sample_pos,dev_send_buf);
+    usb_send_pack(hseXaxiSamplePosSave, dev_send_buf);
     break;
   case hseProbeSmplXRead:
   case hseXaxiSamplePosRead:
@@ -658,13 +741,19 @@ event execute_stepping_ctrl(event event)
     break;
   
   case hseProbeSampleGapSave:
-    usb_send_pack(hseProbeSampleGapSave,usb_data_buf);
+    ymt_ctrl.cam_pos=merge_32bit(ymt_ctrl.cam_pos,usb_data_buf);
+    ymt_param_write();
+    ymt_param_read();
+    sort_8bit(ymt_ctrl.cam_pos,dev_send_buf);
+    usb_send_pack(hseProbeSampleGapSave, dev_send_buf);
     break;    
 
    case hseXaxiClCurrentSave:
     ymt_ctrl.cam_pos=merge_32bit(ymt_ctrl.cam_pos,usb_data_buf);
     ymt_param_write();
-    usb_send_pack(hseXaxiClCurrentSave,usb_data_buf);
+    ymt_param_read();
+    sort_8bit(ymt_ctrl.cam_pos,dev_send_buf);
+    usb_send_pack(hseXaxiClCurrentSave, dev_send_buf);
     break;     
   case hseProbeSampleGapRead:
   case hseXaxiClCurrentRead:
@@ -689,7 +778,9 @@ event execute_stepping_ctrl(event event)
   case hseProbeSmplXEndSave:
     xmt_ctrl.sample_pos_end=merge_32bit(xmt_ctrl.sample_pos_end,usb_data_buf);
     xmt_param_write();
-    usb_send_pack(hseProbeSmplXEndSave,usb_data_buf);
+    xmt_param_read();
+    sort_8bit(xmt_ctrl.sample_pos_end,dev_send_buf);
+    usb_send_pack(hseProbeSmplXEndSave, dev_send_buf);
     break;
 
   case hseProbeSmplXEndRead:
@@ -707,7 +798,9 @@ event execute_stepping_ctrl(event event)
   case hseProbeTrayXEndSave:
     xmt_ctrl.dsp_pos_end=merge_32bit(xmt_ctrl.dsp_pos_end,usb_data_buf);
     xmt_param_write();
-    usb_send_pack(hseProbeTrayXEndSave,usb_data_buf);
+    xmt_param_read();
+    sort_8bit(xmt_ctrl.dsp_pos_end,dev_send_buf);
+    usb_send_pack(hseProbeTrayXEndSave, dev_send_buf);
     break;
 
   case hseProbeTrayXEndRead:
@@ -725,7 +818,7 @@ event execute_stepping_ctrl(event event)
   case hseYaxiSpeedSet:
     ymt_ctrl.speed_rpm=merge_32bit(ymt_ctrl.speed_rpm,usb_data_buf);
     spd=(ymt_ctrl.speed_rpm*51200)/60;
-     edbmt_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
+     motor_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
     usb_send_pack(hseYaxiSpeedSet,usb_data_buf);
     break;
   case hseYaxiSpeedRead:
@@ -735,7 +828,7 @@ event execute_stepping_ctrl(event event)
   case hseYaxiAccelSet:
     ymt_ctrl.accel_rpm=merge_32bit(ymt_ctrl.accel_rpm,usb_data_buf);
     acc=(ymt_ctrl.accel_rpm*51200)/60;
-    edbmt_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
+    motor_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
     usb_send_pack(hseYaxiAccelSet,usb_data_buf);
     break;
   case hseYaxiAccelRead:
@@ -767,14 +860,19 @@ event execute_stepping_ctrl(event event)
     break;
   
   case hseProbeBathYSave:
-    usb_send_pack(hseProbeBathYSave,usb_data_buf);
+    ymt_ctrl.bath_pos=merge_32bit(ymt_ctrl.bath_pos,usb_data_buf);
+    ymt_param_write();
+    ymt_param_read();
+    sort_8bit(ymt_ctrl.bath_pos,dev_send_buf);
+    usb_send_pack(hseProbeBathYSave, dev_send_buf);
     break;
 
   case hseYaxiBathPosSave:
     ymt_ctrl.bath_pos=merge_32bit(ymt_ctrl.bath_pos,usb_data_buf);
     ymt_param_write();
     ymt_param_read();
-    usb_send_pack(hseYaxiBathPosSave,usb_data_buf);
+    sort_8bit(ymt_ctrl.bath_pos,dev_send_buf);
+    usb_send_pack(hseYaxiBathPosSave, dev_send_buf);
     break;
 
 
@@ -796,13 +894,19 @@ event execute_stepping_ctrl(event event)
     break;
 
   case hseProbeTrayYSave:
-    usb_send_pack(hseProbeTrayYSave,usb_data_buf);
+    ymt_ctrl.dsp_pos=merge_32bit(ymt_ctrl.dsp_pos,usb_data_buf);
+    ymt_param_write();
+    ymt_param_read();
+    sort_8bit(ymt_ctrl.dsp_pos,dev_send_buf);
+    usb_send_pack(hseProbeTrayYSave, dev_send_buf);
     break;    
 
   case hseYaxiDspPosSave:
     ymt_ctrl.dsp_pos=merge_32bit(ymt_ctrl.dsp_pos,usb_data_buf);
     ymt_param_write();
-    usb_send_pack(hseYaxiDspPosSave,usb_data_buf);
+    ymt_param_read();
+    sort_8bit(ymt_ctrl.dsp_pos,dev_send_buf);
+    usb_send_pack(hseYaxiDspPosSave, dev_send_buf);
     break;    
 
   case hseProbeTrayYRead:
@@ -829,13 +933,19 @@ event execute_stepping_ctrl(event event)
     break;
 
   case hseProbeBathInitSave:
-    usb_send_pack(hseProbeBathInitSave,usb_data_buf); 
+    ymt_ctrl.sample_width=merge_32bit(ymt_ctrl.sample_width,usb_data_buf);
+    ymt_param_write();
+    ymt_param_read();
+    sort_8bit(ymt_ctrl.sample_width,dev_send_buf);
+    usb_send_pack(hseProbeBathInitSave, dev_send_buf);
     break;
 
   case hseYaxiBathSamplePosSave:
     ymt_ctrl.sample_width=merge_32bit(ymt_ctrl.sample_width,usb_data_buf);
     ymt_param_write();
-    usb_send_pack(hseYaxiBathSamplePosSave,usb_data_buf); 
+    ymt_param_read();
+    sort_8bit(ymt_ctrl.sample_width,dev_send_buf);
+    usb_send_pack(hseYaxiBathSamplePosSave, dev_send_buf);
     break;
 
   case hseProbeBathInitRead:
@@ -852,12 +962,18 @@ event execute_stepping_ctrl(event event)
     usb_send_pack(hseProbeSmplY1Set,usb_data_buf);
     break;
   case hseProbeSmplY1Save:
-    usb_send_pack(hseProbeSmplY1Save,usb_data_buf);
+    ymt_ctrl.sample_pos=merge_32bit(ymt_ctrl.sample_pos,usb_data_buf);
+    ymt_param_write();
+    ymt_param_read();
+    sort_8bit(ymt_ctrl.sample_pos,dev_send_buf);
+    usb_send_pack(hseProbeSmplY1Save, dev_send_buf);
     break;
   case hseYaxiSamplePosSave:
     ymt_ctrl.sample_pos=merge_32bit(ymt_ctrl.sample_pos,usb_data_buf);
     ymt_param_write();
-    usb_send_pack(hseYaxiSamplePosSave,usb_data_buf);
+    ymt_param_read();
+    sort_8bit(ymt_ctrl.sample_pos,dev_send_buf);
+    usb_send_pack(hseYaxiSamplePosSave, dev_send_buf);
     break;
 
 
@@ -870,7 +986,7 @@ event execute_stepping_ctrl(event event)
     break;
   case hseYaxiClCurrentSet:
     ymt_ctrl.cl_amp=merge_32bit(ymt_ctrl.cl_amp,usb_data_buf);
-     edbmt_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,ymt_ctrl.cl_amp);
+     motor_cmd_send(ADDR_MOTOR_Y,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,ymt_ctrl.cl_amp);
     usb_send_pack(hseYaxiClCurrentSet,usb_data_buf);
     break;
   case hseYaxiClCurrentRead:
@@ -886,7 +1002,9 @@ event execute_stepping_ctrl(event event)
   case hseProbeSmplY2Save:
     ymt_ctrl.sample_pos2=merge_32bit(ymt_ctrl.sample_pos2,usb_data_buf);
     ymt_param_write();
-    usb_send_pack(hseProbeSmplY2Save,usb_data_buf);
+    ymt_param_read();
+    sort_8bit(ymt_ctrl.sample_pos2,dev_send_buf);
+    usb_send_pack(hseProbeSmplY2Save, dev_send_buf);
     break;
 
   case hseProbeSmplY2Read:
@@ -904,7 +1022,7 @@ event execute_stepping_ctrl(event event)
   case hseZaxiSpeedSet:
     zmt_ctrl.speed_rpm=merge_32bit(zmt_ctrl.speed_rpm,usb_data_buf);
     spd=(zmt_ctrl.speed_rpm*51200)/60;
-    edbmt_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
+    motor_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,spd);
     usb_send_pack(hseZaxiSpeedSet,usb_data_buf);
     break;
   case hseZaxiSpeedRead:
@@ -914,7 +1032,7 @@ event execute_stepping_ctrl(event event)
   case hseZaxiAccelSet:
     zmt_ctrl.accel_rpm=merge_32bit(zmt_ctrl.accel_rpm,usb_data_buf);
     acc=(zmt_ctrl.accel_rpm*51200)/60;
-    edbmt_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
+    motor_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_ACCELERATOR_TYPE,0,acc);
     usb_send_pack(hseZaxiAccelSet,usb_data_buf);
     break;
   case hseZaxiAccelRead:
@@ -937,12 +1055,18 @@ event execute_stepping_ctrl(event event)
     usb_send_pack(hseProbeBathZSet,usb_data_buf);
     break;
   case hseProbeBathZSave:
-    usb_send_pack(hseProbeBathZSave,usb_data_buf); 
+    zmt_ctrl.dsp_pos_end=merge_32bit(zmt_ctrl.dsp_pos_end,usb_data_buf);
+    zmt_param_write();
+    zmt_param_read();
+    sort_8bit(zmt_ctrl.dsp_pos_end,dev_send_buf);
+    usb_send_pack(hseProbeBathZSave, dev_send_buf);
     break;
   case hseZaxiBathPosSave:
     zmt_ctrl.dsp_pos_end=merge_32bit(zmt_ctrl.dsp_pos_end,usb_data_buf);
     zmt_param_write();
-    usb_send_pack(hseZaxiBathPosSave,usb_data_buf); 
+    zmt_param_read();
+    sort_8bit(zmt_ctrl.dsp_pos_end,dev_send_buf);
+    usb_send_pack(hseZaxiBathPosSave, dev_send_buf);
     break;
   case hseProbeBathZRead:
   case hseZaxiBathPosRead:
@@ -961,12 +1085,18 @@ event execute_stepping_ctrl(event event)
     usb_send_pack(hseProbeTrayZSet,usb_data_buf);
     break;
   case hseProbeTrayZSave:
-    usb_send_pack(hseProbeTrayZSave,usb_data_buf);
+    zmt_ctrl.dsp_pos=merge_32bit(zmt_ctrl.dsp_pos,usb_data_buf);
+    zmt_param_write();
+    zmt_param_read();
+    sort_8bit(zmt_ctrl.dsp_pos,dev_send_buf);
+    usb_send_pack(hseProbeTrayZSave, dev_send_buf);
     break;
   case hseZaxiDspPosSave:
     zmt_ctrl.dsp_pos=merge_32bit(zmt_ctrl.dsp_pos,usb_data_buf);
     zmt_param_write();
-    usb_send_pack(hseZaxiDspPosSave,usb_data_buf);
+    zmt_param_read();
+    sort_8bit(zmt_ctrl.dsp_pos,dev_send_buf);
+    usb_send_pack(hseZaxiDspPosSave, dev_send_buf);
     break;
 
 
@@ -997,16 +1127,22 @@ event execute_stepping_ctrl(event event)
     zmt_ctrl.sample_pos=merge_32bit(zmt_ctrl.sample_pos,usb_data_buf);
     stmt_abs_move(ADDR_MOTOR_Z, zmt_ctrl.sample_pos);
     zmt_param_write();
-    edbmt_cmd_send(ADDR_MOTOR_Z,INST_SGP,4,2, zmt_ctrl.sample_pos);
+    motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,4,2, zmt_ctrl.sample_pos);
     usb_send_pack(hseProbeSmplZSet,usb_data_buf);
     break;
   case hseProbeSmplZSave:
-    usb_send_pack(hseProbeSmplZSave,usb_data_buf);
+    zmt_ctrl.sample_pos=merge_32bit(zmt_ctrl.sample_pos,usb_data_buf);
+    zmt_param_write();
+    zmt_param_read();
+    sort_8bit(zmt_ctrl.sample_pos,dev_send_buf);
+    usb_send_pack(hseProbeSmplZSave, dev_send_buf);
     break;
   case hseZaxiSamplePosSave:
     zmt_ctrl.sample_pos=merge_32bit(zmt_ctrl.sample_pos,usb_data_buf);
     zmt_param_write();
-    usb_send_pack(hseZaxiSamplePosSave,usb_data_buf);
+    zmt_param_read();
+    sort_8bit(zmt_ctrl.sample_pos,dev_send_buf);
+    usb_send_pack(hseZaxiSamplePosSave, dev_send_buf);
     break;
   case hseProbeSmplZRead:
   case hseZaxiSamplePosRead:
@@ -1017,7 +1153,7 @@ event execute_stepping_ctrl(event event)
     
   case hseZaxiClCurrentSet:
     zmt_ctrl.cl_amp=merge_32bit(zmt_ctrl.cl_amp,usb_data_buf);
-    edbmt_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,zmt_ctrl.cl_amp); 
+    motor_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,zmt_ctrl.cl_amp); 
     usb_send_pack(hseZaxiClCurrentSet,usb_data_buf);
     break;
   case hseZaxiClCurrentRead:
@@ -1118,7 +1254,7 @@ uint32_t g_dwEDB_Start = 0;
 extern UART_HandleTypeDef huart4;
 extern byte mt_chr;
 
-void UART_EDB_RxCpltCallback(UART_HandleTypeDef *huart)
+void UART_StepMotor_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if(huart == &huart4)
   {
@@ -1212,12 +1348,17 @@ enum mt_com_state *gp_tStatus;
 int32_t Get_EDB_ReceivPacketHandle(uint8_t uAddress, uint8_t *p_uGetPacketBuf);
 int32_t EDB_ReceivPacketExec(uint8_t *p_uReceivPacket);
 
+uint8_t EDBSendPacket[SND_EDB_MAX] = {0};
+uint8_t EDBReceivPacket[RCV_EDB_MAX] = {0};
 
-void edbmt_cmd_send(byte address, byte inst, byte type ,byte bank, signed long int value)
+
+
+void motor_cmd_send(byte address, byte inst, byte type ,byte bank, signed long int value)
 {
+
   uint32_t dwCnt = 0,dwCount = 0,dwCheck = 0, dwReTryCnt = 0,EDB_queue_size = 0, HAL_Fail_Cnt = 0;
-  uint8_t EDBSendPacket[SND_EDB_MAX] = {0};
-  uint8_t EDBReceivPacket[RCV_EDB_MAX] = {0};
+  //uint8_t EDBSendPacket[SND_EDB_MAX] = {0};
+  //uint8_t EDBReceivPacket[RCV_EDB_MAX] = {0};
   
   
   //Address�� ���� ����
@@ -1266,6 +1407,7 @@ void edbmt_cmd_send(byte address, byte inst, byte type ,byte bank, signed long i
     EDB_QueReset();
     HAL_GPIO_WritePin(UART4_DIR_GPIO_Port, UART4_DIR_Pin, (GPIO_PinState)SET);
     dwCheck = HAL_UART_Transmit(&huart4, EDBSendPacket, SND_EDB_MAX, EDB_COM_WAIT_TIM);
+    while (__HAL_UART_GET_FLAG(&huart4, UART_FLAG_TC) == RESET);
     HAL_GPIO_WritePin(UART4_DIR_GPIO_Port, UART4_DIR_Pin, (GPIO_PinState)RESET);
     
     if(dwCheck)
@@ -1314,7 +1456,8 @@ void edbmt_cmd_send(byte address, byte inst, byte type ,byte bank, signed long i
     while(1);//Error code  
   }
   //Error Count Stop
-  
+  memset(EDBSendPacket, 0, sizeof(EDBSendPacket));
+  memset(EDBReceivPacket, 0, sizeof(EDBReceivPacket));
   err_tmout_en(FALSE); 
 }
 
@@ -1351,14 +1494,21 @@ int32_t Get_EDB_ReceivPacketHandle(uint8_t uAddress, uint8_t *p_uGetPacketBuf)
 
 int32_t EDB_ReceivPacketExec(uint8_t *p_uReceivPacket)
 {
-  int32_t dwCheck = 0;
-  uint32_t dwReceivValue;
+  int32_t dwCheck = 0 , positionValue = 0;
+  uint32_t dwReceivValue=0,rawValue=0;
   uint8_t uCmd, uAddress;
   
   uCmd = p_uReceivPacket[RCV_EDB_INST];
   uAddress = p_uReceivPacket[RCV_EDB_DEV];
   dwReceivValue = p_uReceivPacket[RCV_EDB_DAT4] & 0x000000FF;
-  
+ 
+  rawValue = (p_uReceivPacket[RCV_EDB_DAT1] << 24) |
+              (p_uReceivPacket[RCV_EDB_DAT2] << 16) |
+              (p_uReceivPacket[RCV_EDB_DAT3] << 8)  |
+              (p_uReceivPacket[RCV_EDB_DAT4]);
+   
+  positionValue = (int32_t)rawValue; 
+
   switch(uCmd)
   {
     case INST_MVP:
@@ -1366,20 +1516,37 @@ int32_t EDB_ReceivPacketExec(uint8_t *p_uReceivPacket)
     case INST_RESET:
     case INST_RUNAPP:
     case INST_STOP:
+    case MOTOR_POWER_SWITCH:
       *gp_tStatus = stanby;
       break;
       
     case INST_GAP:
       *gp_tStatus = stanby;   
-      if(uAddress == ADDR_MOTOR_X){
-        x_reach_pos = dwReceivValue;  
-      }
-      else if(uAddress == ADDR_MOTOR_Y){
-        y_reach_pos = dwReceivValue;  
-      }
-      else if(uAddress == ADDR_MOTOR_Z){
-        z_reach_pos = dwReceivValue;  
-      }
+      if(EDBSendPacket[SND_EDB_TYPE] == EDB2000_POSITION_REACHED_TYPE)
+      {
+        if(uAddress == ADDR_MOTOR_X){
+          x_reach_pos = dwReceivValue;  
+        }
+        else if(uAddress == ADDR_MOTOR_Y){
+          y_reach_pos = dwReceivValue;  
+        }
+        else if(uAddress == ADDR_MOTOR_Z){
+          z_reach_pos = dwReceivValue;  
+        }
+      } 
+
+      else if(EDBSendPacket[SND_EDB_TYPE] == EDB2000_CL_CLOSED_LOOP_CHECK_TYPE)
+      {
+        if(uAddress == ADDR_MOTOR_X){
+          x_closeloop_state = dwReceivValue;  
+        }
+        else if(uAddress == ADDR_MOTOR_Y){
+          y_closeloop_state = dwReceivValue;  
+        }
+        else if(uAddress == ADDR_MOTOR_Z){
+          z_closeloop_state = dwReceivValue;  
+        }
+      }  
       break;
       
     case INST_SGP:
@@ -1422,5 +1589,4 @@ int32_t EDB_ReceivPacketExec(uint8_t *p_uReceivPacket)
   return dwCheck;
 }
 
-
-
+#endif

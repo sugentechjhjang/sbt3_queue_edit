@@ -206,7 +206,7 @@ event execute_main_ctrl(event event)
     break;
   case eventBarScan:
     if(x_reach_pos){
-      edbmt_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,(30*51200)/60);     
+      motor_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,(30*51200)/60);     
       set_timer_(bar_pr.event[2],100,0);
     }else
       set_timer_(bar_pr.event[1],50,0);
@@ -273,7 +273,7 @@ event execute_main_ctrl(event event)
     break;
   case eventBarScanEnd:
     barcode_off();
-    edbmt_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,(xmt_ctrl.speed_rpm*51200)/60);
+    motor_cmd_send(ADDR_MOTOR_X,INST_SAP,EDB2000_MAX_SPEED_TYPE,0,(xmt_ctrl.speed_rpm*51200)/60);
     stmt_abs_move(ADDR_MOTOR_X,0);
     usb_send_pack(hseBarSqEnd, 0);
     break;
@@ -544,18 +544,18 @@ event execute_main_ctrl(event event)
     break;
     
   case eventSmpCll:
-    edbmt_cmd_send(ADDR_MOTOR_Z,INST_SGP,0,2,CLL_EN);
+    motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,0,2,CLL_EN);
     cll_state=0;
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
     break;
     
   case eventSmpCllCheck:
     if(cll_state==5||cll_state==6){
-      edbmt_cmd_send(ADDR_MOTOR_Z,INST_SGP,2,2,0);
+      motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,2,2,0);
       hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
       set_timer_(smpl_pr.event[++smple_ev_cnt],500,0);
     }else { 
-      edbmt_cmd_send(ADDR_MOTOR_Z, INST_GGP, 2, 2, 0);
+      motor_cmd_send(ADDR_MOTOR_Z, INST_GGP, 2, 2, 0);
       set_timer_(smpl_pr.event[smple_ev_cnt],100,0);
     }
     break;
@@ -643,7 +643,7 @@ event execute_main_ctrl(event event)
     set_timer_(smpl_pr.event[++smple_ev_cnt],200,0);
     break; 
     /* case eventSmpProbeZFirstHome:
-    edbmt_cmd_send(ADDR_MOTOR_Z,INST_SGP,0,2,CLLD_HOME);
+    motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,0,2,CLLD_HOME);
     cll_state=0;
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
     break;
@@ -651,7 +651,7 @@ event execute_main_ctrl(event event)
   case eventSmpProbeZHome:
     cll_state=0;
     dSPIN_Go_To( shk_pram.down_ang_pos);
-    edbmt_cmd_send(ADDR_MOTOR_Z,INST_SGP,0,2,CLLD_HOME);
+    motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,0,2,CLLD_HOME);
     cll_state=0;
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
     break;
@@ -738,7 +738,7 @@ event execute_main_ctrl(event event)
   }else{
     if(clld_vol){
     if((clld_vol-smpl_pr.clld_init_vol)>=smpl_pr.clld_sws){
-    edbmt_cmd_send(ADDR_MOTOR_Z,INST_STOP,EDB2000_STOP_TYPE,0,0);
+    motor_cmd_send(ADDR_MOTOR_Z,INST_STOP,EDB2000_STOP_TYPE,0,0);
     beep(80, 1);
     //set_timer_(smpl_pr.event[++smple_ev_cnt],10,0);
   }else{

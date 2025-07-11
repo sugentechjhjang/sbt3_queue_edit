@@ -133,6 +133,8 @@ extern bool only_washing_flg;
 extern bool auto_clean_repeat_flg;
 extern bool probe_disp_enable;
 extern bool auto_prime_flg;
+
+extern bool admin_positon_flag;
 #endif   
 
 event execute_sys_ctrl(event event);

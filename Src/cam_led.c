@@ -209,8 +209,10 @@ event execute_cam_ctrl(event event)
   case hseCamAnlyXPosSave:
     cam_pram.cam_aly_x_pos=merge_32bit(cam_pram.cam_aly_x_pos,usb_data_buf);
     cam_param_write();
-    usb_send_pack(hseCamAnlyXPosSave,usb_data_buf);
-    break;    
+    cam_param_read();
+    sort_8bit(cam_pram.cam_aly_x_pos,dev_send_buf);
+    usb_send_pack(hseCamAnlyXPosSave,dev_send_buf);
+    break;
   case hseCamAnlyXPosRead:
     cam_param_read();
     sort_8bit(cam_pram.cam_aly_x_pos,dev_send_buf);
@@ -225,8 +227,10 @@ event execute_cam_ctrl(event event)
   case hseCamAnlyXEndPosSave:
     cam_pram.cam_aly_xend_pos=merge_32bit(cam_pram.cam_aly_xend_pos,usb_data_buf);
     cam_param_write();
-    usb_send_pack(hseCamAnlyXEndPosSave,usb_data_buf);
-    break;    
+    cam_param_read();
+    sort_8bit(cam_pram.cam_aly_xend_pos,dev_send_buf);
+    usb_send_pack(hseCamAnlyXEndPosSave, dev_send_buf);
+    break;
   case hseCamAnlyXEndPosRead:
     cam_param_read();
     sort_8bit(cam_pram.cam_aly_xend_pos,dev_send_buf);

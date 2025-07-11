@@ -335,6 +335,7 @@ void C3000_send_command(uint8_t addr, char *pdata)
     SYRINGE_QueReset();
     Syringe_485_Direction_Set(GPIO_PIN_SET); // TX DIR ���� prime
     sy_Check=HAL_UART_Transmit(&huart3, send_data_t, i+5, 200); 
+    while (__HAL_UART_GET_FLAG(&huart3, UART_FLAG_TC) == RESET);
     Syringe_485_Direction_Set(GPIO_PIN_RESET);  // RX DIR ����
    
     if(sy_Check)
@@ -502,8 +503,10 @@ int32_t SYRINGE_ReceivPacketExec(uint8_t *p_sy_ReceivPacket)
     break;
   case hseSygeSave:
     syrg_pram.vol=merge_32bit(syrg_pram.vol,usb_data_buf);
-    usb_send_pack(hseSygeSave,usb_data_buf);
     syge_param_write();
+    syge_param_read();
+    sort_8bit( syrg_pram.vol,dev_send_buf);
+    usb_send_pack(hseSygeSave, dev_send_buf);
     break;
   case hseSygeRead:
     syge_param_read();
@@ -528,9 +531,11 @@ int32_t SYRINGE_ReceivPacketExec(uint8_t *p_sy_ReceivPacket)
     break;
   case hseAirGapSave:
     syrg_pram.air_gap=merge_32bit(syrg_pram.air_gap,usb_data_buf);
-    usb_send_pack(hseAirGapSave,usb_data_buf);
     syge_param_write();
-    break;    
+    syge_param_read();
+    sort_8bit( syrg_pram.air_gap,dev_send_buf);
+    usb_send_pack(hseAirGapSave, dev_send_buf);    
+    break;   
   case hseAirGapRead:
     syge_param_read();
     sort_8bit( syrg_pram.air_gap,dev_send_buf);
@@ -545,8 +550,10 @@ int32_t SYRINGE_ReceivPacketExec(uint8_t *p_sy_ReceivPacket)
 
   case hseSygeSpeedSave:
     syrg_pram.speed=merge_32bit(syrg_pram.speed,usb_data_buf);
-    usb_send_pack(hseSygeSpeedSave,usb_data_buf);
     syge_param_write();
+    syge_param_read();
+    sort_8bit(syrg_pram.speed,dev_send_buf);
+    usb_send_pack(hseSygeSpeedRead, dev_send_buf);  
     break;  
 
   case hseSygeSpeedRead:

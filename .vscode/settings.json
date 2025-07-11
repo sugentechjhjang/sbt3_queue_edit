@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "hs_common_utill.h": "c"
+        "hs_common_utill.h": "c",
+        "main.h": "c",
+        "stm32f1xx_hal.h": "c",
+        "macro.h": "c"
     }
 }

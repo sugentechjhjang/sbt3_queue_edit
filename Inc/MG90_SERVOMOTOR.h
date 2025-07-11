@@ -32,4 +32,6 @@ event execute_servo_ctrl(event event);
 
 void asp_home_init();
 
+extern bool servo_move_flag;
+
 #endif //__MG90S_H

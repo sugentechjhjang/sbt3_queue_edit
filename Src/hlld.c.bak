@@ -365,7 +365,7 @@ event execute_hlld_ctrl(event event)
     usb_send_pack(hseClldSWSResp, dev_send_buf);
   }
    hlld_send_pack(HLLD_ADD, HLLD_CLLD_RES,20, (unsigned short int)((rb<<8)|ra));
-   edbmt_cmd_send(ADDR_MOTOR_Z,INST_SGP,0,2,SWS_OP);
+   motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,0,2,SWS_OP);
    give_event(eventSWSVarResCtrl,0);
 
     break;
@@ -377,10 +377,10 @@ event execute_hlld_ctrl(event event)
   case eventSWSVarCheck:
     if(cll_state==5){
       hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
-      edbmt_cmd_send(ADDR_MOTOR_Z,INST_SGP,2,2,0);
+      motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,2,2,0);
       give_event(eventSWSVarEnd,0);
     }else { 
-      edbmt_cmd_send(ADDR_MOTOR_Z, INST_GGP, 2, 2, 0);
+      motor_cmd_send(ADDR_MOTOR_Z, INST_GGP, 2, 2, 0);
       ra--;
       give_event(eventSWSVarResCtrl,0);
     }

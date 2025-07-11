@@ -11,6 +11,14 @@ void init_event();
 void save_pause(uint16_t* qu,uint16_t* p_head,uint16_t* p_tail);
 void get_pause(uint16_t* qu,uint16_t p_head,uint16_t p_tail);
 
+typedef struct {
+    uint16_t head;
+    uint16_t tail;
+    uint16_t queue[EVENT_QUEUE_LENGTH];
+} EventQueue;
+
+extern EventQueue events;
+
 enum cntrl_event
 {
   //status read
@@ -36,6 +44,11 @@ enum cntrl_event
           eventAirTempRes,
           eventEquiType,
           eventConfig,
+
+          event_Developer_MAIN_VER,
+          event_Developer_LLD_VER,
+
+          eventUSBreset,
 
              
     
@@ -178,6 +191,8 @@ enum cntrl_event
           hseProbeStripGapRead,
           hseProbeSampleGapSet,
           hseProbeSampleGapRead,
+
+          eventLLDFwDown = 0x6400,
           
           hseAspDispPage=0x0700,
           hseAspBathXSet,
@@ -221,9 +236,10 @@ enum cntrl_event
           hseClldTestStop,
           hseClldTestStopResp,
           hseClldVolH,
+          hseClldValueSet,
+          hseClldValueRead,
 
-          
-            
+        
           hsePlldPage=0x0900,
           hsePlldQcStart,
           hsePlldQcStartResp,
@@ -782,20 +798,20 @@ enum cntrl_event
 
 /*
 //status read
-eventEquiSN=0x0001,          //��� �ø��� �ѹ�
-eventFwVer=0x0002,           //fw ����
+eventEquiSN=0x0001,          
+eventFwVer=0x0002,           
 eventReserve0=0x0003, 
-eventHwVer=0x0004,           //hw ����       
+eventHwVer=0x0004,             
 eventSetpId=0x0005,   
-eventTotalSqNum=0x0006,         //�� ���� �Ǿ� �ִ� ������ ����
-eventStSqId=0x0007,            //������ ID Ȯ��
-eventSeqSelR=0x0008,         //���� �ε� �Ǿ��ִ� ������ �޸� ���� Number
-eventTotalSN=0x0009,         //��ü �ø��� �ѹ�
-eventTotalTime=0x000A,       //�� ���α׷� �ҿ� �ð�
-eventCrrtTotalTime=0x000B,   // ���� ���α׷� step�� step �ҿ� �ð�
-eventCrrtProTime=0x000C,     // ���� ���α׷��� �ҿ� �ð�
-eventStepTime=0x000D,        //step�� �ð��� Ȯ��
-eventCtAndPt=0x000E,         //���� ������ step�� process�� �˷��ش�.
+eventTotalSqNum=0x0006,         
+eventStSqId=0x0007,            
+eventSeqSelR=0x0008,         
+eventTotalSN=0x0009,         
+eventTotalTime=0x000A,       
+eventCrrtTotalTime=0x000B,   
+eventCrrtProTime=0x000C,     
+eventStepTime=0x000D,        
+eventCtAndPt=0x000E,         
 eventXMotorVer=0x000F,
 eventFwDownReset=0x0010,
 eventZMotorVer=0x0011,
@@ -804,19 +820,19 @@ eventEquiType=0x0013,
 eventConfig=0x0014,
 
 //Control Write
-eventSeqSels=0x0100,   // ������ ���α׷� Loading
+eventSeqSels=0x0100,   
 eventSeqSelRes=0x0101,
-eventCntinRun=0x0102,        //���� ���۽� �߰��� ���μ��� ���߰� ������
+eventCntinRun=0x0102,       
 eventCntinRunRes=0x0103,
-eventStepSigRun=0x0104,      //���� step�� ����
+eventStepSigRun=0x0104,      
 eventStepSigRunRes=0x0105,
-eventStPsSigRun=0x0106,      //���� ���α׷� process�� ����
+eventStPsSigRun=0x0106,      
 eventStPsSigRunRes=0x0107,
-eventSeqStop=0x0108,         //���� ������ Process �� �Ϸ� �� Stand-by ���·� ��
+eventSeqStop=0x0108,        
 eventSeqStopRes=0x0109,
-eventPause=0x010A,            //�Ͻ�����
+eventPause=0x010A,           
 eventPauseRes=0x010B,
-eventDevReset=0x010C,        //��� sw ����
+eventDevReset=0x010C,       
 eventDevResetRes=0x010D,
 eventAppExit=0x010E,
 eventAppExitResp=0x010F,

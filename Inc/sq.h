@@ -87,7 +87,6 @@ extern struct sq sq[12];
 extern byte sq_strp_mach;
 extern byte full_step, full_pr;
 extern int pr_time_sec;
-extern bool Air_temp_2min_flag;
 
 event sq_ctrl(event event);
 void sq_mem_init();

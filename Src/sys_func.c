@@ -152,20 +152,26 @@ struct auto_clean auto_cl=
        
 uint32_t qc_dry_time=0;
 uint air_temper=0;
+uint temper_volt = 135;  //13.5V
 byte *ver_pnt=0;
 bool only_washing_flg=false;
 bool auto_clean_repeat_flg=false;
 bool probe_disp_enable =false;
 bool auto_prime_flg=false;
 
+bool admin_positon_flag=false;
+
 event execute_sys_ctrl(event event)
 {
   uint16_t etc_vol=0;
-  byte dev_send_buf[4]={0,}; 
+  byte dev_send_buf[4]={0}; 
+  uint16_t year=0,date=0;  
+
   switch(event)
   {
   case eventPosPag:
     state=stStby;
+    admin_positon_flag=true;
     usb_send_pack(eventPosPag,0); 
     break;
   case eventLLDPag:
@@ -203,6 +209,7 @@ event execute_sys_ctrl(event event)
     break;
   case eventASPHome:
     servo_mv(asp_mt.up_pos);
+    servo_move_flag = false;
     dSPIN_Go_To(0);
     usb_send_pack(eventASPHome,0); 
     break;
@@ -338,6 +345,12 @@ event execute_sys_ctrl(event event)
     if(state==stStby){
       dev_send_buf[0]=0x05;
       dev_send_buf[1]=0x08;
+
+      ///FW_date//////////////////////////////////      
+      dbg_serial_fw_date();
+      //dbg_serial("MAIN_FW_DATE_250519");  //FW DATE
+      hlld_send_pack(HLLD_ADD, HLLD_FW_DATE,0, 0);
+      ////////////////////////////////////////////
       usb_send_pack(eventEquiType, dev_send_buf);
     }else{
       if(state==stReady)
@@ -355,27 +368,20 @@ event execute_sys_ctrl(event event)
    
     
   case eventAirTempRes:
-    if(Air_temp_2min_flag == FALSE)
-    {
-      tmp.air_volt = (usb_data_buf[1]|usb_data_buf[0]<<8); 
-      temp_param_write();
-    }
-
-    air_temper=Air_temp_res_vol(tmp.air_volt);
+    air_temper=Air_temp_res_vol(temper_volt);
     dev_send_buf[0]=usb_data_buf[0];
     dev_send_buf[1]=usb_data_buf[1];
     dev_send_buf[2]=air_temper>>8;
     dev_send_buf[3]=air_temper;
     usb_send_pack(eventAirTempRes, dev_send_buf);
 
-    Air_temp_2min_flag = FALSE;
     break;
   case eventFwVer:
     ver_pnt=FW_VER;
     dev_send_buf[0]=*ver_pnt;
     dev_send_buf[1]=*(ver_pnt+2);
     dev_send_buf[2]=*(ver_pnt+4);
-    dev_send_buf[3]=*(ver_pnt+5);
+    dev_send_buf[3]=*(ver_pnt+6);
     usb_send_pack(eventFwVer, dev_send_buf);
     break;
   case eventHwVer:
@@ -383,7 +389,7 @@ event execute_sys_ctrl(event event)
     dev_send_buf[0]=*ver_pnt;
     dev_send_buf[1]=*(ver_pnt+2);
     dev_send_buf[2]=*(ver_pnt+4);
-    dev_send_buf[3]=*(ver_pnt+5);
+    dev_send_buf[3]=*(ver_pnt+6);
     usb_send_pack(eventHwVer, dev_send_buf);
     break;
   case eventConfig:
@@ -392,6 +398,40 @@ event execute_sys_ctrl(event event)
       beep(80, 1);
     usb_send_pack(eventConfig, usb_data_buf);
     break;
+
+  case TEST_MCU_FW_DATE_CHECK:
+    year = (uint16_t)atoi(FW_YEAR);
+    date = (uint16_t)atoi(FW_DATE);
+
+    dev_send_buf[0] = (uint8_t)((year >> 8) & 0xFF); 
+    dev_send_buf[1] = (uint8_t)(year & 0xFF);       
+    dev_send_buf[2] = (uint8_t)((date >> 8) & 0xFF); 
+    dev_send_buf[3] = (uint8_t)(date & 0xFF);      
+    usb_send_pack(TEST_MCU_FW_DATE_CHECK,dev_send_buf);
+    break;
+
+  case TEST_LLD_FW_DATE_CHECK:
+    hlld_send_pack(HLLD_ADD, HLLD_FW_DATE,0, 0);
+    break;
+
+  case event_Developer_MAIN_VER: // 버전 역순 표시 Blot2_Easy와 구조통일
+    parse_version_string(DEVELOPER_MAIN_VER, dev_send_buf);
+    usb_send_pack(event_Developer_MAIN_VER,dev_send_buf);
+    break;
+    
+  case event_Developer_LLD_VER: // 버전 역순 표시 Blot2_Easy와 구조통일
+    hlld_send_pack(HLLD_ADD, HLLD_DEVELOPER_VER_H,0, 0); 
+    hlld_send_pack(HLLD_ADD, HLLD_DEVELOPER_VER_L,0, 0);
+    break;
+
+  case eventUSBreset:
+    HAL_GPIO_WritePin(USB5V_OnOff_GPIO_Port,USB5V_OnOff_Pin,GPIO_PIN_RESET);
+    HAL_Delay(500);
+    HAL_GPIO_WritePin(USB5V_OnOff_GPIO_Port,USB5V_OnOff_Pin,GPIO_PIN_SET);
+    HAL_Delay(500);
+    break;
+
+
   default: break;
   }
   return event;

@@ -25,7 +25,6 @@ build adc.pbi : index adc.xcl
 build C3000_SYRINGE.pbi : index C3000_SYRINGE.xcl
 build cam_led.pbi : index cam_led.xcl
 build cntrl.pbi : index cntrl.xcl
-build EDB2000_STEPMOTOR.pbi : index EDB2000_STEPMOTOR.xcl
 build eeprom_ctrl.pbi : index eeprom_ctrl.xcl
 build error.pbi : index error.xcl
 build event.pbi : index event.xcl
@@ -37,12 +36,12 @@ build main.pbi : index main.xcl
 build Max5500.pbi : index Max5500.xcl
 build MG90_SERVOMOTOR.pbi : index MG90_SERVOMOTOR.xcl
 build pump.pbi : index pump.xcl
-build Robot.pbi : index Robot.xcl
 build SE655_Barcode.pbi : index SE655_Barcode.xcl
 build shake.pbi : index shake.xcl
 build sq.pbi : index sq.xcl
 build stepping.pbi : index stepping.xcl
-build stepping_ctrl.pbi : index stepping_ctrl.xcl
+build stepping_edb_ctrl.pbi : index stepping_edb_ctrl.xcl
+build stepping_leadshine_ctrl.pbi : index stepping_leadshine_ctrl.xcl
 build stm32f1xx_hal_msp.pbi : index stm32f1xx_hal_msp.xcl
 build stm32f1xx_it.pbi : index stm32f1xx_it.xcl
 build sys_func.pbi : index sys_func.xcl
@@ -68,13 +67,13 @@ build stm32f1xx_hal_tim.pbi : index stm32f1xx_hal_tim.xcl
 build stm32f1xx_hal_tim_ex.pbi : index stm32f1xx_hal_tim_ex.xcl
 build stm32f1xx_hal_uart.pbi : index stm32f1xx_hal_uart.xcl
 build uart.pbi : index uart.xcl
-build KBlot_supreme_I_part0.pbi : link 17HS3410_Dspin.pbi adc.pbi C3000_SYRINGE.pbi cam_led.pbi cntrl.pbi EDB2000_STEPMOTOR.pbi eeprom_ctrl.pbi
-build KBlot_supreme_I_part1.pbi : link error.pbi event.pbi hlld.pbi hs_Common_Utill.pbi hsAT24_EEPROM.pbi key_polling.pbi main.pbi
-build KBlot_supreme_I_part2.pbi : link Max5500.pbi MG90_SERVOMOTOR.pbi pump.pbi Robot.pbi SE655_Barcode.pbi shake.pbi sq.pbi
-build KBlot_supreme_I_part3.pbi : link stepping.pbi stepping_ctrl.pbi stm32f1xx_hal_msp.pbi stm32f1xx_it.pbi sys_func.pbi timer.pbi uart_pc.pbi
-build KBlot_supreme_I_part4.pbi : link system_stm32f1xx.pbi stm32f1xx_hal.pbi stm32f1xx_hal_adc.pbi stm32f1xx_hal_adc_ex.pbi stm32f1xx_hal_cortex.pbi stm32f1xx_hal_dma.pbi stm32f1xx_hal_flash.pbi
-build KBlot_supreme_I_part5.pbi : link stm32f1xx_hal_flash_ex.pbi stm32f1xx_hal_gpio.pbi stm32f1xx_hal_gpio_ex.pbi stm32f1xx_hal_i2c.pbi stm32f1xx_hal_pwr.pbi stm32f1xx_hal_rcc.pbi stm32f1xx_hal_rcc_ex.pbi
-build KBlot_supreme_I_part6.pbi : link stm32f1xx_hal_spi.pbi stm32f1xx_hal_spi_ex.pbi stm32f1xx_hal_tim.pbi stm32f1xx_hal_tim_ex.pbi stm32f1xx_hal_uart.pbi uart.pbi
+build KBlot_supreme_I_part0.pbi : link 17HS3410_Dspin.pbi adc.pbi C3000_SYRINGE.pbi cam_led.pbi cntrl.pbi eeprom_ctrl.pbi error.pbi
+build KBlot_supreme_I_part1.pbi : link event.pbi hlld.pbi hs_Common_Utill.pbi hsAT24_EEPROM.pbi key_polling.pbi main.pbi Max5500.pbi
+build KBlot_supreme_I_part2.pbi : link MG90_SERVOMOTOR.pbi pump.pbi SE655_Barcode.pbi shake.pbi sq.pbi stepping.pbi stepping_edb_ctrl.pbi
+build KBlot_supreme_I_part3.pbi : link stepping_leadshine_ctrl.pbi stm32f1xx_hal_msp.pbi stm32f1xx_it.pbi sys_func.pbi timer.pbi uart_pc.pbi system_stm32f1xx.pbi
+build KBlot_supreme_I_part4.pbi : link stm32f1xx_hal.pbi stm32f1xx_hal_adc.pbi stm32f1xx_hal_adc_ex.pbi stm32f1xx_hal_cortex.pbi stm32f1xx_hal_dma.pbi stm32f1xx_hal_flash.pbi stm32f1xx_hal_flash_ex.pbi
+build KBlot_supreme_I_part5.pbi : link stm32f1xx_hal_gpio.pbi stm32f1xx_hal_gpio_ex.pbi stm32f1xx_hal_i2c.pbi stm32f1xx_hal_pwr.pbi stm32f1xx_hal_rcc.pbi stm32f1xx_hal_rcc_ex.pbi stm32f1xx_hal_spi.pbi
+build KBlot_supreme_I_part6.pbi : link stm32f1xx_hal_spi_ex.pbi stm32f1xx_hal_tim.pbi stm32f1xx_hal_tim_ex.pbi stm32f1xx_hal_uart.pbi uart.pbi
 build KBlot_supreme_I.pbd : link KBlot_supreme_I_part0.pbi KBlot_supreme_I_part1.pbi KBlot_supreme_I_part2.pbi KBlot_supreme_I_part3.pbi KBlot_supreme_I_part4.pbi KBlot_supreme_I_part5.pbi KBlot_supreme_I_part6.pbi
 build KBlot_supreme_I.pbw : browsedata KBlot_supreme_I.pbd
 

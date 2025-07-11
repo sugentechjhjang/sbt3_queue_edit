@@ -7,18 +7,20 @@
 #define HLLD_CLLD_RES  0x01
 #define HLLD_PLLD_RUN_MINMAX  0x02
 #define HLLD_PLLD_RUN 0x03
-
 #define HLLD_CLLD_RUN  0x05
 #define HLLD_CLLD_VOL  0x06
 #define HLLD_PLLD_STREAM  0x07
 #define HLLD_PLLD_GET_SENS  0x08
 #define HLLD_PLLD_SLOP_CMD  0x09
 #define HLLD_FW_DATE  0x0A
+#define HLLD_PLLD_INDEX_SET 0x0B
 #define HLLD_PLLD_RESULT  0x0C
 #define HLLD_PLLD_SLOP_RESULT  0x0D
 #define HLLD_CLLD_INIT  0x0E
-#define HLLD_PLLD_INDEX_SET 0x0F
-
+#define HLLD_SYSTEM_RESET 0x0F
+#define HLLD_DEVELOPER_VER_H 0x10
+#define HLLD_DEVELOPER_VER_L 0x11
+#define HLLD_CLLD_VALUE_SET 0x12
 
 
 
@@ -77,6 +79,7 @@ extern enum lld_func lld_fc;
   int16_t max_std;
   int16_t slop_min_std;
   int16_t slop_max_std;
+  int16_t clld_value_set;
  };
 #pragma pack(pop)
  

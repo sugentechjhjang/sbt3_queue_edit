@@ -85,6 +85,8 @@ void sevo_stop() //SERVO STOP
  HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL_1);
 }
 
+bool servo_move_flag = false;
+
 void servo_mv(uint16_t pos) //SERVO MOVE(without overcurrent detecting)
 {
  // timer_intrrupt_stop();
@@ -95,6 +97,7 @@ void servo_mv(uint16_t pos) //SERVO MOVE(without overcurrent detecting)
   HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1); 
   set_timer_(eventAspTimeOut,1200,0); 
+  servo_move_flag = true;
 }
 
 int32_t bath_xpos_temp=0;
@@ -127,14 +130,22 @@ event execute_servo_ctrl(event event)
     break;
   case hseAspHomeSave:
     asp_mt.up_pos=merge_32bit(asp_mt.up_pos,usb_data_buf);
-    //servo_param_write();
     servo_param_write2();
-    usb_send_pack(hseAspHomeSave,usb_data_buf);
+    servo_param_read2();
+    sort_8bit(asp_mt.up_pos,dev_send_buf);
+    usb_send_pack(hseAspHomeSave, dev_send_buf);
     break;    
+  case hseAspUpPosSave:
+    asp_mt.up_pos=merge_32bit(asp_mt.up_pos,usb_data_buf);
+    servo_param_write2();
+    servo_param_read2();
+    sort_8bit(asp_mt.up_pos,dev_send_buf);
+    usb_send_pack(hseAspUpPosSave, dev_send_buf);
+    break;
   case hseAspHomeRead:
   case hseAspUpPosRead:
    // servo_param_read();
-     servo_param_read2();
+    servo_param_read2();
     sort_8bit(asp_mt.up_pos,dev_send_buf);
     usb_send_pack(hseAspHomeRead, dev_send_buf);
     break;
@@ -142,10 +153,11 @@ event execute_servo_ctrl(event event)
   case hseAspDownPosSet:
     asp_mt.down_pos=merge_32bit(asp_mt.down_pos,usb_data_buf);
     servo_mv(asp_mt.down_pos);
-    usb_send_pack(hseAspBathZSet,usb_data_buf);;
+    usb_send_pack(hseAspBathZSet,usb_data_buf);
     break;
   case hseAspBathZSave:
-    usb_send_pack(hseAspBathZSave,usb_data_buf);
+    asp_mt.down_pos=merge_32bit(asp_mt.down_pos,usb_data_buf);
+    usb_send_pack(hseAspDownPosSave,usb_data_buf);
     break;
   case hseAspDownPosSave:
     asp_mt.down_pos=merge_32bit(asp_mt.down_pos,usb_data_buf);
@@ -177,7 +189,9 @@ event execute_servo_ctrl(event event)
     xmt_ctrl.bath_pos= asp_mt.asp_bath_x;
     servo_param_write2();
     xmt_param_write();
-    usb_send_pack(hseAspBathXSave,usb_data_buf);
+    servo_param_read2();
+    sort_8bit(asp_mt.asp_bath_x,dev_send_buf);
+    usb_send_pack(hseAspBathXSave, dev_send_buf);
     break;
   case hseAspBathXRead:
    // servo_param_read();
@@ -194,8 +208,10 @@ event execute_servo_ctrl(event event)
   case hseDispBathYSave:
     asp_mt.disp_bath_y=merge_32bit(asp_mt.disp_bath_y,usb_data_buf);
     servo_param_write2();
-    usb_send_pack(hseDispBathYSave,usb_data_buf);
-    break;       
+    servo_param_read2();
+    sort_8bit(asp_mt.disp_bath_y,dev_send_buf);
+    usb_send_pack(hseDispBathYSave, dev_send_buf);
+    break;         
   case hseDispBathYRead:
     //servo_param_read();
     servo_param_read2();
@@ -213,8 +229,10 @@ event execute_servo_ctrl(event event)
     asp_mt.asp_tray_x=merge_32bit(asp_mt.asp_tray_x,usb_data_buf);
     //servo_param_write();
     servo_param_write2();
-    usb_send_pack(hseAspTrayXSave,usb_data_buf);
-    break;    
+    servo_param_read2();
+    sort_8bit(asp_mt.asp_tray_x,dev_send_buf);
+    usb_send_pack(hseAspTrayXSave, dev_send_buf);
+    break;   
   case hseAspTrayXRead:
     //servo_param_read();
      servo_param_read2();
@@ -233,8 +251,11 @@ event execute_servo_ctrl(event event)
     asp_mt.asp_tray_z=merge_32bit(asp_mt.asp_tray_z,usb_data_buf);
     //servo_param_write();
     servo_param_write2();
-    usb_send_pack(hseAspTrayZSave,usb_data_buf);
-    break;    
+    servo_param_read2();
+    sort_8bit(asp_mt.asp_tray_z,dev_send_buf);
+    usb_send_pack(hseAspTrayZSave, dev_send_buf);
+    break;
+  
   case hseAspTrayZRead:
    // servo_param_read();
      servo_param_read2();
@@ -252,8 +273,10 @@ event execute_servo_ctrl(event event)
     asp_mt.disp_tray_y=merge_32bit(asp_mt.disp_tray_y,usb_data_buf);
    // servo_param_write();
     servo_param_write2();
-    usb_send_pack(hseDispTrayYSave,usb_data_buf);
-    break;    
+    servo_param_read2();
+    sort_8bit(asp_mt.disp_tray_y,dev_send_buf);
+    usb_send_pack(hseDispTrayYSave, dev_send_buf);
+    break;
   case hseDispTrayYRead:
     //servo_param_read();
     servo_param_read2();

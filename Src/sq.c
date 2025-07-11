@@ -10,7 +10,6 @@ int pr_time_sec=0;
 int base_time=0;
 
 byte manual_check_state=0;
-bool Air_temp_2min_flag = FALSE;
 bool aging_mode=false;
 bool rollback_flag=true;
 
@@ -210,7 +209,6 @@ event sq_ctrl(event event)
     switch(full_pr)
     {
     case Prime:
-      com_time_out_set(EN);//Retry code
       disp_sgl.disp_pump_num=prime.disp_pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff);
       dw_prime_vol=prime.disp_vol=(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff)*1000;
       if(((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff)==PRIME_DW){
@@ -226,14 +224,12 @@ event sq_ctrl(event event)
         set_timer_(eventPrimeIinit,200,0);
       break;
     case Prime1:
-      com_time_out_set(EN);//Retry code
       disp_sgl.disp_pump_num=prime.disp_pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff);
       disp_sgl.disp_pump_num|=prime.disp_pump_num|=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>16)&0x000000ff);
       prime.disp_vol=(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff)*1000;
       set_timer_(eventPrimeIinit,200,0);
       break;
     case Prime2:
-      com_time_out_set(EN);//Retry code
       disp_sgl.disp_pump_num=prime.disp_pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>28)&0x0000000f);
       disp_sgl.disp_pump_num|=prime.disp_pump_num|=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x0000000f);
       disp_sgl.disp_pump_num|=prime.disp_pump_num|=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>16)&0x000000ff);
@@ -241,7 +237,6 @@ event sq_ctrl(event event)
       set_timer_(eventPrimeIinit,200,0);
       break;
     case DispAsp:
-      com_time_out_set(EN);//Retry code
       HAL_GPIO_WritePin(M_ASP_DSP_GPIO_Port,M_ASP_DSP_Pin,GPIO_PIN_RESET);
       diasp.pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff);
       probe_disp.total_strip=diasp.total_strip=full_total_strip;
@@ -255,7 +250,6 @@ event sq_ctrl(event event)
       }
       break;
     case DispAsp2:
-      com_time_out_set(EN);//Retry code
       HAL_GPIO_WritePin(M_ASP_DSP_GPIO_Port,M_ASP_DSP_Pin,GPIO_PIN_RESET);
       diasp.pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff);
       diasp.pump_num|=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>16)&0x000000ff);
@@ -268,7 +262,6 @@ event sq_ctrl(event event)
       set_timer_(eventDspAspIinit,200,0);
       break;
     case DispAsp3:
-      com_time_out_set(EN);//Retry code
       HAL_GPIO_WritePin(M_ASP_DSP_GPIO_Port,M_ASP_DSP_Pin,GPIO_PIN_RESET);
       if((smp_strip[0].penel==Inhalant)||(smp_strip[0].penel==Inhalant_CON)){
         diasp.pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>28)&0x0000000f);
@@ -286,7 +279,6 @@ event sq_ctrl(event event)
       set_timer_(eventDspAspIinit,200,0);
       break;
     case Disp:
-      com_time_out_set(EN);//Retry code
       HAL_GPIO_WritePin(M_ASP_DSP_GPIO_Port,M_ASP_DSP_Pin,GPIO_PIN_RESET);
       disp_sgl.disp_pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff);
       //disp_sgl.disp_vol=(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff);
@@ -295,7 +287,6 @@ event sq_ctrl(event event)
       set_timer_(eventDspIinit,200,0);
       break;
     case Disp2:
-      com_time_out_set(EN);//Retry code
       HAL_GPIO_WritePin(M_ASP_DSP_GPIO_Port,M_ASP_DSP_Pin,GPIO_PIN_RESET);
       disp_sgl.disp_pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff);
       disp_sgl.disp_pump_num|=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>16)&0x000000ff);
@@ -306,14 +297,12 @@ event sq_ctrl(event event)
       set_timer_(eventDspIinit,200,0);
       break;
     case Asp:
-      com_time_out_set(EN);//Retry code
       HAL_GPIO_WritePin(M_ASP_DSP_GPIO_Port,M_ASP_DSP_Pin,GPIO_PIN_RESET);
       asp_re_cunt=((sq[full_step_cnt].dword[full_pr_cnt]>>16)&0x0000000f)-1;
       asp.total_strip=full_total_strip;
       set_timer_(eventAspIinit,200,0);
       break;
     case Incubation:
-      com_time_out_set(EN);//Retry code
       HAL_GPIO_WritePin(M_INCUBATION_GPIO_Port,M_INCUBATION_Pin,GPIO_PIN_RESET);
       base_time = (sq[full_step_cnt].dword[full_pr_cnt] & 0x0000ffff) * 60;
       strip_num_shake_time(); //edit incubation
@@ -321,14 +310,12 @@ event sq_ctrl(event event)
       shake_run();
       break;
     case Incubation2:  
-      com_time_out_set(EN);//Retry code   
       HAL_GPIO_WritePin(M_INCUBATION_GPIO_Port,M_INCUBATION_Pin,GPIO_PIN_RESET);
       shk_pram.run_time_s = (sq[full_step_cnt].dword[full_pr_cnt] & 0x0000ffff) * 60;
       sk_state=stShkrStby;
       shake_run();
       break;
     case Incubation_Ws:
-      com_time_out_set(EN);//Retry code
       step_time_cal(full_step_cnt);
       HAL_GPIO_WritePin(M_INCUBATION_GPIO_Port,M_INCUBATION_Pin,GPIO_PIN_RESET);
       base_time = (sq[full_step_cnt].dword[full_pr_cnt] & 0x0000ffff) * 60;
@@ -344,7 +331,6 @@ event sq_ctrl(event event)
       break;
 
     case Incubation_Ws2:
-      com_time_out_set(EN);//Retry code
       step_time_cal(full_step_cnt);
       HAL_GPIO_WritePin(M_INCUBATION_GPIO_Port,M_INCUBATION_Pin,GPIO_PIN_RESET);
       shk_pram.run_time_s = (sq[full_step_cnt].dword[full_pr_cnt] & 0x0000ffff) * 60;
@@ -358,7 +344,6 @@ event sq_ctrl(event event)
       break;
 
     case Sample_LLD:
-      com_time_out_set(EN);//Retry code
       auto_prime_flg=false;
       smp_prime_oper_flg=false;
       sq_smp_strp_mach_cnt=0;
@@ -392,7 +377,6 @@ event sq_ctrl(event event)
       usb_send_pack(eventCtAndPt,usb_data_buf);
       break;
     case Dry:
-      com_time_out_set(EN);//Retry code
       HAL_GPIO_WritePin(M_DRY_GPIO_Port,M_DRY_Pin,GPIO_PIN_RESET);
       HAL_GPIO_WritePin(FAN_L_GPIO_Port,FAN_L_Pin,GPIO_PIN_RESET);
       dwHsSW_Delay_ms(1000);
@@ -411,7 +395,6 @@ event sq_ctrl(event event)
         New_Pump_RollBack(rbk_pump_num,rbk_time);
       }
       rollback_flag = false;
-      com_time_out_set(EN);//Retry code
       set_timer_(eventSqNext,rbk_time+500,0); 
       break;
     case RollBack1:
@@ -423,7 +406,6 @@ event sq_ctrl(event event)
         New_Pump_RollBack(rbk_pump_num,rbk_time);
       }
       rollback_flag = false;
-      com_time_out_set(EN);//Retry code
       set_timer_(eventSqNext,rbk_time+500,0); 
       break;
     case RollBack2:
@@ -436,7 +418,6 @@ event sq_ctrl(event event)
         New_Pump_RollBack(rbk_pump_num,rbk_time);
       }
       rollback_flag = false;
-      com_time_out_set(EN);//Retry code
       set_timer_(eventSqNext,rbk_time+500,0); 
       break;
     case Analy:
@@ -498,7 +479,6 @@ event sq_ctrl(event event)
     usb_send_pack(eventCtAndPt,usb_data_buf);
     break;
   case eventSqSamplNumMach:
-    com_time_out_set(DISEN);
     sq_retry_count = 0;
     if(sq_smp_strp_mach_cnt<full_total_strip-1){
       sq_smp_strp_mach_cnt++;
@@ -539,7 +519,13 @@ event sq_ctrl(event event)
       pr_time_sec=0;
       beep(80, 2);
       smpl_pr.sample_num=0;
-      stmt_abs_move(ADDR_MOTOR_X,0);
+      #ifdef Motor_EDB
+        stmt_abs_move(ADDR_MOTOR_X,0);
+      #endif
+      
+      #ifdef Motor_LEAD
+        stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos);
+      #endif
       if((full_pr==Sample_LLD)&&(full_step==Sample)){
         smp_retime_pr_cnt=full_pr_cnt;
         for(;;){
@@ -580,7 +566,6 @@ event sq_ctrl(event event)
     usb_send_pack(eventSqManualStart,dev_send_buf);
     break;
   case eventSqNext:
-    com_time_out_set(DISEN);
     sq_retry_count = 0;
     rollback_flag = true;
     if(state==stReady){
@@ -817,7 +802,6 @@ event sq_ctrl(event event)
           dev_send_buf[3]=(pr_time_min-pr_time_sec)/60;
           usb_send_pack(eventCrrtTotalTime,dev_send_buf);
 
-          Air_temp_2min_flag = TRUE;
           set_timer_(eventAirTempRes,5,0);
           state_time_min=120;
         }

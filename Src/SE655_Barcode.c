@@ -304,6 +304,8 @@ void barcode_off()
 }
 
 bool bar_indx_oper_flg= false;
+bool barcode_flag = false;
+bool bar_index_num_flag = false;
 
  event execute_barcode_ctrl(event event)
 {
@@ -322,9 +324,21 @@ bool bar_indx_oper_flg= false;
     //index+=1;
     //barcode_rx_data_buffer[index]='\n';
     memset(dev_send_buf,0,sizeof(dev_send_buf));
-    bar_pm.spl_num--;
-    dev_send_buf[1]=bar_pr.sample_num-bar_pm.spl_num;
+
+    if(bar_index_num_flag == false)
+    {  
+      bar_pm.spl_num--;
+      dev_send_buf[1]=bar_pr.sample_num-bar_pm.spl_num;
+    }  
+    
+    else if(bar_index_num_flag == true)
+    {
+      dev_send_buf[1]=bar_pm.spl_num;
+      bar_index_num_flag = false; 
+    }
+
     dev_send_buf[3]=index;
+
     usb_send_pack(hseBarDataStart, dev_send_buf);
     send_test(&barcode_rx_data_buffer[1], index);
     memset(dev_send_buf,0,sizeof(dev_send_buf));
@@ -350,6 +364,7 @@ bool bar_indx_oper_flg= false;
     usb_send_pack(hseBarPage, 0);
     break;
   case hseBarRead:
+    barcode_flag = true;
     bar_data_checksum=0;
     bar_pr.sample_num=bar_pm.spl_num=usb_data_buf[3];
     sort_8bit(bar_pm.spl_num,dev_send_buf);
@@ -368,8 +383,9 @@ bool bar_indx_oper_flg= false;
   case hseBarFirstPosSave:
     bar_pm.start_pos=merge_32bit( bar_pm.start_pos,usb_data_buf);
     bar_param_write();
+    bar_param_read();
+    sort_8bit(bar_pm.start_pos,dev_send_buf);
     usb_send_pack(hseBarFirstPosSave, dev_send_buf);
-    //set_timer_(eventQcTriger,3000,0);
     break;    
   case hseBarFirstPosRead:
     bar_param_read();
@@ -387,8 +403,9 @@ bool bar_indx_oper_flg= false;
   case hseBarLastPosSave:
     bar_pm.end_pos=merge_32bit( bar_pm.end_pos,usb_data_buf);
     bar_param_write();
+    bar_param_read();
+    sort_8bit(bar_pm.end_pos,dev_send_buf);
     usb_send_pack(hseBarLastPosSave, dev_send_buf);
-    //set_timer_(eventQcTriger,5000,0);
     break;    
   case hseBarLastPosRead:
     bar_param_read();
@@ -400,7 +417,7 @@ bool bar_indx_oper_flg= false;
   case hseBarDataEnd:
     break;
   case eventQcTriger:
-        HAL_GPIO_WritePin(BAR_TRIG_GPIO_Port, BAR_TRIG_Pin, GPIO_PIN_SET); 
+    HAL_GPIO_WritePin(BAR_TRIG_GPIO_Port, BAR_TRIG_Pin, GPIO_PIN_SET); 
     break;
   case hseBarRacGapSet:
     bar_pm.start_pos2=merge_32bit( bar_pm.start_pos2,usb_data_buf);
@@ -413,8 +430,9 @@ bool bar_indx_oper_flg= false;
   case hseBarRacGapSave:
     bar_pm.start_pos2=merge_32bit( bar_pm.start_pos2,usb_data_buf);
     bar_param_write();
+    bar_param_read();
+    sort_8bit(bar_pm.start_pos2,dev_send_buf);
     usb_send_pack(hseBarRacGapSave, dev_send_buf);
-    //set_timer_(eventQcTriger,5000,0);
     break;    
   case hseBarRacGapRead:
     bar_param_read();
@@ -430,7 +448,9 @@ bool bar_indx_oper_flg= false;
   case hseQrTrayPosSave:
     bar_pm.qr_tray_pos=merge_32bit( bar_pm.qr_tray_pos,usb_data_buf);
     bar_param_write();
-    usb_send_pack(hseQrTrayPosSave, usb_data_buf);
+    bar_param_read();
+    sort_8bit(bar_pm.qr_tray_pos,dev_send_buf);
+    usb_send_pack(hseQrTrayPosSave, dev_send_buf);
     break;    
   case hseQrTrayPosRead:
     bar_param_read();
@@ -446,8 +466,7 @@ bool bar_indx_oper_flg= false;
     bar_pr.sample_num=bar_pm.spl_num=1;
     bar_pm.spl_num=usb_data_buf[3];
     bar_indx_oper_flg=true;
-    //    bar_param_read();
-    //    sort_8bit(bar_pm.start_pos2,dev_send_buf);
+    bar_index_num_flag = true;
     usb_send_pack(hseBarNumbRead, dev_send_buf);
     give_event(eventBarPr,0);
     break;

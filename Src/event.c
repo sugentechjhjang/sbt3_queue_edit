@@ -4,12 +4,14 @@
 
 
 
-struct
+/*struct
 {
   uint16_t head;
   uint16_t tail;
   uint16_t queue[EVENT_QUEUE_LENGTH];
-}events={0,0};
+}events={0,0};*/
+
+EventQueue events = {0, 0};
 
 void init_event()
 {

@@ -189,7 +189,6 @@ byte shake_home()
 int32_t run_time_cnt=0;
 byte shake_run()
 {
-  com_time_out_set(DISEN);
   sq_retry_count = 0;
   if(sk_state==stShkrStby){
     run_time_cnt=shk_pram.run_time_s;
@@ -322,7 +321,9 @@ event execute_shake_ctrl(event event)
   case hseTraySpeedSave:
     shk_pram.speed_rpm=merge_32bit(shk_pram.speed_rpm,usb_data_buf);
     shk_param_write();
-    usb_send_pack(hseTraySpeedSave, usb_data_buf);
+    shk_param_read();
+    sort_8bit(shk_pram.speed_rpm,dev_send_buf);
+    usb_send_pack(hseTraySpeedSave, dev_send_buf);
     break;    
   case hseTraySpeedRead:
     shk_param_read();
@@ -340,7 +341,9 @@ event execute_shake_ctrl(event event)
   case hseTrayAccelSave:
     shk_pram.accel_rpm=merge_32bit(shk_pram.accel_rpm,usb_data_buf);
     shk_param_write();
-    usb_send_pack(hseTrayAccelSave, usb_data_buf);
+    shk_param_read();
+    sort_8bit(shk_pram.accel_rpm,dev_send_buf);
+    usb_send_pack(hseTrayAccelSave, dev_send_buf);
     break;    
   case hseTrayAccelRead:
     shk_param_read();
@@ -362,7 +365,9 @@ event execute_shake_ctrl(event event)
   case hseTrayHorizPosSave:
     shk_pram.hoiz_pos=merge_32bit(shk_pram.hoiz_pos,usb_data_buf);
     shk_param_write();
-    usb_send_pack(hseTrayHorizPosSave,usb_data_buf);
+    shk_param_read();
+    sort_8bit(shk_pram.hoiz_pos,dev_send_buf);
+    usb_send_pack(hseTrayHorizPosSave, dev_send_buf);
     break;
   case hseTrayHorizPosRead:
     shk_param_read();
@@ -378,7 +383,9 @@ event execute_shake_ctrl(event event)
   case hseTrayDAspPosSave:
     shk_pram.dasp_pos=merge_32bit( shk_pram.dasp_pos,usb_data_buf);
     shk_param_write();
-    usb_send_pack(hseTrayDAspPosSave, usb_data_buf);
+    shk_param_read();
+    sort_8bit(shk_pram.dasp_pos,dev_send_buf);
+    usb_send_pack(hseTrayDAspPosSave, dev_send_buf);
     break;    
   case hseTrayDAspPosRead:
     shk_param_read();
@@ -394,7 +401,9 @@ event execute_shake_ctrl(event event)
    case hseTrayAlyPosSave:
     shk_pram.aly_pos=merge_32bit( shk_pram.aly_pos,usb_data_buf);
     shk_param_write();
-    usb_send_pack(hseTrayAlyPosSave, usb_data_buf);
+    shk_param_read();
+    sort_8bit(shk_pram.aly_pos,dev_send_buf);
+    usb_send_pack(hseTrayAlyPosSave, dev_send_buf);
     break;   
   case hseTrayAlyPosRead:
     shk_param_read();
@@ -410,7 +419,9 @@ event execute_shake_ctrl(event event)
   case hseTrayDryPosSave:
     shk_pram.dry_pos=merge_32bit( shk_pram.dry_pos,usb_data_buf);
     shk_param_write();
-    usb_send_pack(hseTrayDryPosSave, usb_data_buf);
+    shk_param_read();
+    sort_8bit(shk_pram.dry_pos,dev_send_buf);
+    usb_send_pack(hseTrayDryPosSave, dev_send_buf);
     break;    
   case hseTrayDryPosRead:
     shk_param_read();
@@ -426,7 +437,9 @@ event execute_shake_ctrl(event event)
   case hseTrayAngUpPosSave:
     shk_pram.up_ang_pos=merge_32bit( shk_pram.up_ang_pos,usb_data_buf);
     shk_param_write();
-    usb_send_pack(hseTrayAngUpPosSave, usb_data_buf);
+    shk_param_read();
+    sort_8bit(shk_pram.up_ang_pos,dev_send_buf);
+    usb_send_pack(hseTrayAngUpPosSave, dev_send_buf);
     break;    
   case hseTrayAngUpPosRead:
     shk_param_read();
@@ -442,7 +455,9 @@ event execute_shake_ctrl(event event)
   case hseTrayAngDownPosSave:
     shk_pram.down_ang_pos=merge_32bit( shk_pram.down_ang_pos,usb_data_buf);
     shk_param_write();
-    usb_send_pack(hseTrayAngDownPosSave, usb_data_buf);
+    shk_param_read();
+    sort_8bit(shk_pram.down_ang_pos,dev_send_buf);
+    usb_send_pack(hseTrayAngDownPosSave, dev_send_buf);
     break;    
   case hseTrayAngDownPosRead:
     shk_param_read();

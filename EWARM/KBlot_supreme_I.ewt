@@ -1446,9 +1446,6 @@
                 <name>$PROJ_DIR$\..\Src\cntrl.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\Src\EDB2000_STEPMOTOR.c</name>
-            </file>
-            <file>
                 <name>$PROJ_DIR$\..\Src\eeprom_ctrl.c</name>
             </file>
             <file>
@@ -1482,9 +1479,6 @@
                 <name>$PROJ_DIR$\..\Src\pump.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\Src\Robot.c</name>
-            </file>
-            <file>
                 <name>$PROJ_DIR$\..\Src\SE655_Barcode.c</name>
             </file>
             <file>
@@ -1497,7 +1491,10 @@
                 <name>$PROJ_DIR$\..\Src\stepping.c</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\Src\stepping_ctrl.c</name>
+                <name>$PROJ_DIR$\..\Src\stepping_edb_ctrl.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\Src\stepping_leadshine_ctrl.c</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\Src\stm32f1xx_hal_msp.c</name>

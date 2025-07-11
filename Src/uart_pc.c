@@ -16,6 +16,12 @@ extern DMA_HandleTypeDef hdma_usart1_tx;
 #define PC_STX 0x5B
 #define PC_ETX 0x5D
 
+#define hsPC_TO_DEV_QUE_SZ      64
+
+#define hsPC_TO_DEV_QUE_OK	0
+#define hsPC_TO_DEV_QUE_FULL	1
+#define hsPC_TO_DEV_QUE_EMPTY	2
+
 byte pc_chr=0;
 byte pc_escap=0;
 byte usb_currnt_rec_buf_ind=0;
@@ -27,6 +33,12 @@ byte pc_checksum=0;
 byte usb_receive_bufs[300]={0,};
 uint16_t usb_checksum,usb_checksum_b;
 uint16_t usb_checksums=0xffff;
+
+bool isEchoEnabled = false;
+
+int32_t hsDevToPC_DataSendQueHandle(enum cntrl_event cmd, uint8_t *data);
+int32_t hsDevToPC_NoConvertSendQueHandle(uint8_t *p_uData, uint32_t dwLen);
+
 /* USART1 init function */
 void MX_USART1_UART_Init(void)
 {
@@ -45,20 +57,147 @@ void MX_USART1_UART_Init(void)
 
 }
 
-extern void UART_EDB_RxCpltCallback(UART_HandleTypeDef *);
+extern void UART_StepMotor_RxCpltCallback(UART_HandleTypeDef *);
 extern int32_t hsPC_ToDev_PutQue(uint8_t);
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{      
+HAL_StatusTypeDef UART1_ReInit(void)
+{
+    HAL_StatusTypeDef status;
+
+    status = HAL_UART_DeInit(&huart1);
+    if (status != HAL_OK)
+    {
+        // UART 비활성화 실패 처리
+        return status;
+    }
+
+    // UART5 다시 초기화 (Init)
+    status = HAL_UART_Init(&huart1);
+    if (status != HAL_OK)
+    {
+        // UART 초기화 실패 처리
+        return status;
+    }
+
+    // 초기화 성공
+    HAL_UART_Receive_IT(&huart1, &pc_chr, 1);
+    return HAL_OK;
+}
+
+uint8_t echoBuf[ECHO_BUF_SIZE];
+//uint8_t ACKBuf[9];
+uint8_t length_backup[2];
+uint16_t echoIdx = 0;
+uint8_t fwdnMatchIdx = 0;
+uint16_t expectedTotalLength = 0;
+uint16_t dataLen = 0;
+bool download_packet_receive = false;
+bool PCtoSub = false;
+
+bool download_start_flag= false;
+
+
+uint8_t calculate_FW_checksum(uint8_t *buf)
+{
+    uint32_t sum = 0;
+    for (int i = FW_Data_buf; i <= FW_Data_buf + dataLen; i++) {
+        sum += buf[i];
+    }
+    return (uint8_t)(sum % 256);
+}
+
+void Handle_GUI_LLD_FWDownloadStream(uint8_t data)
+{
+    const char *header = "FWDN";
+
+    if (!isEchoEnabled) 
+    {
+        if (data == header[fwdnMatchIdx]) 
+        {
+            echoBuf[fwdnMatchIdx++] = data;
+            if (fwdnMatchIdx > PACKET_START3) 
+            {
+                isEchoEnabled = true;
+                echoIdx = PACKET_LENGTH_H;
+            }
+        } 
+        else 
+        {
+            fwdnMatchIdx = 0;
+            echoIdx = 0;
+        }
+    }
+
+    else if(isEchoEnabled)
+    {
+        if (echoIdx < ECHO_BUF_SIZE)
+        {
+            echoBuf[echoIdx++] = data;
+        }
+
+        if (echoIdx == PACKET_FW_DATA_START) 
+        {
+            dataLen = echoBuf[PACKET_LENGTH_H] << 8 | (echoBuf[PACKET_LENGTH_L]);
+            expectedTotalLength = 4 + 2 + 1 + dataLen + 1;//FWDN(4) + Length(2) + Cmd(1) + Data(n) + Checksum(1)
+        }
+
+        if (expectedTotalLength > 0 && echoIdx >= expectedTotalLength) 
+        {
+
+            uint8_t expectedChecksum = calculate_FW_checksum(echoBuf);
+            uint8_t receivedChecksum = echoBuf[PACKET_CHECKSUM];
+             
+            if(expectedChecksum == receivedChecksum) 
+            {
+                PCtoSub = true;
+            }
+                   
+            echoIdx = 0;
+            isEchoEnabled = false;
+            fwdnMatchIdx = 0;
+            
+            //memset(copyBuf,0,sizeof(copyBuf));
+            //expectedTotalLength = 0;
+        }
+    }
+}
+
+
+
+
+void UART_PC_RxCpltCallback(UART_HandleTypeDef *huart)
+{
   if(huart == &huart1)
   {
-    if(hsPC_ToDev_PutQue(pc_chr))
+    int32_t dwQueCheck;
+    
+    dwQueCheck = hsPC_ToDev_PutQue(pc_chr);
+    
+    if(dwQueCheck == hsPC_TO_DEV_QUE_FULL)
     {
       //Error Code
     }
-    HAL_UART_Receive_IT(&huart1, &pc_chr, 1);
+
+    if(download_start_flag == true)
+    {
+      Handle_GUI_LLD_FWDownloadStream(pc_chr); // LLD_FW_DOWNLOAD
+    }
+    
+    
+    dwQueCheck = HAL_UART_Receive_IT(&huart1, &pc_chr, 1);
+
+    if(dwQueCheck)
+    {
+      error(errRS232,0);
+      while(1);
+    }
   }
-  UART_EDB_RxCpltCallback(huart);
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{      
+  UART_PC_RxCpltCallback(huart);
+  UART_StepMotor_RxCpltCallback(huart);
   UART_Barcode_RxCpltCallback(huart);
   UART_Syringe_RxCpltCallback(huart);
   UART_Pump_LLD_RxCpltCallback(huart);
@@ -91,20 +230,40 @@ byte usb_transmit_bufs[TRANSMIT_BUF_LENGTH];
 
 void dbg_serial(char *s)
 {
-    int32_t result = 0;
     uint8_t buffer[50]; 
     snprintf((char *)buffer, sizeof(buffer), "DEV<-%s\n", s);
-    result = hsDevToPC_NoConvertSendQueHandle(buffer, strlen((char *)buffer));
+    hsDevToPC_NoConvertSendQueHandle(buffer, strlen((char *)buffer));
 }
 
+void dbg_serial_fw_date(void)
+{
+    uint8_t buffer[50] = {0};
+    snprintf((char *)buffer, sizeof(buffer), "DEV<-MAIN_FW_DATE_" FW_YEAR FW_DATE "\n");
+    hsDevToPC_NoConvertSendQueHandle(buffer, strlen((char *)buffer));
+}
+
+void send_pw_message(char *s)
+{
+  uint8_t buffer[50] = {0}; 
+  snprintf((char *)buffer, sizeof(buffer), "%s", s);
+  hsDevToPC_NoConvertSendQueHandle(buffer, strlen((char *)buffer));
+}
+
+void send_ack_buf_as_message(uint8_t *buf, uint16_t len)
+{
+  hsDevToPC_NoConvertSendQueHandle(buf, len);
+}
+
+int parse_version_string(const char *versionStr, uint8_t out[4])
+{
+  return sscanf(versionStr, "%hhu.%hhu.%hhu.%hhu", &out[3], &out[2], &out[1], &out[0]) == 4;
+}
 
 char *pnt;
 //char *date;
 event dev_cfg_ctrl(event event)
 {
-  byte dev_send_buf[4]={0,}; 
-  uint16_t year=0,date=0;
-
+  byte dev_send_buf[4]={0}; 
 
   switch(event)
   {
@@ -119,21 +278,6 @@ event dev_cfg_ctrl(event event)
     
   case eventReserve0:
     usb_send_pack(eventReserve0,dev_send_buf);
-    break;
-
-  case TEST_MCU_FW_DATE_CHECK:
-    year = (uint16_t)atoi(FW_YEAR);
-    date = (uint16_t)atoi(FW_DATE);
-
-    dev_send_buf[0] = (uint8_t)((year >> 8) & 0xFF); 
-    dev_send_buf[1] = (uint8_t)(year & 0xFF);       
-    dev_send_buf[2] = (uint8_t)((date >> 8) & 0xFF); 
-    dev_send_buf[3] = (uint8_t)(date & 0xFF);      
-    usb_send_pack(TEST_MCU_FW_DATE_CHECK,dev_send_buf);
-    break;
-
-  case TEST_LLD_FW_DATE_CHECK:
-    hlld_send_pack(HLLD_ADD, HLLD_FW_DATE,0, 0);
     break;
     
   default: 
@@ -260,8 +404,7 @@ enum
   hsDEV_TO_PC_MAX
 };
 
-int32_t hsDevToPC_DataSendQueHandle(enum cntrl_event cmd, uint8_t *data);
-int32_t hsDevToPC_NoConvertSendQueHandle(uint8_t *p_uData, uint32_t dwLen);
+
 
 void usb_send_pack(enum cntrl_event cmd, uint8_t *data)
 {
@@ -430,12 +573,6 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 //=============================================================================
 //2024 03 12
 //------------------------------------------------------------------------------
-#define hsPC_TO_DEV_QUE_SZ      64
-
-#define hsPC_TO_DEV_QUE_OK	0
-#define hsPC_TO_DEV_QUE_FULL	1
-#define hsPC_TO_DEV_QUE_EMPTY	2
-
 
 typedef struct
 {

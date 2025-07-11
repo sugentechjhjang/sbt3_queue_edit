@@ -9,7 +9,7 @@ TIM_HandleTypeDef hWORK_TIM_Handle;
 #define TIMER0_1S_TIK 1
 #define COM_TIME_OUT 35
 
-#define LLD_TIME_OUT 35
+#define LLD_TIME_OUT 45
 #define SY_TIME_OUT  10
 
 ulong timer=TIEMR0_TIK;//timer_freq;
@@ -145,6 +145,84 @@ void tm_add(uint16_t evnt, uint time, void(*event_func)(uint16_t evnt))
         }
     error(errTMTimeOut,0);
   }
+
+void Sample_LLD_ClearEvents() {
+    uint16_t eventsToClear[] = {
+        eventSmpInit, eventSmpZinit, eventSmpMoveZCheck, eventSmpRackMove, 
+        eventSmpAbsMoveCheck, eventSmpSWSInitCheck, eventSmpCll, eventSmpCllCheck, 
+        eventSmpSWSCheck, eventSmpSygAspOper, eventSmpCllVolCheck, eventSmpProbeZHome, 
+        eventSmpStripMove, eventSmpStripDspMove, eventSmpSygDspOper, eventSmpClldRageSpeedSet,
+        eventSmpEnd, eventSmpFinalEnd, eventSmpNext,eventSmpPlldJude,
+        hsePlldJudgResultResp,hsePlldJudgSlope,hsePlldJudgResp
+    };
+
+    // 각 채널을 순차적으로 검사
+    for (int i = 0; i < channels; i++) {
+        for (int j = 0; j < sizeof(eventsToClear) / sizeof(eventsToClear[0]); j++) {
+            if (channel[i].event == eventsToClear[j]) {
+                channel[i].event = 0;       
+                channel[i].delay = 0;        
+                channel[i].event_func = NULL; 
+                break;  
+            }
+        }
+    }
+
+    for (int i = 0; i < EVENT_QUEUE_LENGTH; i++) {
+        for (int j = 0; j < sizeof(eventsToClear) / sizeof(eventsToClear[0]); j++) {
+            if (events.queue[i] == eventsToClear[j]) {
+                events.queue[i] = 0;
+                //queue[i].delay = 0;
+                //queue[i].event_func = NULL;
+                break;
+            }
+        }
+    }
+}
+
+void Sample_LLD_ClearPrimeEvents() {
+    uint16_t primeEventsToClear[] = {
+        eventSmpPrimeInit,
+        eventSmpPrimeStripMoveZCheck,
+        eventSmpPrimeBathMove,
+        eventSmpPrimeAixsCheck,
+        eventSmpPrimeStripMoveZ,
+        eventSmpPrimeSygeSet,
+        eventSmpPrimePumpOn,
+        eventSmpPrimeStructInit,
+        eventSmpPrimeSygeOper,
+        eventSmpPrimeProveSet,
+        eventSmpPrimeProveMove,
+        eventSmpPrimeBathSuck,
+        eventSmpPrimeBathInit,
+        eventSmpPrimeEnd,
+        eventSmpPrimeFinalEnd
+    };
+
+    // 채널 이벤트 초기화
+    for (int i = 0; i < channels; i++) {
+        for (int j = 0; j < sizeof(primeEventsToClear) / sizeof(primeEventsToClear[0]); j++) {
+            if (channel[i].event == primeEventsToClear[j]) {
+                channel[i].event = 0;
+                channel[i].delay = 0;
+                channel[i].event_func = NULL;
+                break;
+            }
+        }
+    }
+
+    // 이벤트 큐 초기화
+    for (int i = 0; i < EVENT_QUEUE_LENGTH; i++) {
+        for (int j = 0; j < sizeof(primeEventsToClear) / sizeof(primeEventsToClear[0]); j++) {
+            if (events.queue[i] == primeEventsToClear[j]) {
+                events.queue[i] = 0;
+                // queue[i].delay = 0;
+                // queue[i].event_func = NULL;
+                break;
+            }
+        }
+    }
+}
 
 void tm_init()
 {

@@ -44,4 +44,5 @@ struct bar_pram
 extern struct bar_pram bar_pm;
 
 extern bool bar_indx_oper_flg;
+extern bool barcode_flag;
 #endif //__SE655_H
