@@ -1838,8 +1838,8 @@ event execute_main_ctrl(event event)
     if(sq_start_dw_washing_flg){
       sq_start_dw_washing_flg=false;
       set_timer_(eventSpuResetEnd,100,0);
-    }else
-      New_Pump_RollBack(0x1FE,16000);
+    }//else
+     //New_Pump_RollBack(0x1FE,16000);
     break;
     
   case eventBathFull:
