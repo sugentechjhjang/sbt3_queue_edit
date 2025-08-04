@@ -90,6 +90,8 @@ int32_t syringe_rxpack_aly(uint8_t *p_sy_GetPacketBuf);
 void syringe_rs232();
 void syge_init();
 
+extern HAL_StatusTypeDef UART3_ReInit(void);
+extern UART_HandleTypeDef huart3;
 
 extern bool sy_flag;
 event execute_syringe_ctrl(event event);

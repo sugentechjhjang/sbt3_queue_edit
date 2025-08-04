@@ -6,8 +6,8 @@ SPI_HandleTypeDef *hspi_cam;
 struct camera_pram cam_pram;
 
 
-int32_t cam_strip_pcak_cnt=0;
-int32_t cam_strip_pcak_gap=0;
+int32_t cam_strip_pack_cnt=0;
+int32_t cam_strip_pack_gap=0;
 void cam_led_spi_init()
 {
   cam_led.Instance = SPI1;
@@ -237,23 +237,23 @@ event execute_cam_ctrl(event event)
     usb_send_pack(hseCamAnlyXEndPosReadResp, dev_send_buf);
     break;
   case hseCamStripGo:
-    cam_strip_pcak_cnt=(usb_data_buf[0]-1)/12;
-  //  cam_strip_pcak_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos_end;//xmt_ctrl.dsp_pos;
-    cam_strip_pcak_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_xend_pos;//xmt_ctrl.dsp_pos;
+    cam_strip_pack_cnt=(usb_data_buf[0]-1)/12;
+  //  cam_strip_pack_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos_end;//xmt_ctrl.dsp_pos;
+    cam_strip_pack_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_xend_pos;//xmt_ctrl.dsp_pos;
     cam_strip_wd=(cam_pram.cam_aly_xend_pos-cam_pram.cam_aly_x_pos)/(STRIP_NUM-1);
-    stmt_abs_move(ADDR_MOTOR_X,cam_pram.cam_aly_x_pos+(cam_strip_wd*(usb_data_buf[0]-1))+((cam_strip_pcak_gap-cam_strip_wd)*cam_strip_pcak_cnt));
-   // (cam_strip_pcak_gap*cam_strip_pcak_cnt)+((cam_strip_wd*(usb_data_buf[0]-1)-(12*cam_strip_pcak_cnt))));
+    stmt_abs_move(ADDR_MOTOR_X,cam_pram.cam_aly_x_pos+(cam_strip_wd*(usb_data_buf[0]-1))+((cam_strip_pack_gap-cam_strip_wd)*cam_strip_pack_cnt));
+   // (cam_strip_pack_gap*cam_strip_pack_cnt)+((cam_strip_wd*(usb_data_buf[0]-1)-(12*cam_strip_pack_cnt))));
     //stmt_abs_move(ADDR_MOTOR_X, ((usb_data_buf[0]-1)*cam_strip_wd)+cam_pram.cam_aly_x_pos);
    // stmt_abs_move(ADDR_MOTOR_X, ((usb_data_buf[0]-1)*cam_strip_wd)+cam_pram.cam_aly_x_pos);
     usb_send_pack(hseCamStripGoResp, usb_data_buf);
     dSPIN_Go_To( shk_pram.aly_pos);
     break;
   case hseCamStripWaitGo:
-    cam_strip_pcak_cnt=(usb_data_buf[0]-1)/12;
-    cam_strip_pcak_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_xend_pos;//xmt_ctrl.dsp_pos;
-    //cam_strip_pcak_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos_end;//xmt_ctrl.dsp_pos;
+    cam_strip_pack_cnt=(usb_data_buf[0]-1)/12;
+    cam_strip_pack_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_xend_pos;//xmt_ctrl.dsp_pos;
+    //cam_strip_pack_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos_end;//xmt_ctrl.dsp_pos;
     cam_strip_wd=(cam_pram.cam_aly_xend_pos-cam_pram.cam_aly_x_pos)/(STRIP_NUM-1);
-    stmt_abs_move(ADDR_MOTOR_X,cam_pram.cam_aly_x_pos+(cam_strip_wd*(usb_data_buf[0]-1))+((cam_strip_pcak_gap-cam_strip_wd)*cam_strip_pcak_cnt));
+    stmt_abs_move(ADDR_MOTOR_X,cam_pram.cam_aly_x_pos+(cam_strip_wd*(usb_data_buf[0]-1))+((cam_strip_pack_gap-cam_strip_wd)*cam_strip_pack_cnt));
     //stmt_abs_move(ADDR_MOTOR_X, ((usb_data_buf[0]-1)*cam_strip_wd)+cam_pram.cam_aly_x_pos);
     set_timer_(hseCamStripWaitGoResp,100,0);
     break;

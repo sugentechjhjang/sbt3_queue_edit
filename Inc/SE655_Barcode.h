@@ -42,6 +42,8 @@ struct bar_pram
 } ;
 #pragma pack(pop)
 extern struct bar_pram bar_pm;
+extern UART_HandleTypeDef huart2;
+extern HAL_StatusTypeDef UART2_ReInit(void);
 
 extern bool bar_indx_oper_flg;
 extern bool barcode_flag;

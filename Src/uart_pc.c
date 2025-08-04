@@ -162,9 +162,6 @@ void Handle_GUI_LLD_FWDownloadStream(uint8_t data)
     }
 }
 
-
-
-
 void UART_PC_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if(huart == &huart1)
@@ -201,7 +198,34 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
   UART_Barcode_RxCpltCallback(huart);
   UART_Syringe_RxCpltCallback(huart);
   UART_Pump_LLD_RxCpltCallback(huart);
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+  if(huart1.ErrorCode != HAL_UART_ERROR_NONE)
+  {
+    UART1_ReInit();
+  }
+
+  if(huart2.ErrorCode != HAL_UART_ERROR_NONE)
+  {
+    UART2_ReInit();
+  }
+
+  if(huart3.ErrorCode != HAL_UART_ERROR_NONE)
+  {
+    UART3_ReInit();
+  }
+
+  if(huart4.ErrorCode != HAL_UART_ERROR_NONE)
+  {
+    UART4_ReInit();
+  }
   
+  if(huart5.ErrorCode != HAL_UART_ERROR_NONE)
+  {
+    UART5_ReInit();
+  }
 }
 
 uint8_t ascii2hex(uint8_t code)

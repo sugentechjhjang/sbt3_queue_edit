@@ -375,11 +375,6 @@ void com_time_out_set(byte value)
 {
   com_tm_out_enable=value;
   com_timeout_cnt=COM_TIME_OUT;
-  
-  if(rollback_flag == false)
-  {
-    com_timeout_cnt=COM_TIME_OUT+(rbk_time/1000);
-  }
 }
 
 byte call_com_timeout_cnt()

@@ -275,7 +275,7 @@ event execute_pump_ctrl(event event)
   {
 
   case hseDWPage:
-        state=stStEng;
+    state=stStEng;
     pump_param_read();
     usb_send_pack(hseDWPage,0); 
     break;
@@ -654,13 +654,6 @@ void New_Pump_Data_Trans_s(unsigned short int *pump_go)
     while(1);
   }
 }
-
-/*
-* Pump 통신의 경우, 재전송으로 인해 펌프가 중복 동작할 수 있는 위험이 있음 
-* --> 재전송으로 인한 중복 동작 위험으로 1번 만 명령을 내려야 함.
-* Pump 보드가 전송 데이터를 받았다고 추정 할 수 있으면 통신 성공으로 처리 
-* 추정 방법은 응답 데이터 중 연속적으로 "KM"이 있으면 통신 성공으로 추정 함
-*/
 
 int32_t hsPump_COM_PacketGeneration(uint16_t *p_wOriginDatBuf, uint8_t *p_uSendPacket);
 int32_t hsPump_COM_ReceivPacketHandle(uint8_t *p_uReceivPacketBuf, hsPump_COM_Convert_t *p_tConvertData);

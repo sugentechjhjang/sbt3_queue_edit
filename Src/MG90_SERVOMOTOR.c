@@ -40,26 +40,25 @@ struct servo asp_mt={
 /* TIM4 init function */
 void MX_TIM4_Init(void)
 {
+    TIM_MasterConfigTypeDef sMasterConfig;
 
-  TIM_MasterConfigTypeDef sMasterConfig;
+    htim4.Instance = TIM4;
+    htim4.Init.Prescaler = 31;
+    htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
+    htim4.Init.Period = 45000;
+    htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 
-  htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 31;
-  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 45000;
-  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  HAL_TIM_PWM_Init(&htim4);
+    HAL_TIM_PWM_Init(&htim4);
 
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
+    sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+    sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+    HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig);
 
-  sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 3700;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1);
-
+    sConfigOC.OCMode = TIM_OCMODE_PWM1;
+    sConfigOC.Pulse = 3700;
+    sConfigOC.OCPolarity = TIM_OCPOLARITY_LOW;
+    sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+    HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1);
 }
 
 void servo_mem_init()
@@ -96,7 +95,12 @@ void servo_mv(uint16_t pos) //SERVO MOVE(without overcurrent detecting)
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1); 
-  set_timer_(eventAspTimeOut,1200,0); 
+  
+  if(servo_continue == false)
+  {
+    set_timer_(eventAspTimeOut,1200,0); 
+  }
+
   servo_move_flag = true;
 }
 

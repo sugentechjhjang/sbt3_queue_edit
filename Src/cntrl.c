@@ -21,6 +21,7 @@ byte asp_eve_cnt=0,asp_cnt=0, syg_prime_oper_cnt=0;
 uint asp_xaixs_init_pos=0;
 byte cll_state=0;
 bool home_flag=false;
+bool servo_continue=false;
 byte syg_add_sel=0;
 int16_t slope_vol=0;
 
@@ -28,8 +29,8 @@ bool LLD_homeing_flag=false;
 bool PRIME_homeing_flag=false;
 
 int32_t clld_vol=0;
-int32_t strip_pcak_cnt=0;
-int32_t strip_pcak_gap=0;
+int32_t strip_pack_cnt=0;
+int32_t strip_pack_gap=0;
 unsigned short int smp_prime_pm_ch=0;
 int clld_speed_probz=0;
 byte jude_cnt=0;
@@ -55,7 +56,6 @@ byte smp_prime_dw_erorr_cnt=0;
 int32_t lld_strip_gap_qc=0;
 bool press_sens_flg=false;
 bool channel_empty = true; 
-uint16_t sq_retry_count = 0;
 
 event execute_main_ctrl(event event)
 {
@@ -99,7 +99,7 @@ event execute_main_ctrl(event event)
     set_timer_(eventZHomeInitCheck,5000,0);
     break;
   case eventZHomeInitCheck:
-    if(z_reach_pos){
+    if(z_homeing_success){
       y_homeing();
       set_timer_(eventShakeInit,5000,0);
     }else  set_timer_(eventZHomeInitCheck,100,0);
@@ -357,7 +357,6 @@ event execute_main_ctrl(event event)
     
     //----------prime---------------------------   
   case eventPrimeIinit:
-    sq_retry_count = 0;
     prime_eve_cnt=0;
     stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.bath_pos);
     set_timer_(prime.event[++prime_eve_cnt],30,0);
@@ -393,7 +392,7 @@ event execute_main_ctrl(event event)
     ASP_PUMP_OFF;
     servo_mv(asp_mt.up_pos);
     //stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos);
-    //  stmt_abs_move(ADDR_MOTOR_Y, ymt_ctrl.sample_width);
+    //stmt_abs_move(ADDR_MOTOR_Y, ymt_ctrl.sample_width);
     if(state==stPause)
       set_timer_pause(prime.event[++prime_eve_cnt],100,0);
     else
@@ -422,7 +421,6 @@ event execute_main_ctrl(event event)
     break;
     //------------sample prime-------------------
   case eventSmpPrimeInit:
-    sq_retry_count = 0;
     smp_prime_dw_check_flg=false;
     smpl_prime.air_asp_pos=syrg_pram.air_gap;
     smp_prime_eve_cnt=0;
@@ -738,12 +736,12 @@ event execute_main_ctrl(event event)
       lld_repeat_en(EN);
     }  
     smple_ev_cnt=0;
-    strip_pcak_cnt=0;
+    strip_pack_cnt=0;
     clld_vol=0;
     cll_state=0; 
     clld_speed_probz=0;
     p_min=0; p_max=0;
-    strip_pcak_gap=0;
+    strip_pack_gap=0;
     slope_vol=0;
  
     smpl_pr.sample_wd=(xmt_ctrl.sample_pos_end- xmt_ctrl.sample_pos)/(SAMPLE_NUM-1);
@@ -949,15 +947,15 @@ event execute_main_ctrl(event event)
   case eventSmpStripMove:
     stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.dsp_pos);
     if((state==stReady)||(state==stPause)){
-      strip_pcak_cnt=sq_strp_mach/12;
-      //  strip_pcak_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos;
-      strip_pcak_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_x_pos;
-      stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.dsp_pos+(strip_pcak_gap*strip_pcak_cnt)+(xmt_ctrl.strip_width*(sq_strp_mach-(12*strip_pcak_cnt))));
+      strip_pack_cnt=sq_strp_mach/12;
+      //  strip_pack_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos;
+      strip_pack_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_x_pos;
+      stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.dsp_pos+(strip_pack_gap*strip_pack_cnt)+(xmt_ctrl.strip_width*(sq_strp_mach-(12*strip_pack_cnt))));
     }else{
       
-      strip_pcak_cnt=smple_rack_cnt/12;
-      strip_pcak_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_x_pos;
-      stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.dsp_pos+(strip_pcak_gap*strip_pcak_cnt)+(xmt_ctrl.strip_width*(smple_rack_cnt-(12*strip_pcak_cnt))));
+      strip_pack_cnt=smple_rack_cnt/12;
+      strip_pack_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_x_pos;
+      stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.dsp_pos+(strip_pack_gap*strip_pack_cnt)+(xmt_ctrl.strip_width*(smple_rack_cnt-(12*strip_pack_cnt))));
     }
     
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
@@ -1045,11 +1043,10 @@ event execute_main_ctrl(event event)
     
     //----------------Aspiration----------------
   case eventAspIinit:
-    sq_retry_count = 0;
     asp_eve_cnt=0;
     asp_cnt=0;
-    strip_pcak_cnt=0;
-    strip_pcak_gap=0;
+    strip_pack_cnt=0;
+    strip_pack_gap=0;
     //xmt_ctrl.strip_width=(xmt_ctrl.dsp_pos_end-xmt_ctrl.dsp_pos)/STRIP_NUM;
     // xmt_ctrl.strip_width=(xmt_ctrl.dsp_pos_end-xmt_ctrl.dsp_pos)/(STRIP_NUM-1);
     xmt_ctrl.strip_width=(cam_pram.cam_aly_xend_pos-cam_pram.cam_aly_x_pos)/(STRIP_NUM-1);
@@ -1077,6 +1074,7 @@ event execute_main_ctrl(event event)
     break;
   case eventAspOut:
     //servo_mv(asp_mt.down_pos); 
+    servo_continue = true;
     servo_mv( asp_mt.asp_tray_z);
     set_timer_(asp.event[++asp_eve_cnt],100,0);
     break;
@@ -1107,15 +1105,17 @@ event execute_main_ctrl(event event)
       //stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos);
       set_timer_(asp.event[++asp_eve_cnt],100,0);
     }else{
-      strip_pcak_cnt=asp_cnt/12;
-      //strip_pcak_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos;
-      strip_pcak_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_x_pos;
-      stmt_abs_move(ADDR_MOTOR_X,asp_xaixs_init_pos+(strip_pcak_gap*strip_pcak_cnt)+(xmt_ctrl.strip_width*(asp_cnt-(12*strip_pcak_cnt))));
+      strip_pack_cnt=asp_cnt/12;
+      //strip_pack_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos;
+      strip_pack_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_x_pos;
+      stmt_abs_move(ADDR_MOTOR_X,asp_xaixs_init_pos+(strip_pack_gap*strip_pack_cnt)+(xmt_ctrl.strip_width*(asp_cnt-(12*strip_pack_cnt))));
       //stmt_abs_move(ADDR_MOTOR_X,asp_xaixs_init_pos+(xmt_ctrl.strip_width*asp_cnt));
       set_timer_(eventAspCon,50,0);
     }
     break;
   case eventAspEnd:
+    servo_continue = false;
+    set_timer_(eventAspTimeOut,1200,0);
     asp_eve_cnt=0;
     asp_cnt=0;
     switch(state)
@@ -1144,12 +1144,11 @@ event execute_main_ctrl(event event)
     break;
     //----------------disp 1---------------------
   case eventDspIinit:
-    sq_retry_count = 0;
     disp_eve_cnt=0;
     diasp.xaixs_start_pos=0;
     diasp_xaixs_wide_offset=0;
-    strip_pcak_cnt=0;
-    strip_pcak_gap=0;
+    strip_pack_cnt=0;
+    strip_pack_gap=0;
     //xmt_ctrl.strip_width=(xmt_ctrl.dsp_pos_end-xmt_ctrl.dsp_pos)/STRIP_NUM;
     xmt_ctrl.strip_width=(cam_pram.cam_aly_xend_pos-cam_pram.cam_aly_x_pos)/(STRIP_NUM-1);
     
@@ -1258,10 +1257,10 @@ event execute_main_ctrl(event event)
       dSPIN_Go_To(0);
       set_timer_(disp_sgl.event[++disp_eve_cnt],disp_sgl.disp_vol+50,0);
     }else{
-      strip_pcak_cnt=disp_cnt/12;
-      // strip_pcak_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos;
-      strip_pcak_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_x_pos;
-      stmt_abs_move(ADDR_MOTOR_X,disp_sgl.xaixs_start_pos+(strip_pcak_gap*strip_pcak_cnt)+(xmt_ctrl.strip_width*(disp_cnt-(12*strip_pcak_cnt))));
+      strip_pack_cnt=disp_cnt/12;
+      // strip_pack_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos;
+      strip_pack_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_x_pos;
+      stmt_abs_move(ADDR_MOTOR_X,disp_sgl.xaixs_start_pos+(strip_pack_gap*strip_pack_cnt)+(xmt_ctrl.strip_width*(disp_cnt-(12*strip_pack_cnt))));
       // stmt_abs_move(ADDR_MOTOR_X,disp_sgl.xaixs_start_pos+(xmt_ctrl.strip_width*disp_cnt));
       
       set_timer_(eventDspByStripPass,100,0);
@@ -1299,14 +1298,13 @@ event execute_main_ctrl(event event)
     //---------------------dispense&asp--------------
     
   case eventDspAspIinit:
-    sq_retry_count = 0;
     diasp_eve_cnt=0;
     diasp_cnt=0;
     diasp.xaixs_start_pos=0;
     diasp_xaixs_wide_offset=0;
     diasp_cnt_offset=0;
-    strip_pcak_cnt=0;
-    strip_pcak_gap=0;
+    strip_pack_cnt=0;
+    strip_pack_gap=0;
     diasp_eve_cnt2=0;
     disasp_pack_cnt=0;
     diasp_cnt_even=0;
@@ -1405,6 +1403,7 @@ event execute_main_ctrl(event event)
     }else  set_timer_(diasp.event[diasp_eve_cnt],50,0);
     break;
   case eventDspAspOut:
+    servo_continue = true;
     if((diasp_cnt<diasp.total_strip-diasp_cnt_offset)||!diasp_cnt){
       //servo_mv(asp_mt.down_pos);
       if(diasp.pump_num==((0x01<<WS_PUMP1)|(0x01<<WS_PUMP2))){
@@ -1471,13 +1470,13 @@ event execute_main_ctrl(event event)
   case eventDspAspCheck:
     if(diasp_cnt) 
       if(!(diasp_cnt%12))
-        strip_pcak_cnt=1;
+        strip_pack_cnt=1;
       else
-        strip_pcak_cnt=0;
+        strip_pack_cnt=0;
       
-      //strip_pcak_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos_end;
-      strip_pcak_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_xend_pos;
-      // stmt_abs_move(ADDR_MOTOR_X,disp_sgl.xaixs_start_pos+(strip_pcak_gap*strip_pcak_cnt)+(xmt_ctrl.strip_width*(disp_cnt-(12*strip_pcak_cnt))));
+      //strip_pack_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos_end;
+      strip_pack_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_xend_pos;
+      // stmt_abs_move(ADDR_MOTOR_X,disp_sgl.xaixs_start_pos+(strip_pack_gap*strip_pack_cnt)+(xmt_ctrl.strip_width*(disp_cnt-(12*strip_pack_cnt))));
       
       if(diasp.pump_num==((0x01<<WS_PUMP1)|(0x01<<WS_PUMP2))){
         diasp_cnt+=2;
@@ -1491,20 +1490,20 @@ event execute_main_ctrl(event event)
         
         if(diasp.pump_num==((0x01<<WS_PUMP1)|(0x01<<WS_PUMP2))){
           //diasp.xaixs_start_pos+=(xmt_ctrl.strip_width*2);
-          if(strip_pcak_cnt)diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pcak_gap*strip_pcak_cnt)-(xmt_ctrl.strip_width);
-          else diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pcak_gap*strip_pcak_cnt)+(xmt_ctrl.strip_width*2);
+          if(strip_pack_cnt)diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pack_gap*strip_pack_cnt)-(xmt_ctrl.strip_width);
+          else diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pack_gap*strip_pack_cnt)+(xmt_ctrl.strip_width*2);
           
           if(di_asp_onplus_flag)
             diasp.pump_num=0x01<<WS_PUMP1;
           
         }else{
           if(di_asp_onplus_flag){
-            if(strip_pcak_cnt)diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pcak_gap*strip_pcak_cnt)-(xmt_ctrl.strip_width*2);
-            else diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pcak_gap*strip_pcak_cnt)+(xmt_ctrl.strip_width*disp_xaixs_wide_offset);
+            if(strip_pack_cnt)diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pack_gap*strip_pack_cnt)-(xmt_ctrl.strip_width*2);
+            else diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pack_gap*strip_pack_cnt)+(xmt_ctrl.strip_width*disp_xaixs_wide_offset);
           }else{
-            if(strip_pcak_cnt)diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pcak_gap*strip_pcak_cnt)-(xmt_ctrl.strip_width*2)+(diasp_cnt_even*xmt_ctrl.strip_width);
-            else diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pcak_gap*strip_pcak_cnt)+(xmt_ctrl.strip_width*disp_xaixs_wide_offset);
-            //diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pcak_gap*strip_pcak_cnt)+(xmt_ctrl.strip_width*disp_xaixs_wide_offset*(diasp_cnt-(12*strip_pcak_cnt)));
+            if(strip_pack_cnt)diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pack_gap*strip_pack_cnt)-(xmt_ctrl.strip_width*2)+(diasp_cnt_even*xmt_ctrl.strip_width);
+            else diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pack_gap*strip_pack_cnt)+(xmt_ctrl.strip_width*disp_xaixs_wide_offset);
+            //diasp.xaixs_start_pos=diasp.xaixs_start_pos+(strip_pack_gap*strip_pack_cnt)+(xmt_ctrl.strip_width*disp_xaixs_wide_offset*(diasp_cnt-(12*strip_pack_cnt)));
             //diasp.xaixs_start_pos+=(xmt_ctrl.strip_width*disp_xaixs_wide_offset);
           }
         }
@@ -1549,14 +1548,14 @@ event execute_main_ctrl(event event)
         diasp.pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>16)&0x0000000f);
         diasp.vol=pm_pram.vol[((sq[full_step_cnt].dword[full_pr_cnt]>>16)&0x0000000f)-1]*(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff)/500;
       }*/
-        if(strip_pcak_cnt){
+        if(strip_pack_cnt){
           disasp_pack_cnt=0;
           diasp_eve_cnt2=0;
           if( diasp.pump_num!=((0x01<<WS_PUMP1)|(0x01<<WS_PUMP2))){
             if(!diasp_cnt_even)
               odd_flg=true;
           }
-          asp_flg=false;;
+          asp_flg=false;
           set_timer_(eventDspAspStripPackCheck,10,0);  
         }else{
           stmt_abs_move(ADDR_MOTOR_X,diasp.xaixs_start_pos);
@@ -1586,7 +1585,9 @@ event execute_main_ctrl(event event)
     diasp.xaixs_start_pos=0;
     diasp_xaixs_wide_offset=0;
     ASP_PUMP_OFF;
-    asp_flg=false;;
+    asp_flg=false;
+    servo_continue = false;
+    set_timer_(eventAspTimeOut,1200,0);
     // servo_mv(asp_mt.up_pos);
     switch(state)
     {
@@ -1630,7 +1631,7 @@ event execute_main_ctrl(event event)
     break;
   case eventDspAspStripPackAspOper:
     ASP_PUMP_ON;
-    asp_flg=true;;
+    asp_flg=true;
     diasp_eve_cnt2=eventDspAspStripPackAspEnd;
     set_timer_(diasp_eve_cnt2,diasp.asp_time,0);
     break;
@@ -1666,11 +1667,10 @@ event execute_main_ctrl(event event)
     
     //----------probe disp-------------------------------
   case eventProbeDispIinit:
-    sq_retry_count = 0;
     probe_disp_enable=false;
     probe_disp_eve_cnt=0;
-    strip_pcak_cnt=0;
-    strip_pcak_gap=0;
+    strip_pack_cnt=0;
+    strip_pack_gap=0;
     xmt_ctrl.strip_width=(cam_pram.cam_aly_xend_pos-cam_pram.cam_aly_x_pos)/(STRIP_NUM-1);
     C3000_srige_oper(SYRINGE_VALVE_BYPASS , 0);
     HAL_GPIO_WritePin(ACC_VALVE_PROBE_GPIO_Port,ACC_VALVE_PROBE_Pin,GPIO_PIN_SET);
@@ -1683,10 +1683,10 @@ event execute_main_ctrl(event event)
     break;
   case eventProbeDispStripMove:
     stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.dsp_pos);
-    strip_pcak_cnt=prob_disp_cnt/12;
-    //  strip_pcak_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos;
-    strip_pcak_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_x_pos;
-    stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.dsp_pos+(strip_pcak_gap*strip_pcak_cnt)+(xmt_ctrl.strip_width*(prob_disp_cnt-(12*strip_pcak_cnt))));
+    strip_pack_cnt=prob_disp_cnt/12;
+    //  strip_pack_gap=xmt_ctrl.cam_pos-xmt_ctrl.dsp_pos;
+    strip_pack_gap=xmt_ctrl.cam_pos-cam_pram.cam_aly_x_pos;
+    stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.dsp_pos+(strip_pack_gap*strip_pack_cnt)+(xmt_ctrl.strip_width*(prob_disp_cnt-(12*strip_pack_cnt))));
     //stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.dsp_pos+(xmt_ctrl.strip_width*prob_disp_cnt));
     set_timer_(probe_disp.event[++probe_disp_eve_cnt],100,0);
     break;
@@ -1852,7 +1852,6 @@ event execute_main_ctrl(event event)
   case eventRbEnd:
     break;
   case eventdryOper:
-    sq_retry_count = 0;
     dry_cnt=true;
     HAL_GPIO_WritePin(FAN_ARR_GPIO_Port,FAN_ARR_Pin,GPIO_PIN_RESET);
     break;

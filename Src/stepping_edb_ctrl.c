@@ -1161,7 +1161,7 @@ event execute_stepping_ctrl(event event)
     usb_send_pack(hseZaxiClCurrentRead, dev_send_buf);
     break;
   case hseProbePage:
-        state=stStEng;
+    state=stStEng;
   //  bath_ypos_temp=ymt_ctrl.bath_pos;
    // bath_zpos_temp=zmt_ctrl.bath_pos;
     usb_send_pack(hseProbePage, 0);
@@ -1568,7 +1568,7 @@ int32_t EDB_ReceivPacketExec(uint8_t *p_uReceivPacket)
       {
         *gp_tStatus = stanby_home;
       }
-      else if( (dwReceivValue == 5) || (dwReceivValue == 6) )
+      else if( (dwReceivValue == 5) || (dwReceivValue == 6) )  // Z축 6은 CLLD 동작 종료 ,  5는 그 외의 동작 종료
       {
         if(uAddress == ADDR_MOTOR_Z)
         {

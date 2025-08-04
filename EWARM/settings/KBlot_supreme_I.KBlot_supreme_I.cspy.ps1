@@ -23,9 +23,9 @@
 
 if ($debugfile -eq "")
 {
-& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.4\common\bin\cspybat" -f "D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\EWARM\settings\KBlot_supreme_I.KBlot_supreme_I.general.xcl" --backend -f "D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\EWARM\settings\KBlot_supreme_I.KBlot_supreme_I.driver.xcl" 
+& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.4\common\bin\cspybat" -f "D:\Github\sb3\S-Blot-3_queue_edit\EWARM\settings\KBlot_supreme_I.KBlot_supreme_I.general.xcl" --backend -f "D:\Github\sb3\S-Blot-3_queue_edit\EWARM\settings\KBlot_supreme_I.KBlot_supreme_I.driver.xcl" 
 }
 else
 {
-& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.4\common\bin\cspybat" -f "D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\EWARM\settings\KBlot_supreme_I.KBlot_supreme_I.general.xcl" --debug_file=$debugfile --backend -f "D:\Github\sb3\S-Blot-3_Ereatec_queueEdit\EWARM\settings\KBlot_supreme_I.KBlot_supreme_I.driver.xcl" 
+& "C:\Program Files (x86)\IAR Systems\Embedded Workbench 8.4\common\bin\cspybat" -f "D:\Github\sb3\S-Blot-3_queue_edit\EWARM\settings\KBlot_supreme_I.KBlot_supreme_I.general.xcl" --debug_file=$debugfile --backend -f "D:\Github\sb3\S-Blot-3_queue_edit\EWARM\settings\KBlot_supreme_I.KBlot_supreme_I.driver.xcl" 
 }

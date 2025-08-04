@@ -39,9 +39,14 @@ void UART_STEP_MT_RxCpltCallback(UART_HandleTypeDef *huart);
 void calculateModbusCRC_16(uint8_t *data, uint16_t length, uint8_t *crcArray);
 void mt_pack_aly();
 
-int32_t handleXmotorState(uint8_t val);
-int32_t handleYmotorState(uint8_t val);
-int32_t handleZmotorState(uint8_t val);
+extern HAL_StatusTypeDef UART4_ReInit(void);
+extern UART_HandleTypeDef huart4;
+
+#ifdef Motor_LEAD
+  int32_t handleXmotorState(uint8_t val);
+  int32_t handleYmotorState(uint8_t val);
+  int32_t handleZmotorState(uint8_t val);
+#endif
 
 void stepping_rs();
 

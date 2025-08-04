@@ -2,20 +2,21 @@
 #define MACROS_H
 
 
-#define Motor_EDB      // Motor_EDB or Motor_LEAD
+//#define Motor_EDB  
+#define Motor_LEAD
 
 #define FW_VER "1.0.0.8"
 #define HW_VER "0.0.0.1"
 #define DEV_SN 1
 #define FW_YEAR "25"
-#define FW_DATE "0714"
+#define FW_DATE "0804"
 
 #ifdef Motor_EDB
-#define DEVELOPER_MAIN_VER "9.0.0.1"
+#define DEVELOPER_MAIN_VER "9.0.0.2"
 #endif
 
 #ifdef Motor_LEAD
-#define DEVELOPER_MAIN_VER "8.0.0.1"
+#define DEVELOPER_MAIN_VER "8.0.0.2"
 #endif
 
 #define BEEP

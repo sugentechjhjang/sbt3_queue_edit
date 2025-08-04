@@ -197,8 +197,26 @@ void MX_USART2_UART_Init(void)
   
   //HAL_UART_Receive_IT(&huart2, barcode_rx_data_buffer, 1);  
   HAL_UART_Receive_IT(&huart2, &br_chr, 1);  
-  
+}
 
+HAL_StatusTypeDef UART2_ReInit(void)
+{
+    HAL_StatusTypeDef status;
+
+    status = HAL_UART_DeInit(&huart2);
+    if (status != HAL_OK)
+    {
+        return status;
+    }
+
+    status = HAL_UART_Init(&huart2);
+    if (status != HAL_OK)
+    {
+        return status;
+    }
+
+    HAL_UART_Receive_IT(&huart2, &br_chr, 1);
+    return HAL_OK;
 }
 
 HAL_StatusTypeDef barcode_data_send(unsigned char *data, unsigned char data_length)

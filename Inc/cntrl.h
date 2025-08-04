@@ -39,9 +39,9 @@ extern int16_t slope_vol;
 
 extern int32_t clld_vol;
 extern int16_t p_min , p_max;
-extern uint16_t sq_retry_count; 
 
 extern bool home_flag;
+extern bool servo_continue;
 
 
 extern byte asp_re_cunt;

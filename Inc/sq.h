@@ -109,6 +109,5 @@ extern uint dw_prime_vol;
 extern uint rbk_time;
 extern bool sq_start_dw_washing_flg;
 extern bool aging_mode;
-extern bool rollback_flag;
 
 #endif

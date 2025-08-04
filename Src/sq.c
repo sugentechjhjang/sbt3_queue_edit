@@ -11,7 +11,6 @@ int base_time=0;
 
 byte manual_check_state=0;
 bool aging_mode=false;
-bool rollback_flag=true;
 
 void sq_mem_init()
 {
@@ -389,23 +388,19 @@ event sq_ctrl(event event)
          rbk_pump_num=0x01<<PRIME_DW_ON;
       else
       rbk_pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff);
-      rbk_time=(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff)*1000;;
-      if(rollback_flag == true)
-      { 
-        New_Pump_RollBack(rbk_pump_num,rbk_time);
-      }
-      rollback_flag = false;
+      rbk_time=(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff)*1000;
+
+      New_Pump_RollBack(rbk_pump_num,rbk_time);
+      
       set_timer_(eventSqNext,rbk_time+500,0); 
       break;
     case RollBack1:
       rbk_pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff);
       rbk_pump_num|=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>16)&0x000000ff);
       rbk_time=(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff)*1000;;
-      if(rollback_flag == true)
-      { 
-        New_Pump_RollBack(rbk_pump_num,rbk_time);
-      }
-      rollback_flag = false;
+
+      New_Pump_RollBack(rbk_pump_num,rbk_time);
+      
       set_timer_(eventSqNext,rbk_time+500,0); 
       break;
     case RollBack2:
@@ -413,11 +408,9 @@ event sq_ctrl(event event)
       rbk_pump_num|=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x0000000f);
       rbk_pump_num|=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>16)&0x000000ff);
       rbk_time=(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff)*1000;;
-      if(rollback_flag == true)
-      { 
-        New_Pump_RollBack(rbk_pump_num,rbk_time);
-      }
-      rollback_flag = false;
+
+      New_Pump_RollBack(rbk_pump_num,rbk_time);
+      
       set_timer_(eventSqNext,rbk_time+500,0); 
       break;
     case Analy:
@@ -479,7 +472,6 @@ event sq_ctrl(event event)
     usb_send_pack(eventCtAndPt,usb_data_buf);
     break;
   case eventSqSamplNumMach:
-    sq_retry_count = 0;
     if(sq_smp_strp_mach_cnt<full_total_strip-1){
       sq_smp_strp_mach_cnt++;
       if(aging_mode==false)
@@ -566,8 +558,6 @@ event sq_ctrl(event event)
     usb_send_pack(eventSqManualStart,dev_send_buf);
     break;
   case eventSqNext:
-    sq_retry_count = 0;
-    rollback_flag = true;
     if(state==stReady){
       if((smp_reult_bit[0]||smp_reult_bit[1])&&!manual_check_state)
         if(sq[full_step_cnt].prNum[full_pr_cnt]==Sample_LLD){
@@ -814,7 +804,7 @@ event sq_ctrl(event event)
     aging_mode = true;
     full_step_cnt = 0x00;
     full_pr_cnt = 0x00;
-    full_total_strip = 1;
+    full_total_strip = 60;
     set_timer_(eventSqFullSqAly,10,0);
     break;
     
