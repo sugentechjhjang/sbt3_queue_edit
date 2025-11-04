@@ -131,7 +131,7 @@ void c3000_add_checksum(uint8_t *pdata)
 void syge_mem_init()
 {
 syge_param_read();
-if(syrg_pram.air_gap==(~0)||syrg_pram.vol==(~0)){
+if(syrg_pram.air_gap==(~0)){
     syrg_pram.air_gap=150;
     syrg_pram.vol=1744;
     syrg_pram.speed=11;

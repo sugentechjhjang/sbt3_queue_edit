@@ -539,8 +539,8 @@ event execute_stepping_ctrl(event event)
     
   case eventZhomeCk:    
     if(mt_zstate==stanby_home){
-      stmt_abs_home_move(ADDR_MOTOR_Z,zmt_ctrl.bath_pos);
-       bath_zpos_temp=zmt_ctrl.bath_pos;
+      stmt_abs_home_move(ADDR_MOTOR_Z,Z_BATH_POS);
+       bath_zpos_temp=Z_BATH_POS;
      // z_pram_set();
       break;
     }else{
@@ -1048,9 +1048,7 @@ event execute_stepping_ctrl(event event)
   case hseProbeBathZSet:
   case hseZaxiBathPosSet:
     zmt_ctrl.dsp_pos_end=merge_32bit(zmt_ctrl.dsp_pos_end,usb_data_buf);
-    //zmt_ctrl.bath_pos=merge_32bit(zmt_ctrl.bath_pos,usb_data_buf);
     zmt_param_write();
-   // stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.bath_pos-bath_zpos_temp);
     stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.dsp_pos_end);
     usb_send_pack(hseProbeBathZSet,usb_data_buf);
     break;
@@ -1072,7 +1070,6 @@ event execute_stepping_ctrl(event event)
   case hseZaxiBathPosRead:
     zmt_param_read();
     sort_8bit(zmt_ctrl.dsp_pos_end,dev_send_buf);
-    //sort_8bit(zmt_ctrl.bath_pos,dev_send_buf);
     usb_send_pack(hseProbeBathZRead, dev_send_buf);
     break;
     
@@ -1162,8 +1159,6 @@ event execute_stepping_ctrl(event event)
     break;
   case hseProbePage:
     state=stStEng;
-  //  bath_ypos_temp=ymt_ctrl.bath_pos;
-   // bath_zpos_temp=zmt_ctrl.bath_pos;
     usb_send_pack(hseProbePage, 0);
     break;
   default:
@@ -1568,7 +1563,7 @@ int32_t EDB_ReceivPacketExec(uint8_t *p_uReceivPacket)
       {
         *gp_tStatus = stanby_home;
       }
-      else if( (dwReceivValue == 5) || (dwReceivValue == 6) )  // Z축 6은 CLLD 동작 종료 ,  5는 그 외의 동작 종료
+      else if( (dwReceivValue == 5) || (dwReceivValue == 6) )  // Z축 CLLD  6은 일반적인 동작 종료 ,  5는 시작부터 Z축 프로브가 이동 한계점인 경우
       {
         if(uAddress == ADDR_MOTOR_Z)
         {

@@ -7,6 +7,7 @@
 #define CLL_EN      11
 #define SWS_OP      12
 #define CLLD_HOME   13   
+#define Z_BATH_POS 1000  //LEADSHINE = 10000
 
 #define HEATING_PAD_ON           HAL_GPIO_WritePin(ACC_HEATING_PAD_GPIO_Port,ACC_HEATING_PAD_Pin,GPIO_PIN_RESET)
 #define HEATING_PAD_OFF          HAL_GPIO_WritePin(ACC_HEATING_PAD_GPIO_Port,ACC_HEATING_PAD_Pin,GPIO_PIN_SET)
@@ -76,6 +77,7 @@ void z_pram_set();
 
 #ifdef Motor_LEAD
 
+#define Z_BATH_POS 10000 //EDB = 1000 
 
 #define HEATING_PAD_ON           HAL_GPIO_WritePin(ACC_HEATING_PAD_GPIO_Port,ACC_HEATING_PAD_Pin,GPIO_PIN_RESET)
 #define HEATING_PAD_OFF          HAL_GPIO_WritePin(ACC_HEATING_PAD_GPIO_Port,ACC_HEATING_PAD_Pin,GPIO_PIN_SET)
@@ -128,6 +130,7 @@ void stmt_speed_set(byte adress,signed long int value);
 void stmt_accel_set(byte adress,signed long int value);
 void stmt_decel_set(byte adress,signed long int value);
 bool stmt_abs_move(byte adress,signed long int value);
+bool stmt_rel_move(byte adress,signed long int value);
 
 void CLLD_OP();
 void SWS_OP();

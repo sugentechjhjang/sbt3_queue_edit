@@ -49,6 +49,8 @@ enum cntrl_event
           event_Developer_LLD_VER,
 
           eventUSBreset,
+          eventUSBretry,
+          eventUSBcontinue,
 
              
     

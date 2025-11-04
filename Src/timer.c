@@ -7,10 +7,10 @@ TIM_HandleTypeDef hWORK_TIM_Handle;
 #define TIEMR0_TIK 500
 #define TIMER1_TIK 100
 #define TIMER0_1S_TIK 1
-#define COM_TIME_OUT 35
-
+#define COM_TIME_OUT 120
 #define LLD_TIME_OUT 45
 #define SY_TIME_OUT  10
+#define USB_TIME_OUT  60
 
 ulong timer=TIEMR0_TIK;//timer_freq;
 ulong timer1=TIMER1_TIK;
@@ -20,6 +20,7 @@ uint16_t timer_ticks=0;
 byte com_timeout_cnt=COM_TIME_OUT;
 byte lld_timeout_cnt=LLD_TIME_OUT;
 byte sy_timeout_cnt=SY_TIME_OUT;
+byte usb_timeout_cnt=USB_TIME_OUT;
 
 
 struct tmchan channel[50];
@@ -58,6 +59,7 @@ void timer_mk_int()
 byte com_tm_out_enable=0;
 byte lld_tm_out_enable=0;
 byte sy_tm_out_enable=0;
+byte usb_tm_out_enable=0;
 
 void timer_eve()
 {
@@ -99,7 +101,14 @@ void timer_eve()
           {
               sy_timeout_cnt--;
           }
-        }                            
+        }
+        if(usb_tm_out_enable)
+        {
+          if (usb_timeout_cnt > 0) 
+          {
+              usb_timeout_cnt--;
+          }
+        }                                 
       } 
   }
   timer_ticks++;	
@@ -314,7 +323,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)//1ms
    if(htim->Instance == TIM2)
    {
      beep_polling();
+
+     __disable_irq();
      deDevCheck = hsDevToPC_QueUseCheck();
+      __enable_irq();
      
      if(deDevCheck == RESET) //usb_rs232();
      {
@@ -408,4 +420,14 @@ void sy_repeat_en(byte value)
   sy_tm_out_enable=value;
   sy_timeout_cnt=SY_TIME_OUT;  
 }
-  
+
+byte usb_com_timeout_cnt()
+{
+  return usb_timeout_cnt;
+}
+
+void usb_repeat_en(byte value)
+{
+  usb_tm_out_enable=value;
+  usb_timeout_cnt=USB_TIME_OUT;  
+}  

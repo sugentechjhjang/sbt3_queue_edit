@@ -16,7 +16,7 @@ bool CLLD_VOL_Check = false;
 void  hlld_mem_init()
 {
   hlld_param_read();
-  if(smp_pram.clld_value_set==0||smp_pram.clld_value_set==(~0))
+  if(smp_pram.clld_value_set==(~0))
   {
     smp_pram.clld_value_set = 2500;
     
@@ -422,23 +422,31 @@ event hsExec_hLLD_CTRL(event event)
     usb_send_pack(hseClldPage, 0);    
     break;
     
-  case hseClldSensControl:
-    uSendToPC_Buf[0]= g_tSubRun_hLLD_Data.wData >> 8;
+//**************************UNUSED**********************************************    
+  case hseClldSensControl:  
+    /*uSendToPC_Buf[0]= g_tSubRun_hLLD_Data.wData >> 8;
     uSendToPC_Buf[1]= g_tSubRun_hLLD_Data.wData;
     uSendToPC_Buf[2]= clld_indx>>8;
-    uSendToPC_Buf[3]= clld_indx;
-        
+    uSendToPC_Buf[3]= clld_indx;*/
     hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
+    uSendToPC_Buf[0]= g_tSubRun_hLLD_Data.wContent >> 8;
+    uSendToPC_Buf[1]= g_tSubRun_hLLD_Data.wContent;
+    uSendToPC_Buf[2]= g_tSubRun_hLLD_Data.wData >> 8;
+    uSendToPC_Buf[3]= g_tSubRun_hLLD_Data.wData;
+        
     usb_send_pack(hseClldSensControlResp, uSendToPC_Buf);
     break;
     
-  case hseClldOutputVol:
-    uSendToPC_Buf[0]= g_tSubRun_hLLD_Data.wData >> 8;
+  case hseClldOutputVol: // unused
+    /*uSendToPC_Buf[0]= g_tSubRun_hLLD_Data.wData >> 8;
     uSendToPC_Buf[1]= g_tSubRun_hLLD_Data.wData;
-
     uSendToPC_Buf[2]= 0;
-    uSendToPC_Buf[3]= 1;
-    
+    uSendToPC_Buf[3]= 1;*/    
+    uSendToPC_Buf[0]= g_tSubRun_hLLD_Data.wContent >> 8;
+    uSendToPC_Buf[1]= g_tSubRun_hLLD_Data.wContent;
+    uSendToPC_Buf[2]= g_tSubRun_hLLD_Data.wData >> 8;
+    uSendToPC_Buf[3]= g_tSubRun_hLLD_Data.wData;
+
     if(!ra--)
     {
       rb--;
@@ -446,6 +454,7 @@ event hsExec_hLLD_CTRL(event event)
     }     
     usb_send_pack(hseClldOutputVolResp, uSendToPC_Buf);
     break;
+//****************************************************************************    
     
   case hseClldOffSet:
     smp_pram.off_set=usb_data_buf[0];
@@ -460,9 +469,18 @@ event hsExec_hLLD_CTRL(event event)
     break;
     
   case hseClldTestRun:
+    hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
+    uSendToPC_Buf[0]= g_tSubRun_hLLD_Data.wContent >> 8;
+    uSendToPC_Buf[1]= g_tSubRun_hLLD_Data.wContent;
+    uSendToPC_Buf[2]= g_tSubRun_hLLD_Data.wData >> 8;
+    uSendToPC_Buf[3]= g_tSubRun_hLLD_Data.wData;
+
+    usb_send_pack(hseClldSensControlResp, uSendToPC_Buf);
+    /*
     clld_indx=0;
-    give_event(eventClldVarResCtrl,0);
+    give_event(eventClldVarResCtrl,0);*/
     break;
+    
     
   case eventClldVarResCtrl:
     clld_indx++;

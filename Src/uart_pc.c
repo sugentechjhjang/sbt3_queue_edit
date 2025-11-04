@@ -254,7 +254,7 @@ byte usb_transmit_bufs[TRANSMIT_BUF_LENGTH];
 
 void dbg_serial(char *s)
 {
-    uint8_t buffer[50]; 
+    uint8_t buffer[50] = {0}; 
     snprintf((char *)buffer, sizeof(buffer), "DEV<-%s\n", s);
     hsDevToPC_NoConvertSendQueHandle(buffer, strlen((char *)buffer));
 }
@@ -365,26 +365,41 @@ int32_t hsDevToPC_PutQue(uint8_t uPutData)
 {
   int32_t dwTail;
 
+  __disable_irq();
+
   dwTail = (g_tDevToPC_QueHandle.dwTail + 1)%hsDEV_TO_PC_QUE_SZ;
 
-  if( dwTail == g_tDevToPC_QueHandle.dwHead) return hsDEV_TO_PC_QUE_FULL;
+  if(dwTail == g_tDevToPC_QueHandle.dwHead)
+  {
+    __enable_irq();
+    return hsDEV_TO_PC_QUE_FULL;
+  }
 
   g_tDevToPC_QueHandle.uQueBuf[g_tDevToPC_QueHandle.dwTail] = uPutData;
 
   g_tDevToPC_QueHandle.dwTail = dwTail;
+  __enable_irq();  
           
   return hsDEV_TO_PC_QUE_OK;
 }
 
 int32_t hsDevToPC_GetQue(uint8_t *p_uGetData)
 {
-  if( g_tDevToPC_QueHandle.dwTail == g_tDevToPC_QueHandle.dwHead ) return hsDEV_TO_PC_QUE_EMPTY;
+  __disable_irq();
+  
+  if( g_tDevToPC_QueHandle.dwTail == g_tDevToPC_QueHandle.dwHead )
+  {
+    __enable_irq();
+    return hsDEV_TO_PC_QUE_EMPTY;
+  }
 
   *p_uGetData = g_tDevToPC_QueHandle.uQueBuf[g_tDevToPC_QueHandle.dwHead];
 
   g_tDevToPC_QueHandle.dwHead = (g_tDevToPC_QueHandle.dwHead + 1)%hsDEV_TO_PC_QUE_SZ;
+  __enable_irq();
 
   return hsDEV_TO_PC_QUE_OK;
+
 }
 
 void hsDevToPC_QueReset(void)
@@ -778,14 +793,17 @@ void hsPC_To_DevRxPacket_Handle(void)
     //Checksum Check 
     if( uChecksum != uCheckSumPacket)
     {
-      dwCnt++;
       return;
     }
     
   }
   
   dwPC_To_Dev_PacketExec(wCmd, uData);
-  
+  if(usb_retry_flag == true)
+  {
+    usb_retry_flag = false;
+    usb_repeat_en(DISEN);  
+  }  
 }
 
 int32_t dwPC_To_Dev_PacketExec(uint16_t wCmd, uint8_t *p_Data)
@@ -806,6 +824,8 @@ int32_t dwPC_To_Dev_PacketExec(uint16_t wCmd, uint8_t *p_Data)
       break;
     
     case eventFwDownReset: 
+     usb_send_pack(eventFwDownReset, 0);
+     HAL_Delay(50); 
      HAL_NVIC_SystemReset(); 
      break;
 

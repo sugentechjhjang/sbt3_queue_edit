@@ -326,7 +326,7 @@ event execute_main_ctrl(event event)
     syg_prime_oper_cnt=0;
     syg_add_sel=0;
     syg_prime_oper_cnt=smpl_prime.syg_prime_cnt*2; 
-    stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.bath_pos);
+    stmt_abs_move(ADDR_MOTOR_Z,Z_BATH_POS);
     set_timer_(smpl_prime.event[++smp_prime_eve_cnt],200,0);
     break;
   case eventSmpPrimeBathMove:
@@ -443,7 +443,7 @@ event execute_main_ctrl(event event)
     set_timer_(smpl_prime.event[++smp_prime_eve_cnt],200,0);
     break;
   case eventSmpPrimeEnd:
-    stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.bath_pos);
+    stmt_abs_move(ADDR_MOTOR_Z,Z_BATH_POS);
     // stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos);
     set_timer_(smpl_prime.event[++smp_prime_eve_cnt],100,0);
     break;
@@ -489,7 +489,7 @@ event execute_main_ctrl(event event)
     set_timer_(smpl_pr.event[++smple_ev_cnt],30,0);
     break;
   case eventSmpZinit:
-    stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.bath_pos);
+    stmt_abs_move(ADDR_MOTOR_Z,Z_BATH_POS);
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
     break;
   case eventSmpRackMove:
@@ -679,7 +679,7 @@ event execute_main_ctrl(event event)
     set_timer_(smpl_pr.event[++smple_ev_cnt],800,0);
     break;
   case eventSmpEnd:
-    stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.bath_pos);
+    stmt_abs_move(ADDR_MOTOR_Z,Z_BATH_POS);
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
     break;
   case eventSmpFinalEnd:
@@ -764,7 +764,7 @@ event execute_main_ctrl(event event)
     }else  set_timer_(smpl_pr.event[smple_ev_cnt],100,0);
     break;
   case eventSmpStripHome:
-    stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.bath_pos);
+    stmt_abs_move(ADDR_MOTOR_Z,Z_BATH_POS);
     set_timer_(smpl_pr.event[++smple_ev_cnt],50,0);
     break;
     
@@ -1198,7 +1198,7 @@ event execute_main_ctrl(event event)
     set_timer_(probe_disp.event[++probe_disp_eve_cnt],1000,0);
     break;
   case eventProbeDispProbeHome:
-    stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.bath_pos);
+    stmt_abs_move(ADDR_MOTOR_Z,Z_BATH_POS);
     set_timer_(probe_disp.event[++probe_disp_eve_cnt],50,0);
     break;
   case eventProbeDispCheck:

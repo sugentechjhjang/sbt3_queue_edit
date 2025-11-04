@@ -151,13 +151,21 @@ event sq_ctrl(event event)
     //-----------------full sq ruting-------
   case eventSqFullSqAly:
  
-  //////////////////////////////////////////////////////////////////////      
+  //////////////////////////////////////////////////////////////////////      s_start__;  // .bss RAM 시작
+  extern uint32_t __bss_end__;    // .bss RAM 끝
     if(aging_mode == true && full_step_cnt==10)  // aging TEST
     {
       full_step_cnt = 0;
       full_pr_cnt = 0;
       smple_rack_cnt=0;
       sq_strp_mach=0;
+      x_homeing_success=false;  
+      y_homeing_success=false;  
+      z_homeing_success=false;
+      sk_state=stShkrStby;
+      state = stBoot;
+      set_timer_(eventSpuOn,2000,0);
+      break;
     }
   //////////////////////////////////////////////////////////////////////   
 
@@ -169,7 +177,7 @@ event sq_ctrl(event event)
     full_step=sq[full_step_cnt].stNum;
     full_pr=sq[full_step_cnt].prNum[full_pr_cnt];
     
-    dbg_serial("[eventSqFullSqAly]");
+    dbg_serial("(eventSqFullSqAly)");
 
     switch(full_step)
     {
@@ -217,7 +225,7 @@ event sq_ctrl(event event)
         auto_prime_flg=false;
         C3000_srige_oper(SYRINGE_INIT , 0);
         HAL_Delay(2000);
-        dbg_serial("[PRIME_eventSmpPrimeInit]"); 
+        dbg_serial("(PRIME_eventSmpPrimeInit)"); 
         set_timer_(eventSmpPrimeInit,200,0);
       }else
         set_timer_(eventPrimeIinit,200,0);

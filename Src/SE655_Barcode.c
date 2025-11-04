@@ -115,7 +115,7 @@ enum barcode_state br_state=BarNone;
 void bar_mem_init()
 {
   bar_param_read();
-  if(bar_pm.start_pos==0||bar_pm.start_pos==(~0)){
+  if(bar_pm.start_pos==(~0)){
     bar_pm.start_pos=6000;
     bar_pm.end_pos=252000;
     bar_pm.spl_num=20;

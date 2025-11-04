@@ -282,11 +282,22 @@ void CLLD_HOME()
     motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_SPEED_ABS,10);
     motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_ACC_ABS,30000);
     motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_DEC_ABS,30000);
-    stmt_abs_move(ADDR_MOTOR_Z,5000);
+    motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_MOVE_ABS,0x41);
+    motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_POSITION_H_ABS,-5000);
+    motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_POSITION_L_ABS,-5000);
+    motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_PATH_0_SET,PATH_0);
+    
+    HAL_Delay(1500);
+    
+    //stmt_rel_move(ADDR_MOTOR_Z,-5000); //rel_move  
+
+    //while(!z_reach_pos); 
 
     motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_SPEED_ABS,200);
     motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_ACC_ABS,5000);
     motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_DEC_ABS,5000);
+
+    stmt_abs_move(ADDR_MOTOR_Z,Z_BATH_POS);
     
       
 }
@@ -314,7 +325,6 @@ bool stmt_abs_move(byte adress,signed long int value){
     probe_Hardware_protect(); //admin mode
     
     if(x_reach_pos){
-      x_prev_value = value;
       x_abs_move_state = true;
       x_reach_pos=false;
       x_homeing_success = false;
@@ -332,7 +342,6 @@ bool stmt_abs_move(byte adress,signed long int value){
     probe_Hardware_protect(); //admin mode
 
     if(y_reach_pos){
-      y_prev_value = value;
       y_abs_move_state = true;
       y_reach_pos=false;
       y_homeing_success = false;
@@ -348,13 +357,76 @@ bool stmt_abs_move(byte adress,signed long int value){
     break;
   case ADDR_MOTOR_Z:
     if(z_reach_pos){
-      z_prev_value = value;
       z_abs_move_state = true;
       z_reach_pos=false;
       z_homeing_success = false;
       mt_zstate=stanby;
-    
+     
       motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_MOVE_ABS,0x01);
+      motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_POSITION_H_ABS,value);
+      motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_POSITION_L_ABS,value);
+      motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_PATH_0_SET,PATH_0);
+      
+      set_timer_(eventZAbsPosCk,100,0);  
+    }
+    break;
+  default:
+    break;
+  }
+ 
+  if(adress==ADDR_MOTOR_X) return x_reach_pos;
+  if(adress==ADDR_MOTOR_Y) return y_reach_pos; 
+  if(adress==ADDR_MOTOR_Z) return z_reach_pos; 
+  
+  return 0;
+}
+
+
+bool stmt_rel_move(byte adress,signed long int value){
+  switch(adress)
+  {
+  case ADDR_MOTOR_X:
+    probe_Hardware_protect(); //admin mode
+    
+    if(x_reach_pos){
+      x_abs_move_state = true;
+      x_reach_pos=false;
+      x_homeing_success = false;
+      mt_xstate=stanby;
+    
+      motor_cmd_send(ADDR_MOTOR_X,LEAD_WRITE,LEAD_MOVE_ABS,0x41);
+      motor_cmd_send(ADDR_MOTOR_X,LEAD_WRITE,LEAD_POSITION_H_ABS,value);
+      motor_cmd_send(ADDR_MOTOR_X,LEAD_WRITE,LEAD_POSITION_L_ABS,value);
+      motor_cmd_send(ADDR_MOTOR_X,LEAD_WRITE,LEAD_PATH_0_SET,PATH_0);
+      
+      set_timer_(eventXAbsPosCk,100,0);
+    }
+    break;
+  case ADDR_MOTOR_Y:
+    probe_Hardware_protect(); //admin mode
+
+    if(y_reach_pos){
+      y_abs_move_state = true;
+      y_reach_pos=false;
+      y_homeing_success = false;
+      mt_ystate=stanby;
+     
+      motor_cmd_send(ADDR_MOTOR_Y,LEAD_WRITE,LEAD_MOVE_ABS,0x41);
+      motor_cmd_send(ADDR_MOTOR_Y,LEAD_WRITE,LEAD_POSITION_H_ABS,value);
+      motor_cmd_send(ADDR_MOTOR_Y,LEAD_WRITE,LEAD_POSITION_L_ABS,value);
+      motor_cmd_send(ADDR_MOTOR_Y,LEAD_WRITE,LEAD_PATH_0_SET,PATH_0);
+      
+      set_timer_(eventYAbsPosCk,100,0);
+    }
+    break;
+  case ADDR_MOTOR_Z:
+    if(z_reach_pos){
+      z_abs_move_state = true;
+      z_reach_pos=false;
+      z_homeing_success = false;
+      mt_zstate=stanby;
+     
+      motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_MOVE_ABS,0x41);
       motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_POSITION_H_ABS,value);
       motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_POSITION_L_ABS,value);
       motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_PATH_0_SET,PATH_0);
@@ -421,7 +493,7 @@ void z_pram_set()
   spd=zmt_ctrl.speed_rpm; //50 
   acc=zmt_ctrl.accel_rpm; //1000
   
-  //motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_TRIGGER_REG,LEAD_E_STOP);
+  motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_TRIGGER_REG,LEAD_E_STOP);
   motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_SPEED_ABS,spd);
   motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_ACC_ABS,acc);
 }
@@ -979,9 +1051,7 @@ event execute_stepping_ctrl(event event)
   case hseProbeBathZSet:
   case hseZaxiBathPosSet:
     zmt_ctrl.dsp_pos_end=merge_32bit(zmt_ctrl.dsp_pos_end,usb_data_buf);
-    //zmt_ctrl.bath_pos=merge_32bit(zmt_ctrl.bath_pos,usb_data_buf);
     zmt_param_write();
-   // stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.bath_pos-bath_zpos_temp);
     stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.dsp_pos_end);
     usb_send_pack(hseProbeBathZSet,usb_data_buf);
     break;
@@ -1003,7 +1073,6 @@ event execute_stepping_ctrl(event event)
   case hseZaxiBathPosRead:
     zmt_param_read();
     sort_8bit(zmt_ctrl.dsp_pos_end,dev_send_buf);
-    //sort_8bit(zmt_ctrl.bath_pos,dev_send_buf);
     usb_send_pack(hseProbeBathZRead, dev_send_buf);
     break;
     
@@ -1092,9 +1161,7 @@ event execute_stepping_ctrl(event event)
     usb_send_pack(hseZaxiClCurrentRead, dev_send_buf);
     break;
   case hseProbePage:
-        state=stStEng;
-  //  bath_ypos_temp=ymt_ctrl.bath_pos;
-   // bath_zpos_temp=zmt_ctrl.bath_pos;
+    state=stStEng;
     usb_send_pack(hseProbePage, 0);
     break;
   default:
@@ -1453,7 +1520,7 @@ int32_t Get_LEAD_ReceivPacketHandle(uint8_t uAddress, uint8_t *p_uGetPacketBuf)
     }
   }
   
-  else if((dwCount >= 8) && (p_uGetPacketBuf[RCV_LEAD_ADDRESS] == uAddress) &&(p_uGetPacketBuf[RCV_LEAD_FC] == LEAD_WRITE))
+  else if((dwCount >= 8) && (p_uGetPacketBuf[RCV_LEAD_ADDRESS] == uAddress) && (p_uGetPacketBuf[RCV_LEAD_FC] == LEAD_WRITE))
   {
     
     calculateModbusCRC_16(p_uGetPacketBuf,6, modbus_rev_crc16_data);

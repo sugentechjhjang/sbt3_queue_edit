@@ -1081,24 +1081,23 @@ uint8_t dSPIN_Flag(void)
   */
 uint8_t dSPIN_Write_Byte(uint8_t byte)
 {
-  unsigned char asdjklfjasdklfjsdaklfj =0;
-	/* nSS signal activation - low */
-	HAL_GPIO_WritePin(dSPIN_nSS_Port, dSPIN_nSS_Pin, GPIO_PIN_RESET);
-	/* SPI byte send */
-    
-     asdjklfjasdklfjsdaklfj = HAL_SPI_Transmit(hspi, &byte, 1, 100);
-     if(asdjklfjasdklfjsdaklfj) asdjklfjasdklfjsdaklfj++;
-    //while(HAL_SPI_Transmit(hspi, &byte, 1, 100));
-	/* Wait for SPIx Busy flag */
-    while(HAL_SPI_GetState(hspi) != HAL_SPI_STATE_READY);
-	
-	/* nSS signal deactivation - high */
-    HAL_GPIO_WritePin(dSPIN_nSS_Port, dSPIN_nSS_Pin, GPIO_PIN_SET);
-    asdjklfjasdklfjsdaklfj = HAL_SPI_Receive(hspi, &byte, 1, 100);
-    if(asdjklfjasdklfjsdaklfj) asdjklfjasdklfjsdaklfj++;
-    //while(HAL_SPI_Receive(hspi, &byte, 1, 100));
-    return byte;
-	
+ uint8_t uSend[2], uGet[2];
+
+ int32_t dwCheck = 0;
+
+ uSend[0] = byte;
+ HAL_GPIO_WritePin(dSPIN_nSS_Port, dSPIN_nSS_Pin, GPIO_PIN_RESET);
+
+ dwCheck = HAL_SPI_TransmitReceive(hspi, uSend, uGet, 1, 10);
+ if(dwCheck) 
+ {
+    error(errShaker,0);
+    while(1);
+    //Error 처리 코드 
+ }
+
+ HAL_GPIO_WritePin(dSPIN_nSS_Port, dSPIN_nSS_Pin, GPIO_PIN_SET);
+ return uGet[0];
 }
 
 

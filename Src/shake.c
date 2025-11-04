@@ -139,7 +139,7 @@ void shaker_Init(void)
 void shake_mem_init()
 {
   shk_param_read();
-  if(shk_pram.speed_rpm==0||shk_pram.speed_rpm==(~0)){
+  if(shk_pram.speed_rpm==(~0)){
     shk_pram.hoiz_pos=7200;
     shk_pram.dasp_pos=-8500;
     shk_pram.aly_pos=1000;

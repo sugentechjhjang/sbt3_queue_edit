@@ -40,6 +40,9 @@ byte lld_com_timeout_cnt();
 void lld_repeat_en(byte value);
 byte sy_com_timeout_cnt();
 void sy_repeat_en(byte value);
+byte usb_com_timeout_cnt();
+void usb_repeat_en(byte value);
+
 void Sample_LLD_ClearEvents();
 void Sample_LLD_ClearPrimeEvents();
 

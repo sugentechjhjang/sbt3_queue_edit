@@ -135,6 +135,7 @@ extern bool probe_disp_enable;
 extern bool auto_prime_flg;
 
 extern bool admin_positon_flag;
+extern bool usb_retry_flag;
 #endif   
 
 event execute_sys_ctrl(event event);

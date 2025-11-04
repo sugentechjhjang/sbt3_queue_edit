@@ -154,12 +154,14 @@ uint32_t qc_dry_time=0;
 uint air_temper=0;
 uint temper_volt = 135;  //13.5V
 byte *ver_pnt=0;
+
 bool only_washing_flg=false;
 bool auto_clean_repeat_flg=false;
 bool probe_disp_enable =false;
 bool auto_prime_flg=false;
-
 bool admin_positon_flag=false;
+
+bool usb_retry_flag = false;
 
 event execute_sys_ctrl(event event)
 {
@@ -425,11 +427,26 @@ event execute_sys_ctrl(event event)
     break;
 
   case eventUSBreset:
+    usb_send_pack(eventUSBreset,NULL);
+    HAL_Delay(50);
     HAL_GPIO_WritePin(USB5V_OnOff_GPIO_Port,USB5V_OnOff_Pin,GPIO_PIN_RESET);
     HAL_Delay(500);
     HAL_GPIO_WritePin(USB5V_OnOff_GPIO_Port,USB5V_OnOff_Pin,GPIO_PIN_SET);
     HAL_Delay(500);
     break;
+
+
+    case eventUSBretry:
+    usb_retry_flag = true;
+    usb_repeat_en(EN);
+    usb_send_pack(eventUSBretry,0);
+    /*usb_send_pack(eventUSBreset,0);
+    HAL_Delay(50);
+    HAL_GPIO_WritePin(USB5V_OnOff_GPIO_Port,USB5V_OnOff_Pin,GPIO_PIN_RESET);
+    HAL_Delay(500);
+    HAL_GPIO_WritePin(USB5V_OnOff_GPIO_Port,USB5V_OnOff_Pin,GPIO_PIN_SET);
+    HAL_Delay(500);*/
+    break;  
 
 
   default: break;

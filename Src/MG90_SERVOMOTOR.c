@@ -65,7 +65,7 @@ void servo_mem_init()
 {
  // servo_param_read();
   servo_param_read2();
-  if(asp_mt.speed==0||asp_mt.disp_tray_y==(~0)){
+  if(asp_mt.speed==(~0)){
     asp_mt.speed=100; 
     asp_mt.up_pos=1200;
     asp_mt.down_pos=3000;
@@ -157,19 +157,23 @@ event execute_servo_ctrl(event event)
   case hseAspDownPosSet:
     asp_mt.down_pos=merge_32bit(asp_mt.down_pos,usb_data_buf);
     servo_mv(asp_mt.down_pos);
+    servo_param_write2();
     usb_send_pack(hseAspBathZSet,usb_data_buf);
     break;
   case hseAspBathZSave:
     asp_mt.down_pos=merge_32bit(asp_mt.down_pos,usb_data_buf);
+    servo_param_write2();
     usb_send_pack(hseAspDownPosSave,usb_data_buf);
     break;
   case hseAspDownPosSave:
     asp_mt.down_pos=merge_32bit(asp_mt.down_pos,usb_data_buf);
+    servo_param_write2();
     usb_send_pack(hseAspDownPosSave,usb_data_buf);
     break;
 
   case hseAspBathZRead:
   case hseAspDownPosRead:
+    servo_param_read2();
     sort_8bit(asp_mt.down_pos,dev_send_buf);
     usb_send_pack(hseAspBathZRead, dev_send_buf);
     break;
@@ -185,7 +189,15 @@ event execute_servo_ctrl(event event)
     //servo_param_write();
     servo_param_write2();
     xmt_param_write();
-    stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos-bath_xpos_temp); //jjh
+    
+    #ifdef Motor_EDB  
+      stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos-bath_xpos_temp); //jjh
+    #endif
+
+    #ifdef Motor_LEAD  
+      stmt_abs_move(ADDR_MOTOR_X,xmt_ctrl.bath_pos); //jjh
+    #endif
+
     usb_send_pack(hseAspBathXSet,usb_data_buf);
     break;
   case hseAspBathXSave:
