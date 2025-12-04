@@ -9,14 +9,14 @@
 #define HW_VER "0.0.0.1"
 #define DEV_SN 1
 #define FW_YEAR "25"
-#define FW_DATE "1029"
+#define FW_DATE "1125"
 
 #ifdef Motor_EDB
-#define DEVELOPER_MAIN_VER "9.0.0.3"
+#define DEVELOPER_MAIN_VER "9.0.0.4"
 #endif
 
 #ifdef Motor_LEAD
-#define DEVELOPER_MAIN_VER "8.0.0.3"
+#define DEVELOPER_MAIN_VER "8.0.0.4"
 #endif
 
 #define BEEP

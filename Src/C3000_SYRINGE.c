@@ -491,7 +491,7 @@ int32_t SYRINGE_ReceivPacketExec(uint8_t *p_sy_ReceivPacket)
   case eventSygeSendCheck:
   break;
   case hseDSSetPage:
-        state=stStEng;
+    state=stStEng;
     syge_param_read();
     usb_send_pack(hseDSSetPage,0); 
     C3000_srige_oper(SYRINGE_INIT, 0);  

@@ -10,6 +10,9 @@ int pr_time_sec=0;
 int base_time=0;
 
 byte manual_check_state=0;
+bool Ccd_Block_check_state = false;
+
+
 bool aging_mode=false;
 
 void sq_mem_init()
@@ -132,7 +135,7 @@ event sq_ctrl(event event)
     full_total_strip=smp_strp_mach_cnt++;
     usb_send_pack(eventSampStripMatch,usb_data_buf);
     break;
-    
+  
   case eventSampStripMatchRun:
     smp_strp_mach_cnt=0;
     memset(smp_strip,0,sizeof(smp_strip));
@@ -442,37 +445,7 @@ event sq_ctrl(event event)
     usb_data_buf[2]=full_pr;
  //   usb_send_pack(eventCtAndPt,usb_data_buf);
     break;
-  case eventPause:
-  /*    
-    if(state==stPauseSq){
-      if(!usb_data_buf[3]){
-        beep(1000, 1);
-        state=stReady;
-        set_timer_(eventSqNext,100,0);
-      }
-    }else{
-       set_timer_(eventPauseInfinRoutin,100,0);
-    }
     
-*/
-      /*   if(!usb_data_buf[3]){
-              beep(1000, 3);
-              state=stPause;
-              usb_send_pack(eventPauseRes,usb_data_buf);
-             // save_pause(pau_queue,&pau_head,&pau_tail);
-              pause_flag=true;
-            }else if(usb_data_buf[3]==1){
-              beep(1000, 1);
-              state=stReady;
-              usb_send_pack(eventPauseRes,usb_data_buf);
-              get_pause(pau_queue,pau_head,pau_tail);
-              pause_flag=false;
-            }*/
-
-    break;
- // case eventPauseInfinRoutin:
-    
- //   break;
   case eventCtAndPt:
     usb_data_buf[0]=full_step_cnt+1;
     usb_data_buf[1]=full_step;
@@ -547,8 +520,7 @@ event sq_ctrl(event event)
       }
     }
     break;
-  case eventSqManualCheck:
-   
+  case eventSqManualCheck:  
     if(!manual_check_state){
       beep(1000, 1);
         set_timer_(eventSqManualCheck,2000,0);
@@ -557,6 +529,7 @@ event sq_ctrl(event event)
 
     //for(manual_check_cnt =0;manual_check_cnt<full_total_strip-1;manual_check_cnt++)
   break;
+  
   case eventSqManualStart:
     manual_check_state=1;
     if(press_sens_flg){
@@ -565,9 +538,14 @@ event sq_ctrl(event event)
     }
     usb_send_pack(eventSqManualStart,dev_send_buf);
     break;
+
+
+
   case eventSqNext:
     if(state==stReady){
+      
       if((smp_reult_bit[0]||smp_reult_bit[1])&&!manual_check_state)
+      {
         if(sq[full_step_cnt].prNum[full_pr_cnt]==Sample_LLD){
           dSPIN_Go_To(shk_pram.down_ang_pos);
           sort_8bit(smp_reult_bit[0],dev_send_buf);
@@ -578,7 +556,8 @@ event sq_ctrl(event event)
           manual_check_state=0;
           break;
         }
-      
+      }
+
       sq[full_step_cnt].prNum[full_pr_cnt++];
       if(!sq[full_step_cnt].prNum[full_pr_cnt]){
         full_pr_cnt=0;

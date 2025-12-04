@@ -129,9 +129,7 @@ event execute_main_ctrl(event event)
   case eventLldInit:
     hlld_send_pack(HLLD_ADD, HLLD_CLLD_VALUE_SET,0,smp_pram.clld_value_set); 
     hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
-    //  hlld_send_pack(HLLD_ADD, HLLD_CLLD_RES,smp_pram.r1, smp_pram.r2); 
-    //set_timer_(eventSpuInit,200,0);
-    //set_timer_(eventLldInit,100,0);  
+    //set_timer_(eventSpuStnby,5000,0);
     break;
   case eventSpuInit:
     if(!home_flag){
@@ -455,7 +453,7 @@ event execute_main_ctrl(event event)
     }
     else 
     {
-      dbg_serial("(eventSmpPrimeBathMove_LOOP)");
+      //dbg_serial("(eventSmpPrimeBathMove_LOOP)");
       set_timer_(smpl_prime.event[smp_prime_eve_cnt],50,0);
     }
     break;
@@ -465,7 +463,7 @@ event execute_main_ctrl(event event)
       set_timer_(smpl_prime.event[++smp_prime_eve_cnt],50,0);
       dbg_serial("(eventSmpPrimeAixsCheck)");
     }else{        
-      dbg_serial("(eventSmpPrimeAixsCheck_LOOP)");
+      //dbg_serial("(eventSmpPrimeAixsCheck_LOOP)");
 
       set_timer_(smpl_prime.event[smp_prime_eve_cnt],50,0);
 
@@ -923,11 +921,6 @@ event execute_main_ctrl(event event)
     
     break;
     
-  case eventSmpClldRageSpeedSet:
-    stmt_speed_set(ADDR_MOTOR_Z,clld_speed_probz);
-    set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
-    break; 
-
   case eventSmpProbeZHome:   
     #ifdef Motor_EDB
       cll_state=0;
@@ -972,9 +965,14 @@ event execute_main_ctrl(event event)
   case eventSmpSygDspOper:
     C3000_srige_oper(SYRINGE_SPEED_SET , 4);
     C3000_srige_oper(SYRINGE_MOVE_UP ,syrg_pram.vol+(syrg_pram.air_gap/2));// 400);
-    clld_speed_probz=200;
     set_timer_(smpl_pr.event[++smple_ev_cnt],800,0);
     break;
+
+  case eventSmpClldRageSpeedSet:
+    stmt_speed_set(ADDR_MOTOR_Z,200);
+    set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
+    break;    
+
   case eventSmpEnd:
     stmt_abs_move(ADDR_MOTOR_Z,Z_BATH_POS);
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);

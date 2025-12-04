@@ -20,7 +20,7 @@
         <LeaveTargetRunning>_ 0</LeaveTargetRunning>
     </StLinkDriver>
     <DebugChecksum>
-        <Checksum>961506521</Checksum>
+        <Checksum>338312167</Checksum>
     </DebugChecksum>
     <Exceptions>
         <StopOnUncaught>_ 0</StopOnUncaught>
@@ -284,10 +284,15 @@
         <Bp2>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\sys_func.c}.373.5" 0 0 1 "" 0 "" 0</Bp2>
         <Bp3>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\sys_func.c}.373.5" 0 0 1 "" 0 "" 0</Bp3>
         <Bp4>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\sys_func.c}.373.5" 0 0 1 "" 0 "" 0</Bp4>
-        <Bp5>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\hlld.c}.218.7" 0 0 1 "" 0 "" 0</Bp5>
-        <Bp6>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\hlld.c}.223.3" 0 0 1 "" 0 "" 0</Bp6>
-        <Bp7>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\hlld.c}.342.5" 0 0 1 "" 0 "" 0</Bp7>
-        <Count>8</Count>
+        <Bp5>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\hlld.c}.219.7" 0 0 1 "" 0 "" 0</Bp5>
+        <Bp6>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\hlld.c}.224.3" 0 0 1 "" 0 "" 0</Bp6>
+        <Bp7>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\hlld.c}.343.5" 0 0 1 "" 0 "" 0</Bp7>
+        <Bp8>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\SE655_Barcode.c}.489.5" 0 0 1 "" 0 "" 0</Bp8>
+        <Bp9>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\cntrl.c}.265.9" 0 0 1 "" 0 "" 0</Bp9>
+        <Bp10>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\SE655_Barcode.c}.394.9" 0 0 1 "" 0 "" 0</Bp10>
+        <Bp11>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\SE655_Barcode.c}.397.8" 0 0 1 "" 0 "" 0</Bp11>
+        <Bp12>_ 0 "EMUL_CODE" "{$PROJ_DIR$\..\Src\SE655_Barcode.c}.395.9" 0 0 1 "" 0 "" 0</Bp12>
+        <Count>13</Count>
     </Breakpoints2>
     <Aliases>
         <A0>_ "C:\Users\smkan\OneDrive\project\sugen\project\suprimeI\fw\main\K_Blot_Supreme_Main_211022_DR4\CUBE\Drivers\CMSIS\Device\ST\STM32F1xx\Source\Templates\iar\startup_stm32f103xe.s" ""</A0>

@@ -322,7 +322,7 @@ event execute_pump_ctrl(event event)
     break;
 //--------------------
   case hseWSSetPage:
-        state=stStEng;
+    state=stStEng;
     pump_param_read();
     usb_send_pack(hseWSSetPage,0); 
     break;

@@ -19,7 +19,6 @@ void  hlld_mem_init()
   if(smp_pram.clld_value_set==(~0))
   {
     smp_pram.clld_value_set = 2500;
-    
     hlld_param_write();
   }  
 }
@@ -28,17 +27,19 @@ void UART5_Hlld_RxCpltCallback(byte chr)
 {
   hlld_rx_index++;
   hlld_rx_data_buffer[hlld_rx_index]=chr;
-  //  HAL_UART_Receive_IT(&huart5, &pump_rx_data_buffer[pump_rx_index], 1);
+  //HAL_UART_Receive_IT(&huart5, &pump_rx_data_buffer[pump_rx_index], 1);
 }
+
 void hlld_485_Direction_Set(GPIO_PinState pin_state)
 {
   HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, pin_state);  // DIR RS-485
 }
+
 HAL_StatusTypeDef Hlld_Uart5_Data_Send(unsigned char *data, unsigned char data_length)
 { 
   return HAL_UART_Transmit(&huart5, data, data_length, 100);
-  
 }
+
 unsigned char hex2ascii(unsigned char code)
 {
   unsigned char result = 0;

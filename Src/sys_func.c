@@ -350,7 +350,6 @@ event execute_sys_ctrl(event event)
 
       ///FW_date//////////////////////////////////      
       dbg_serial_fw_date();
-      //dbg_serial("MAIN_FW_DATE_250519");  //FW DATE
       hlld_send_pack(HLLD_ADD, HLLD_FW_DATE,0, 0);
       ////////////////////////////////////////////
       usb_send_pack(eventEquiType, dev_send_buf);
@@ -424,10 +423,11 @@ event execute_sys_ctrl(event event)
   case event_Developer_LLD_VER: // 버전 역순 표시 Blot2_Easy와 구조통일
     hlld_send_pack(HLLD_ADD, HLLD_DEVELOPER_VER_H,0, 0); 
     hlld_send_pack(HLLD_ADD, HLLD_DEVELOPER_VER_L,0, 0);
+    //usb_send_pack(event_Developer_LLD_VER,0);
     break;
 
   case eventUSBreset:
-    usb_send_pack(eventUSBreset,NULL);
+    usb_send_pack(eventUSBreset,0);
     HAL_Delay(50);
     HAL_GPIO_WritePin(USB5V_OnOff_GPIO_Port,USB5V_OnOff_Pin,GPIO_PIN_RESET);
     HAL_Delay(500);
@@ -436,7 +436,7 @@ event execute_sys_ctrl(event event)
     break;
 
 
-    case eventUSBretry:
+  case eventUSBretry:
     usb_retry_flag = true;
     usb_repeat_en(EN);
     usb_send_pack(eventUSBretry,0);

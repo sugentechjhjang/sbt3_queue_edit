@@ -331,7 +331,7 @@ bool bar_index_num_flag = false;
   switch(event)
   {
   case eventBarTri:
-    if( br_state==BarReady)
+    if(br_state==BarReady)
       HAL_GPIO_WritePin(BAR_TRIG_GPIO_Port, BAR_TRIG_Pin, GPIO_PIN_RESET); 
     //else if(br_state==BarReadComp){
     //  HAL_GPIO_WritePin(BAR_TRIG_GPIO_Port, BAR_TRIG_Pin, GPIO_PIN_RESET); 
@@ -372,10 +372,35 @@ bool bar_index_num_flag = false;
     break;
   case eventBarPr:
     //usb_send_pack(eventBarPr,0);
-    give_event(bar_pr.event[0],0);
+    //give_event(bar_pr.event[0],0);
    // dev_send_buf[1]= bar_pm.spl_num;
    // usb_send_pack(hseBarDataStart, dev_send_buf);
    //  give_event(smpl_pr.event[0],0);
+    if(!home_flag && x_reach_pos == true)
+    {
+      home_flag=TRUE;
+      x_homeing();
+      set_timer_(eventBarPr,300,0);
+    }
+    else
+    {
+      if(mt_xstate==stanby_home)
+      {
+        #ifdef Motor_EDB
+          stmt_abs_move(ADDR_MOTOR_Y,0);
+        #endif
+        
+        #ifdef Motor_LEAD
+          stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos);
+        #endif
+        set_timer_(bar_pr.event[0],500,0);
+        home_flag=FALSE;
+      }
+      else
+      {
+        set_timer_(eventBarPr,50,0);
+      }
+    }
     break;
   case hseBarPage:
         state=stStEng;
