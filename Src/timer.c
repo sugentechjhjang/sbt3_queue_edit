@@ -153,6 +153,7 @@ void tm_add(uint16_t evnt, uint time, void(*event_func)(uint16_t evnt))
           return;
         }
     error(errTMTimeOut,0);
+    while(1);
   }
 
 void Sample_LLD_ClearEvents() {
@@ -254,7 +255,7 @@ void set_timer_pause(uint16_t evnt, uint time, void(*event_func)(uint16_t evnt))
     pause_eve=evnt;
     pause_time=time;
     beep(1000, 3);
-    usb_send_pack(eventPauseRes,0);
+    //usb_send_pack(eventPauseRes,0);
 
   }
 
@@ -376,9 +377,14 @@ void beep_polling()
       beep_cnt--;
       }
       if(beep_en)
-       HAL_GPIO_TogglePin(M_Buzzer_GPIO_Port, M_Buzzer_Pin);
+      {
+        HAL_GPIO_TogglePin(M_Buzzer_GPIO_Port, M_Buzzer_Pin);
+      }
       else
+      {
         HAL_GPIO_WritePin(M_Buzzer_GPIO_Port, M_Buzzer_Pin, GPIO_PIN_RESET);
+      }
+        
     }
   
 }

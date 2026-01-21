@@ -75,7 +75,7 @@ __packed  struct sample_strip
 extern struct sample_strip smp_strip[STRIP_NUM_END+1];
 
 #pragma pack(push,1)
-__packed  struct sq
+__packed  struct sequence
 {
   uint8_t  stNum; //step number
   uint8_t  prNum[20]; //process number
@@ -83,7 +83,7 @@ __packed  struct sq
 };
 #pragma pack(pop)
 
-extern struct sq sq[12];
+extern struct sequence sq[12];
 extern byte sq_strp_mach;
 extern byte full_step, full_pr;
 extern int pr_time_sec;

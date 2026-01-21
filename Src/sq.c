@@ -1,7 +1,7 @@
 #include "main.h"
 #include "string.h"
 enum step st=St_None;
-struct sq sq[12];
+struct sequence sq[12];
 struct sample_strip smp_strip[STRIP_NUM_END+1];
 struct strip_err_bit str_errbit;
 byte penel_sel=0;
@@ -10,7 +10,8 @@ int pr_time_sec=0;
 int base_time=0;
 
 byte manual_check_state=0;
-bool Ccd_Block_check_state = false;
+bool Ccd_Blocker_check_state = false;
+bool Ccd_beep_en = false;
 
 
 bool aging_mode=false;
@@ -111,16 +112,17 @@ event sq_ctrl(event event)
       smp_strp_mach_cnt=0;
       //pump_param_read();
       give_event(eventSpuResetAsp,0);
-    }else{
+    }
+    else
+    {
       state=stReady;
       full_step_cnt=usb_data_buf[2]-1;
       full_pr_cnt=0;
       full_step=0;
       full_pr=0;
-     full_total_strip=smp_strp_mach_cnt;
+      full_total_strip=smp_strp_mach_cnt;
       smp_strp_mach_cnt=0;
       //pump_param_read();
- 
       set_timer_(eventSpuResetAsp,100,0);
     }
     step_time_cal(full_step_cnt);
@@ -143,34 +145,21 @@ event sq_ctrl(event event)
     break;
     
     
-    /*
-  case eventErrorSampBit1:
-    str_errbit.err[0]=merge_32bit(str_errbit.err[0],usb_data_buf);
-    break;
-  case eventErrorSampBit2:
-    str_errbit.err[1]=merge_32bit(str_errbit.err[1],usb_data_buf);
-    break;
-    */
     //-----------------full sq ruting-------
   case eventSqFullSqAly:
- 
-  //////////////////////////////////////////////////////////////////////      s_start__;  // .bss RAM 시작
-  extern uint32_t __bss_end__;    // .bss RAM 끝
+  //////////////////////////////////////////////////////////////////////   
     if(aging_mode == true && full_step_cnt==10)  // aging TEST
     {
       full_step_cnt = 0;
       full_pr_cnt = 0;
       smple_rack_cnt=0;
       sq_strp_mach=0;
-      x_homeing_success=false;  
-      y_homeing_success=false;  
-      z_homeing_success=false;
       sk_state=stShkrStby;
       state = stBoot;
       set_timer_(eventSpuOn,2000,0);
       break;
     }
-  //////////////////////////////////////////////////////////////////////   
+  //////////////////////////////////////////////////////////////////////       
 
     state_led_init();
 
@@ -180,7 +169,7 @@ event sq_ctrl(event event)
     full_step=sq[full_step_cnt].stNum;
     full_pr=sq[full_step_cnt].prNum[full_pr_cnt];
     
-    dbg_serial("(eventSqFullSqAly)");
+    dbg_serial("eventSqFullSqAly");
 
     switch(full_step)
     {
@@ -221,17 +210,21 @@ event sq_ctrl(event event)
     case Prime:
       disp_sgl.disp_pump_num=prime.disp_pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff);
       dw_prime_vol=prime.disp_vol=(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff)*1000;
-      if(((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff)==PRIME_DW){
+      if(((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff)==PRIME_DW)
+      {
         smpl_prime.pm_num=SMP_PRME_PP;
         lld_fc=lldFuncNone;
         smple_rack_cnt=1;
         auto_prime_flg=false;
         C3000_srige_oper(SYRINGE_INIT , 0);
         HAL_Delay(2000);
-        dbg_serial("(PRIME_eventSmpPrimeInit)"); 
+        dbg_serial("PRIME_eventSmpPrimeInit"); 
         set_timer_(eventSmpPrimeInit,200,0);
-      }else
+      }
+      else
+      {
         set_timer_(eventPrimeIinit,200,0);
+      }
       break;
     case Prime1:
       disp_sgl.disp_pump_num=prime.disp_pump_num=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff);
@@ -254,7 +247,9 @@ event sq_ctrl(event event)
       {
         probe_disp.vol=(pm_pram.vol[PRIME_DW-1]*(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff))/500;//(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff);
         set_timer_(eventProbeDispIinit,200,0);
-      }else{
+      }
+      else
+      {
         diasp.vol=pm_pram.vol[((sq[full_step_cnt].dword[full_pr_cnt]>>24)&0x000000ff)-1]*(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff)/500;
         set_timer_(eventDspAspIinit,200,0);
       }
@@ -265,8 +260,9 @@ event sq_ctrl(event event)
       diasp.pump_num|=0x01<<((sq[full_step_cnt].dword[full_pr_cnt]>>16)&0x000000ff);
       //  diasp.vol=(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff);
       if(!only_washing_flg)
-      diasp.total_strip=full_total_strip;
-      
+      {
+        diasp.total_strip=full_total_strip;
+      }
       diasp.vol=((pm_pram.vol[WS_PUMP1-1]+pm_pram.vol[WS_PUMP2-1])/2);
       diasp.vol=((diasp.vol*(sq[full_step_cnt].dword[full_pr_cnt]&0x0000ffff))/500);
       set_timer_(eventDspAspIinit,200,0);
@@ -374,12 +370,16 @@ event sq_ctrl(event event)
         sq_strp_mach = 0;
       }  
 
-      if(smp_strip[sq_smp_strp_mach_cnt].manual){
+      if(smp_strip[sq_smp_strp_mach_cnt].manual)
+      {
         smp_reult_bit[0]=1<<sq_smp_strp_mach_cnt;
         set_timer_(eventSqSamplNumMach,10,0);
-      }else
+      }
+      else
+      {
         set_timer_(eventSmpPrimeInit,10,0);
-
+      }
+        
       beep(1000, 1);
       usb_data_buf[0]=full_step_cnt+1;
       usb_data_buf[1]=full_step;
@@ -472,10 +472,16 @@ event sq_ctrl(event event)
         }
       }
       if(smp_strip[sq_smp_strp_mach_cnt].manual)
+      {
         set_timer_(eventSqSamplNumMach,10,0);
+      }  
       else
-      set_timer_(eventSmpPrimeInit,10,0);
-    }else{
+      {
+        set_timer_(eventSmpPrimeInit,100,0);
+      }  
+    }
+    else
+    {
       for(byte i=0;i<STRIP_NUM_END+1;i++){
         if(smp_strip[i].manual){
                   if(smp_strip[i].strip<33)
@@ -516,7 +522,7 @@ event sq_ctrl(event event)
       }
       if(lld_fc==lldFullFunc){
         lld_fc=lldFuncNone;
-        set_timer_(eventSmpPrimeInit,10,0);
+        set_timer_(eventSmpPrimeInit,100,0);
       }
     }
     break;
@@ -539,10 +545,50 @@ event sq_ctrl(event event)
     usb_send_pack(eventSqManualStart,dev_send_buf);
     break;
 
+  case eventSqCcdBlockerCheck:
+    if(Ccd_Blocker_check_state)
+    {
+      if(Ccd_beep_en)
+      {
+        beep(1000, 1);
+      }  
+      set_timer_(eventSqCcdBlockerCheck,2000,0);
+    }
+    else
+    {
+      dSPIN_Go_To(0);
+      set_timer_(eventSqNext,2000,0);
+    }
+    break;
+    
+  case eventSqCcdBlockerFlagOn:
+    Ccd_Blocker_check_state = true;
+    Ccd_beep_en = true;
+    usb_send_pack(eventSqCcdBlockerFlagOn,dev_send_buf);
+    break;
 
+  case eventSqCcdBlockerStart:
+    Ccd_Blocker_check_state = false;
+    usb_send_pack(eventSqCcdBlockerStart,dev_send_buf); 
+    break;
+
+  case eventSqCcdBlockerBeepControl:
+    Ccd_beep_en = false;
+    usb_send_pack(eventSqCcdBlockerBeepControl,dev_send_buf); 
+    break;
 
   case eventSqNext:
     if(state==stReady){
+      if(Ccd_Blocker_check_state)
+      {
+        if(sq[full_step_cnt].prNum[full_pr_cnt+1]==Sample_LLD){
+          Ccd_beep_en = true;
+          dSPIN_Go_To(shk_pram.down_ang_pos);
+          usb_send_pack(eventSqOpenCcdBlockerWindow,dev_send_buf);
+          give_event(eventSqCcdBlockerCheck,0);
+          break;
+        }
+      }  
       
       if((smp_reult_bit[0]||smp_reult_bit[1])&&!manual_check_state)
       {
@@ -788,10 +834,11 @@ event sq_ctrl(event event)
 
   case TEST_AGING_MODE:
     state = stReady;
+    sq_start_dw_washing_flg=true;
     aging_mode = true;
-    full_step_cnt = 0x00;
+    full_step_cnt = 0x01;
     full_pr_cnt = 0x00;
-    full_total_strip = 60;
+    full_total_strip = 1;
     set_timer_(eventSqFullSqAly,10,0);
     break;
     

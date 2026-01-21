@@ -21,6 +21,8 @@
 #define HLLD_DEVELOPER_VER_H 0x10
 #define HLLD_DEVELOPER_VER_L 0x11
 #define HLLD_CLLD_VALUE_SET 0x12
+#define HLLD_CLLD_PREVIOUS 0x13
+#define HLLD_CLLD_CURRENT 0x14
 
 #define CLLD_STANBY          0 
 #define CLLD_START           2

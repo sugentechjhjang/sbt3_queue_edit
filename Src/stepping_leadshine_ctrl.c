@@ -65,6 +65,7 @@ struct st_motor zmt_ctrl ={
   6000,
   100,
   100,
+  2200,
 };
 
 void stm_memory_init()
@@ -75,18 +76,17 @@ void stm_memory_init()
   ymt_param_read();
   zmt_param_read();
   err_tmout_en(FALSE);
-  if(xmt_ctrl.bath_pos==0||xmt_ctrl.sample_width==(~0)){
+  if(xmt_ctrl.bath_pos==(~0))
+  {
     xmt_ctrl.bath_pos=12000;
     xmt_ctrl.tray_pos=1000;
     xmt_ctrl.speed_rpm=100;
     xmt_ctrl.accel_rpm=1000;
     xmt_ctrl.strip_width=7000;
     xmt_ctrl.dsp_pos=49500;
-    
     xmt_ctrl.dsp_pos_end=135500;
     xmt_ctrl.asp_pos=4000;
     xmt_ctrl.sample_pos=2500;
-    
     xmt_ctrl.sample_pos_end=249000;
     xmt_ctrl.sample_pos2=4000;
     xmt_ctrl.bar_pos=5500;
@@ -94,21 +94,19 @@ void stm_memory_init()
     xmt_ctrl.sample_width=10000;
     xmt_ctrl.cl_amp=120;
     xmt_param_write();
-    
   }  
     
-  if(ymt_ctrl.bath_pos==0||ymt_ctrl.sample_width==(~0)){
+  if(ymt_ctrl.bath_pos==(~0))
+  {
     ymt_ctrl.bath_pos=56000;
     ymt_ctrl.tray_pos=1000;
     ymt_ctrl.speed_rpm=50;
     ymt_ctrl.accel_rpm=1000;
     ymt_ctrl.strip_width=1200;
     ymt_ctrl.dsp_pos=54000;
-    
     ymt_ctrl.dsp_pos_end=30000;
     ymt_ctrl.asp_pos=4000;
     ymt_ctrl.sample_pos=-32000;
-    
     ymt_ctrl.sample_pos_end=30000;
     ymt_ctrl.sample_pos2=-56000;
     ymt_ctrl.bar_pos=5500;
@@ -117,27 +115,33 @@ void stm_memory_init()
     ymt_ctrl.cl_amp=120;
     ymt_param_write();
   }
-  if(zmt_ctrl.bath_pos==0||zmt_ctrl.sample_width==(~0)){
+
+  if(zmt_ctrl.bath_pos==(~0))
+  {
     zmt_ctrl.bath_pos=1000;
     zmt_ctrl.tray_pos=1000;
     zmt_ctrl.speed_rpm=50;
     zmt_ctrl.accel_rpm=1000;
     zmt_ctrl.strip_width=1200;
     zmt_ctrl.dsp_pos=28000;
-    
     zmt_ctrl.dsp_pos_end=27000;
     zmt_ctrl.asp_pos=4000;
     zmt_ctrl.sample_pos=4500;
-    
     zmt_ctrl.sample_pos_end=30000;
     zmt_ctrl.sample_pos2=4000;
     zmt_ctrl.bar_pos=5500;
     zmt_ctrl.cam_pos=6000;
     zmt_ctrl.sample_width=100;
     zmt_ctrl.cl_amp=100;
-    
     zmt_param_write();
   }
+
+  if(zmt_ctrl.clld_z_axis_offset==(~0))
+  {
+    zmt_ctrl.clld_z_axis_offset=2200;
+    zmt_param_write();
+  }
+
 }
 
 void probe_Hardware_protect()
@@ -199,8 +203,8 @@ void z_homeing()
 {
   z_homing_state = true;
   
-  motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_HOME_OFFSET_H,10000); //z���� ȣ�� ������ GUI���� ��������
-  motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_HOME_OFFSET_L,10000);
+  motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_HOME_OFFSET_H,Z_BATH_POS); //z���� ȣ�� ������ GUI���� ��������
+  motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_HOME_OFFSET_L,Z_BATH_POS);
   motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_TRIGGER_REG,LEAD_HOMING);
   motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_SPEED_ABS,200);
   motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,LEAD_ACC_ABS,1000);
@@ -555,7 +559,6 @@ event execute_stepping_ctrl(event event)
     break;
   case eventZhomeCk:    
     if(mt_zstate==stanby_home){
-      bath_zpos_temp=zmt_ctrl.bath_pos;
       z_homeing_success = true;
       break;
     }else{
@@ -1160,6 +1163,21 @@ event execute_stepping_ctrl(event event)
     sort_8bit(zmt_ctrl.cl_amp,dev_send_buf);
     usb_send_pack(hseZaxiClCurrentRead, dev_send_buf);
     break;
+
+  case hseZaxiClldMoveOffsetSet:
+    zmt_ctrl.clld_z_axis_offset=merge_32bit(zmt_ctrl.clld_z_axis_offset,usb_data_buf);
+    zmt_param_write();
+    motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,CLLD_Z_AXIS_OFFSET_H,zmt_ctrl.clld_z_axis_offset);
+    motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,CLLD_Z_AXIS_OFFSET_L,zmt_ctrl.clld_z_axis_offset);
+    usb_send_pack(hseZaxiClldMoveOffsetSet,usb_data_buf);
+    break;
+
+  case hseZaxiClldMoveOffsetRead:
+    zmt_param_read();
+    sort_8bit(zmt_ctrl.clld_z_axis_offset,dev_send_buf);
+    usb_send_pack(hseZaxiClldMoveOffsetRead,dev_send_buf);
+    break;
+
   case hseProbePage:
     state=stStEng;
     usb_send_pack(hseProbePage, 0);
@@ -1299,6 +1317,7 @@ HAL_StatusTypeDef UART4_ReInit(void)
 
     // 초기화 성공
     HAL_UART_Receive_IT(&huart4, &mt_chr, 1);
+    dbg_serial("StepMotorX_Y_Z_UART_ReInit");
     return HAL_OK;
 }
 
@@ -1376,7 +1395,7 @@ void motor_cmd_send(byte motor_address, byte fc, uint16_t rg_address ,signed lon
       break;
   }
 
-  if((rg_address == LEAD_POSITION_H_ABS)||(rg_address == LEAD_HOME_OFFSET_H)){
+  if((rg_address == LEAD_POSITION_H_ABS)||(rg_address == LEAD_HOME_OFFSET_H)||(rg_address == CLLD_Z_AXIS_OFFSET_H)){
     LeadSendPacket[0] = motor_address;
     LeadSendPacket[1] = fc;
     LeadSendPacket[2] = (rg_address >> 8) & 0xFF;
@@ -1387,7 +1406,7 @@ void motor_cmd_send(byte motor_address, byte fc, uint16_t rg_address ,signed lon
     LeadSendPacket[7] = 0;
   }
 
-  else if((rg_address == LEAD_POSITION_L_ABS)||(rg_address == LEAD_HOME_OFFSET_L)){
+  else if((rg_address == LEAD_POSITION_L_ABS)||(rg_address == LEAD_HOME_OFFSET_L)||(rg_address == CLLD_Z_AXIS_OFFSET_L)){
     LeadSendPacket[0] = motor_address;
     LeadSendPacket[1] = fc;
     LeadSendPacket[2] = (rg_address >> 8) & 0xFF;
@@ -1422,8 +1441,8 @@ void motor_cmd_send(byte motor_address, byte fc, uint16_t rg_address ,signed lon
     LEAD_QueReset();
     HAL_GPIO_WritePin(UART4_DIR_GPIO_Port, UART4_DIR_Pin, (GPIO_PinState)SET);
     dwCheck = HAL_UART_Transmit(&huart4, LeadSendPacket, 8, LEAD_COM_WAIT_TIM);
-    while (__HAL_UART_GET_FLAG(&huart4, UART_FLAG_TC) == RESET);
-    HAL_GPIO_WritePin(UART4_DIR_GPIO_Port, UART4_DIR_Pin, (GPIO_PinState)RESET);
+    //while (__HAL_UART_GET_FLAG(&huart4, UART_FLAG_TC) == RESET);
+    
 
     if(dwCheck)
     {
@@ -1435,6 +1454,7 @@ void motor_cmd_send(byte motor_address, byte fc, uint16_t rg_address ,signed lon
       }
     }
     
+    HAL_GPIO_WritePin(UART4_DIR_GPIO_Port, UART4_DIR_Pin, (GPIO_PinState)RESET);
 
     for(dwCnt = 0; dwCnt < 500; dwCnt++)
     {
@@ -1455,6 +1475,7 @@ void motor_cmd_send(byte motor_address, byte fc, uint16_t rg_address ,signed lon
       break;
     }
     
+    dbg_serial("StepMotorX_Y_Z_Receive_Retry");
     dwReTryCnt++;
     HAL_Delay(100);
     
@@ -1467,7 +1488,7 @@ void motor_cmd_send(byte motor_address, byte fc, uint16_t rg_address ,signed lon
   dwCheck = LEAD_ReceivPacketExec(LeadReceivPacket);
   if(dwCheck == LEAD_RECV_FAIL)
   {
-    //Error code
+    dbg_serial("StepMotorX_Y_Z_Hardware_fault");
     while(1);
   }
   //HAL_Delay(100);
@@ -1564,7 +1585,6 @@ int32_t LEAD_ReceivPacketExec(uint8_t *p_LeadReceivPacket)
       case LEAD_HOME_OFFSET_H:
       case LEAD_HOME_OFFSET_L:  
       case LEAD_PATH_0_SET:  // 저장된 명령 값을 실행시킨다.
-      
       case LEAD_TRIGGER_REG: // 호밍 명령 내릴 때 사용
         *gp_tStatus = stanby;  
       break;

@@ -1081,25 +1081,30 @@ uint8_t dSPIN_Flag(void)
   */
 uint8_t dSPIN_Write_Byte(uint8_t byte)
 {
- uint8_t uSend[2], uGet[2];
+  uint8_t uSend[1] = {byte}; 
+  uint8_t uGet[1] = {0};
+  HAL_StatusTypeDef spi_status;
+  uint8_t retry_count = 0;
 
- int32_t dwCheck = 0;
+  while(retry_count < 5)
+  {
+    HAL_GPIO_WritePin(dSPIN_nSS_Port, dSPIN_nSS_Pin, GPIO_PIN_RESET);
+    spi_status = HAL_SPI_TransmitReceive(hspi, uSend, uGet, 1, 10);
+    HAL_GPIO_WritePin(dSPIN_nSS_Port, dSPIN_nSS_Pin, GPIO_PIN_SET);
 
- uSend[0] = byte;
- HAL_GPIO_WritePin(dSPIN_nSS_Port, dSPIN_nSS_Pin, GPIO_PIN_RESET);
+    if(spi_status == HAL_OK)
+    {
+      return uGet[0];
+    }
 
- dwCheck = HAL_SPI_TransmitReceive(hspi, uSend, uGet, 1, 10);
- if(dwCheck) 
- {
-    error(errShaker,0);
-    while(1);
-    //Error 처리 코드 
- }
+    dbg_serial("dSPIN_Write_Byte_retry");
+    retry_count++;
+    HAL_Delay(10);
+  }
 
- HAL_GPIO_WritePin(dSPIN_nSS_Port, dSPIN_nSS_Pin, GPIO_PIN_SET);
- return uGet[0];
+  error(errShaker,0);
+  while(1);
 }
-
 
 
 

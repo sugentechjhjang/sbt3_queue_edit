@@ -16,8 +16,7 @@ extern DMA_HandleTypeDef hdma_usart1_tx;
 #define PC_STX 0x5B
 #define PC_ETX 0x5D
 
-#define hsPC_TO_DEV_QUE_SZ      64
-
+#define hsPC_TO_DEV_QUE_SZ  512
 #define hsPC_TO_DEV_QUE_OK	0
 #define hsPC_TO_DEV_QUE_FULL	1
 #define hsPC_TO_DEV_QUE_EMPTY	2
@@ -81,6 +80,7 @@ HAL_StatusTypeDef UART1_ReInit(void)
 
     // 초기화 성공
     HAL_UART_Receive_IT(&huart1, &pc_chr, 1);
+    dbg_serial("PC_UART_ReInit");
     return HAL_OK;
 }
 
@@ -255,16 +255,17 @@ byte usb_transmit_bufs[TRANSMIT_BUF_LENGTH];
 void dbg_serial(char *s)
 {
     uint8_t buffer[50] = {0}; 
-    snprintf((char *)buffer, sizeof(buffer), "DEV<-%s\n", s);
+    snprintf((char *)buffer, sizeof(buffer), "DEV<-(%s)\n", s);
     hsDevToPC_NoConvertSendQueHandle(buffer, strlen((char *)buffer));
 }
 
 void dbg_serial_fw_date(void)
 {
     uint8_t buffer[50] = {0};
-    snprintf((char *)buffer, sizeof(buffer), "DEV<-MAIN_FW_DATE_" FW_YEAR FW_DATE "\n");
+    snprintf((char *)buffer, sizeof(buffer), "DEV<-(MAIN_FW_DATE_"FW_YEAR FW_DATE")\n");
     hsDevToPC_NoConvertSendQueHandle(buffer, strlen((char *)buffer));
 }
+
 
 void send_pw_message(char *s)
 {
@@ -869,8 +870,8 @@ int32_t dwPC_To_Dev_PacketExec(uint16_t wCmd, uint8_t *p_Data)
         {
           beep(1000, 3);
           HAL_GPIO_WritePin(FAN_ARR_GPIO_Port,FAN_ARR_Pin,GPIO_PIN_SET);
-          usb_send_pack(eventPauseRes,usb_data_buf);
         }
+        usb_send_pack(eventPauseRes,usb_data_buf);
       }      
     }
 

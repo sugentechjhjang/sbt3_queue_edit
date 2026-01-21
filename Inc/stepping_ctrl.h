@@ -42,7 +42,7 @@ enum mt_com_state
   int32_t cam_pos;
   int32_t sample_width;
   int32_t cl_amp;
-
+  int32_t clld_z_axis_offset;
  };
 #pragma pack(pop)
  extern struct st_motor xmt_ctrl;
@@ -110,7 +110,7 @@ enum mt_com_state
   int32_t cam_pos;
   int32_t sample_width;
   int32_t cl_amp;
-
+  int32_t clld_z_axis_offset;
  };
 #pragma pack(pop)
  extern struct st_motor xmt_ctrl;

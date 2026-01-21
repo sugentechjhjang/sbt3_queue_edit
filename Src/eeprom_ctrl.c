@@ -95,99 +95,248 @@ void eeprom_init()
 
 
 void xmt_param_read(){
-  hsAT24xx_Read(&xmtCfg, (uint8_t*)&xmt_ctrl, XMT_MEM_START_ADD, sizeof(xmt_ctrl));
+  if (hsAT24xx_Read(&xmtCfg, (uint8_t*)&xmt_ctrl, XMT_MEM_START_ADD, sizeof(xmt_ctrl)) != 0)
+  {
+    dbg_serial("xmt_param_read_error");
+    error(errMemory, 0);
+    while(1);
+  }
 }
+
 void xmt_param_write(){
-  hsAT24xx_Write(&xmtCfg, (uint8_t*)&xmt_ctrl, XMT_MEM_START_ADD,  sizeof(xmt_ctrl));
+  if (hsAT24xx_Write(&xmtCfg, (uint8_t*)&xmt_ctrl, XMT_MEM_START_ADD,  sizeof(xmt_ctrl)) != 0)
+  {
+    dbg_serial("xmt_param_write_error");
+    error(errMemory, 0);
+    while(1);
+  }
 }
+
 void ymt_param_read(){
-   hsAT24xx_Read(&ymtCfg, (uint8_t*)&ymt_ctrl, YMT_MEM_START_ADD, sizeof(ymt_ctrl));
+   if (hsAT24xx_Read(&ymtCfg, (uint8_t*)&ymt_ctrl, YMT_MEM_START_ADD, sizeof(ymt_ctrl)) != 0)
+   {
+    dbg_serial("ymt_param_read_error");
+    error(errMemory, 0);
+    while(1);
+   }
 }
+
 void ymt_param_write(){
-  hsAT24xx_Write(&ymtCfg, (uint8_t*)&ymt_ctrl, YMT_MEM_START_ADD,  sizeof(ymt_ctrl));
+  if (hsAT24xx_Write(&ymtCfg, (uint8_t*)&ymt_ctrl, YMT_MEM_START_ADD,  sizeof(ymt_ctrl)) != 0)
+  {
+    dbg_serial("ymt_param_write_error");
+    error(errMemory, 0);
+    while(1);
+  }
 }
+
 void zmt_param_read(){
-   hsAT24xx_Read(&zmtCfg, (uint8_t*)&zmt_ctrl, ZMT_MEM_START_ADD, sizeof(zmt_ctrl));
+   if (hsAT24xx_Read(&zmtCfg, (uint8_t*)&zmt_ctrl, ZMT_MEM_START_ADD, sizeof(zmt_ctrl)) != 0)
+   {
+    dbg_serial("zmt_param_read_error");
+    error(errMemory, 0);
+    while(1);
+   }
 }
+
 void zmt_param_write(){
-  hsAT24xx_Write(&zmtCfg, (uint8_t*)&zmt_ctrl, ZMT_MEM_START_ADD,  sizeof(zmt_ctrl));
+  if (hsAT24xx_Write(&zmtCfg, (uint8_t*)&zmt_ctrl, ZMT_MEM_START_ADD,  sizeof(zmt_ctrl)) != 0)
+  {
+    dbg_serial("zmt_param_write_error");
+    error(errMemory, 0);
+    while(1);
+  }
 }
+
 void shk_param_read(){
- //  hsAT24xx_Read(&sakeCfg, (uint8_t*)&shk_pram, SHK_MEM_START_ADD, sizeof(shk_pram));
-  hsAT24xx_Read(&shakCfg2, (uint8_t*)&shk_pram, 0, sizeof(shk_pram));
+  if (hsAT24xx_Read(&shakCfg2, (uint8_t*)&shk_pram, 0, sizeof(shk_pram)) != 0)
+  {
+    dbg_serial("shk_param_read_error");
+    error(errMemory, 0);
+    while(1);
+  }
 }
+
 void shk_param_write(){
-  //hsAT24xx_Write(&sakeCfg, (uint8_t*)&shk_pram, SHK_MEM_START_ADD,  sizeof(shk_pram));
-  hsAT24xx_Write(&shakCfg2, (uint8_t*)&shk_pram, 0, sizeof(shk_pram));
+  if (hsAT24xx_Write(&shakCfg2, (uint8_t*)&shk_pram, 0, sizeof(shk_pram)) != 0)
+  {
+    dbg_serial("shk_param_write_error");
+    error(errMemory, 0);
+    while(1);
+  }
 }
+
 void servo_param_read(){
-   hsAT24xx_Read(&servoCfg, (uint8_t*)&asp_mt, SEV0_MEM_START_ADD, sizeof(asp_mt));
+   if (hsAT24xx_Read(&servoCfg, (uint8_t*)&asp_mt, SEV0_MEM_START_ADD, sizeof(asp_mt)) != 0)
+   {
+    dbg_serial("servo_param_read_error");
+    error(errMemory, 0);
+    while(1);
+   }
 }
+
 void servo_param_write(){
-  hsAT24xx_Write(&servoCfg, (uint8_t*)&asp_mt, SEV0_MEM_START_ADD,  sizeof(asp_mt));
+  if (hsAT24xx_Write(&servoCfg, (uint8_t*)&asp_mt, SEV0_MEM_START_ADD,  sizeof(asp_mt)) != 0)
+  {
+    dbg_serial("servo_param_write_error");
+    error(errMemory, 0);
+    while(1);
+  }
 }
+
 void pump_param_read(){
-   hsAT24xx_Read(&pumpCfg, (uint8_t*)&pm_pram, PUMP_MEM_START_ADD, sizeof(pm_pram));
+   if (hsAT24xx_Read(&pumpCfg, (uint8_t*)&pm_pram, PUMP_MEM_START_ADD, sizeof(pm_pram)) != 0)
+   {
+    dbg_serial("pump_param_read_error");
+    error(errMemory, 0);
+    while(1);
+   }
 }
+
 void pump_param_write(){
-  hsAT24xx_Write(&pumpCfg, (uint8_t*)&pm_pram, PUMP_MEM_START_ADD,  sizeof(pm_pram));
+  if (hsAT24xx_Write(&pumpCfg, (uint8_t*)&pm_pram, PUMP_MEM_START_ADD,  sizeof(pm_pram)) != 0)
+  {
+    dbg_serial("pump_param_write_error");
+    error(errMemory, 0);
+    while(1);
+  }
 }
+
 void syge_param_read(){
- hsAT24xx_Read(&sygeCfg, (uint8_t*)&syrg_pram, SYGE_MEM_START_ADD, sizeof(syrg_pram));
+ if (hsAT24xx_Read(&sygeCfg, (uint8_t*)&syrg_pram, SYGE_MEM_START_ADD, sizeof(syrg_pram)) != 0)
+ {
+    dbg_serial("syge_param_read_error");
+    error(errMemory, 0);
+    while(1);
+ }
 }
+
 void syge_param_write(){
- hsAT24xx_Write(&sygeCfg, (uint8_t*)&syrg_pram, SYGE_MEM_START_ADD,  sizeof(syrg_pram));
+ if (hsAT24xx_Write(&sygeCfg, (uint8_t*)&syrg_pram, SYGE_MEM_START_ADD,  sizeof(syrg_pram)) != 0)
+ {
+    dbg_serial("syge_param_write_error");
+    error(errMemory, 0);
+    while(1);
+ }
 }
+
 void bar_param_read(){
- hsAT24xx_Read(&barCfg, (uint8_t*)&bar_pm, BAR_MEM_START_ADD, sizeof(bar_pm));
+ if (hsAT24xx_Read(&barCfg, (uint8_t*)&bar_pm, BAR_MEM_START_ADD, sizeof(bar_pm)) != 0)
+ {  
+    dbg_serial("bar_param_read_error");
+    error(errMemory, 0);
+    while(1);
+ }
 }
+
 void bar_param_write(){
- hsAT24xx_Write(&barCfg, (uint8_t*)&bar_pm, BAR_MEM_START_ADD,  sizeof(bar_pm));
+ if (hsAT24xx_Write(&barCfg, (uint8_t*)&bar_pm, BAR_MEM_START_ADD,  sizeof(bar_pm)) != 0)
+ {
+    dbg_serial("bar_param_write_error");
+    error(errMemory, 0);
+    while(1);
+ }
 }
 
 void hlld_param_read(){
- hsAT24xx_Read(&hlldCfg, (uint8_t*)&smp_pram, HLLD_MEM_START_ADD, sizeof(smp_pram));
+ if (hsAT24xx_Read(&hlldCfg, (uint8_t*)&smp_pram, HLLD_MEM_START_ADD, sizeof(smp_pram)) != 0)
+ {
+    dbg_serial("hlld_param_read_error");
+    error(errMemory, 0);
+    while(1);
+ }
 }
 void hlld_param_write(){
- hsAT24xx_Write(&hlldCfg, (uint8_t*)&smp_pram, HLLD_MEM_START_ADD,  sizeof(smp_pram));
+ if (hsAT24xx_Write(&hlldCfg, (uint8_t*)&smp_pram, HLLD_MEM_START_ADD,  sizeof(smp_pram)) != 0)
+ {
+    dbg_serial("hlld_param_write_error");
+    error(errMemory, 0);
+    while(1);
+ }
 }
 
 void cam_param_read(){
- hsAT24xx_Read(&camCfg, (uint8_t*)&cam_pram, CAM_MEM_START_ADD, sizeof(cam_pram));
+ if (hsAT24xx_Read(&camCfg, (uint8_t*)&cam_pram, CAM_MEM_START_ADD, sizeof(cam_pram)) != 0)
+ {
+    dbg_serial("cam_param_read_error");
+    error(errMemory, 0);
+    while(1);
+ }
 }
+
 void cam_param_write(){
- hsAT24xx_Write(&camCfg, (uint8_t*)&cam_pram, CAM_MEM_START_ADD,  sizeof(cam_pram));
+ if (hsAT24xx_Write(&camCfg, (uint8_t*)&cam_pram, CAM_MEM_START_ADD,  sizeof(cam_pram)) != 0)
+ {
+    dbg_serial("cam_param_write_error");
+    error(errMemory, 0);
+    while(1);
+ }
 }
+
 void sq_read(){
-  hsAT24xx_Read(&sqCfg, (uint8_t*)&sq, 0, sizeof(sq));
- ///hsAT24xx_Read(&sqCfg, (uint8_t*)&sq, SQ_MEM_START_ADD, sizeof(sq));
+  if (hsAT24xx_Read(&sqCfg, (uint8_t*)&sq, 0, sizeof(sq)) != 0)
+  {
+    dbg_serial("sq_read_error");
+    error(errMemory, 0);
+    while(1);
+  }
 }
 void sq_write(){
-  hsAT24xx_Write(&sqCfg, (uint8_t*)&sq, 0,  sizeof(sq));
- //hsAT24xx_Write(&sqCfg, (uint8_t*)&sq, SQ_MEM_START_ADD,  sizeof(sq));
-}
-
-
+  if (hsAT24xx_Write(&sqCfg, (uint8_t*)&sq, 0,  sizeof(sq)) != 0)
+  {
+    dbg_serial("sq_write_error");
+    error(errMemory, 0);
+    while(1);
+  }
+}  
 
 void servo_param_read2(){
-   hsAT24xx_Read(&servoCfg2, (uint8_t*)&asp_mt, SERVO2_MEM_START_ADD, sizeof(asp_mt));
+   if (hsAT24xx_Read(&servoCfg2, (uint8_t*)&asp_mt, SERVO2_MEM_START_ADD, sizeof(asp_mt)) != 0)
+   {
+      dbg_serial("servo_param_read2_error");
+      error(errMemory, 0);
+      while(1);
+   }
 }
 void servo_param_write2(){
-  hsAT24xx_Write(&servoCfg2, (uint8_t*)&asp_mt, SERVO2_MEM_START_ADD,  sizeof(asp_mt));
+  if (hsAT24xx_Write(&servoCfg2, (uint8_t*)&asp_mt, SERVO2_MEM_START_ADD,  sizeof(asp_mt)) != 0)
+  {
+    dbg_serial("servo_param_write2_error");
+    error(errMemory, 0);
+    while(1);
+  }
 }
-
 void temp_param_read(){
-   hsAT24xx_Read(&tempCfg, (uint8_t*)&tmp, SERVO2_MEM_START_ADD, sizeof(tmp));
+   if (hsAT24xx_Read(&tempCfg, (uint8_t*)&tmp, SERVO2_MEM_START_ADD, sizeof(tmp)) != 0)
+   {
+    dbg_serial("temp_param_read_error");
+    error(errMemory, 0);
+    while(1);
+   }
 }
 void temp_param_write(){
-  hsAT24xx_Write(&tempCfg, (uint8_t*)&tmp, SERVO2_MEM_START_ADD,  sizeof(tmp));
+  if (hsAT24xx_Write(&tempCfg, (uint8_t*)&tmp, SERVO2_MEM_START_ADD,  sizeof(tmp)) != 0)
+  {
+    dbg_serial("temp_param_write_error");
+    error(errMemory, 0);
+    while(1);
+  }
 }
-
-
 void app_data_read(uint16_t addr, uint8_t* data){
-   hsAT24xx_Read(&appCfg, data,(addr*4), 4);
-}
+   if (hsAT24xx_Read(&appCfg, data,(addr*4), 4) != 0)
+   {
+    dbg_serial("app_data_read_error");
+    error(errMemory, 0);
+    while(1);
+   }
+}  
 
 void app_data_write(uint16_t addr, uint8_t* data ){
-  hsAT24xx_Write(&appCfg, data,(addr*4),  4);
+  if (hsAT24xx_Write(&appCfg, data,(addr*4),  4) != 0)
+  {
+    dbg_serial("app_data_write_error");
+    error(errMemory, 0);
+    while(1);
+  }
 }
+

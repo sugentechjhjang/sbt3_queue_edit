@@ -85,7 +85,7 @@ static void MX_ADC2_Init(void);
 
 int main(void)
 {
-
+   uint16_t tx_state = 0;
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -139,6 +139,7 @@ int main(void)
   cam_led_on();
   set_timer_(eventSpuOn,2000,0);
 
+   
 
   /* USER CODE BEGIN 2 */
 
@@ -180,22 +181,27 @@ int main(void)
       {
           if((echoBuf[PACKET_CMD] == FIND_ADDRESS_CMD) || (echoBuf[PACKET_CMD] == END_CMD) )
           {
-              //HAL_Delay(100);
-              HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, GPIO_PIN_SET);   
-              HAL_UART_Transmit(&huart5, echoBuf, expectedTotalLength, 1000);
+            HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, GPIO_PIN_SET);   
+            tx_state = HAL_UART_Transmit(&huart5, echoBuf, expectedTotalLength, 1000);
+            
+            if(tx_state) 
+            {
+              UART5_ReInit();
+            }
 
-              while (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_TC) == RESET);
-
-              HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, GPIO_PIN_RESET);
           }
           
           if((echoBuf[PACKET_CMD] == BODY_CMD))
           { 
             HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, GPIO_PIN_SET); 
-            HAL_UART_Transmit(&huart5, echoBuf, sizeof(echoBuf), 1000);
+            tx_state = HAL_UART_Transmit(&huart5, echoBuf, sizeof(echoBuf), 1000);
 
-            while (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_TC) == RESET);
-            
+            if(tx_state) 
+            {
+              UART5_ReInit();
+            }
+
             HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, GPIO_PIN_RESET);
           }
           memset(echoBuf,0,sizeof(echoBuf));

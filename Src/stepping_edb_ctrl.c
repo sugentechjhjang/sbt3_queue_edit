@@ -61,6 +61,7 @@ struct st_motor zmt_ctrl ={
   6000,
   100,
   100,
+  0,
 };
 
 void stm_memory_init()
@@ -71,18 +72,17 @@ void stm_memory_init()
   ymt_param_read();
   zmt_param_read();
   err_tmout_en(FALSE);
-  if(xmt_ctrl.bath_pos==0||xmt_ctrl.sample_width==(~0)){
+  if(xmt_ctrl.bath_pos==(~0))
+  {
     xmt_ctrl.bath_pos=12000;
     xmt_ctrl.tray_pos=1000;
     xmt_ctrl.speed_rpm=100;
     xmt_ctrl.accel_rpm=1000;
     xmt_ctrl.strip_width=7000;
     xmt_ctrl.dsp_pos=49500;
-    
     xmt_ctrl.dsp_pos_end=135500;
     xmt_ctrl.asp_pos=4000;
     xmt_ctrl.sample_pos=2500;
-    
     xmt_ctrl.sample_pos_end=249000;
     xmt_ctrl.sample_pos2=4000;
     xmt_ctrl.bar_pos=5500;
@@ -90,21 +90,19 @@ void stm_memory_init()
     xmt_ctrl.sample_width=10000;
     xmt_ctrl.cl_amp=120;
     xmt_param_write();
-    
   }  
     
-  if(ymt_ctrl.bath_pos==0||ymt_ctrl.sample_width==(~0)){
+  if(ymt_ctrl.bath_pos==(~0))
+  {
     ymt_ctrl.bath_pos=56000;
     ymt_ctrl.tray_pos=1000;
     ymt_ctrl.speed_rpm=50;
     ymt_ctrl.accel_rpm=1000;
     ymt_ctrl.strip_width=1200;
     ymt_ctrl.dsp_pos=54000;
-    
     ymt_ctrl.dsp_pos_end=30000;
     ymt_ctrl.asp_pos=4000;
     ymt_ctrl.sample_pos=-32000;
-    
     ymt_ctrl.sample_pos_end=30000;
     ymt_ctrl.sample_pos2=-56000;
     ymt_ctrl.bar_pos=5500;
@@ -113,25 +111,30 @@ void stm_memory_init()
     ymt_ctrl.cl_amp=120;
     ymt_param_write();
   }
-  if(zmt_ctrl.bath_pos==0||zmt_ctrl.sample_width==(~0)){
+
+  if(zmt_ctrl.bath_pos==(~0))
+  {
     zmt_ctrl.bath_pos=1000;
     zmt_ctrl.tray_pos=1000;
     zmt_ctrl.speed_rpm=50;
     zmt_ctrl.accel_rpm=1000;
     zmt_ctrl.strip_width=1200;
     zmt_ctrl.dsp_pos=28000;
-    
     zmt_ctrl.dsp_pos_end=27000;
     zmt_ctrl.asp_pos=4000;
     zmt_ctrl.sample_pos=4500;
-    
     zmt_ctrl.sample_pos_end=30000;
     zmt_ctrl.sample_pos2=4000;
     zmt_ctrl.bar_pos=5500;
     zmt_ctrl.cam_pos=6000;
     zmt_ctrl.sample_width=100;
     zmt_ctrl.cl_amp=100;
-    
+    zmt_param_write();
+  }
+
+  if(zmt_ctrl.clld_z_axis_offset==(~0))
+  {
+    zmt_ctrl.clld_z_axis_offset=0;
     zmt_param_write();
   }
 }
@@ -176,19 +179,20 @@ void stm_reset()
     motor_cmd_send(ADDR_MOTOR_Y,INST_GAP,EDB2000_CL_CLOSED_LOOP_CHECK_TYPE,0,1);
   }  */
 //-----------------------------------------------------------------------------------
-
+  motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,2,2,0);
+  HAL_Delay(50);
   motor_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_CL_TURN_ON_CLOSED_LOOP_TYPE,0,0);
-  HAL_Delay(100);
+  HAL_Delay(50);
   while(z_closeloop_state)
   {  
     motor_cmd_send(ADDR_MOTOR_Z,INST_GAP,EDB2000_CL_CLOSED_LOOP_CHECK_TYPE,0,0);
-    HAL_Delay(100);
+    HAL_Delay(50);
   }
   motor_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_CL_TURN_ON_CLOSED_LOOP_TYPE,0,1);
   while(!z_closeloop_state)
   {    
     motor_cmd_send(ADDR_MOTOR_Z,INST_GAP,EDB2000_CL_CLOSED_LOOP_CHECK_TYPE,0,1);
-    HAL_Delay(100);
+    HAL_Delay(50);
   }  
   
 //-----------------------------------------------------------------------------------
@@ -199,9 +203,9 @@ void stm_reset()
   motor_cmd_send(ADDR_MOTOR_Y,INST_RUNAPP,0,0,ADDR_MOTOR_Y);//Homeing valiable*/
   
   motor_cmd_send(ADDR_MOTOR_Z,INST_RESET,0,0,0);//Homeing valiable
-  HAL_Delay(100);
+  HAL_Delay(50);
   motor_cmd_send(ADDR_MOTOR_Z,INST_RUNAPP,0,0,ADDR_MOTOR_Z);//Homeing valiable
-  HAL_Delay(100);
+  HAL_Delay(50);
   /*motor_cmd_send(ADDR_MOTOR_Z,MOTOR_POWER_SWITCH,0,0,0);
   HAL_Delay(100);
   motor_cmd_send(ADDR_MOTOR_Z,MOTOR_POWER_SWITCH,0,0,1);
@@ -540,8 +544,6 @@ event execute_stepping_ctrl(event event)
   case eventZhomeCk:    
     if(mt_zstate==stanby_home){
       stmt_abs_home_move(ADDR_MOTOR_Z,Z_BATH_POS);
-       bath_zpos_temp=Z_BATH_POS;
-     // z_pram_set();
       break;
     }else{
       motor_cmd_send(ADDR_MOTOR_Z, INST_GGP, 1, 2, 0);
@@ -1148,15 +1150,19 @@ event execute_stepping_ctrl(event event)
     usb_send_pack(hseProbeSmplZRead, dev_send_buf);
     break;
     
-  case hseZaxiClCurrentSet:
-    zmt_ctrl.cl_amp=merge_32bit(zmt_ctrl.cl_amp,usb_data_buf);
-    motor_cmd_send(ADDR_MOTOR_Z,INST_SAP,EDB2000_CL_CURRENT_MIN_TYPE,0,zmt_ctrl.cl_amp); 
-    usb_send_pack(hseZaxiClCurrentSet,usb_data_buf);
+  case hseZaxiClldMoveOffsetSet:
+    zmt_ctrl.clld_z_axis_offset=merge_32bit(zmt_ctrl.clld_z_axis_offset,usb_data_buf);
+    zmt_param_write();
+    motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,5,2, zmt_ctrl.clld_z_axis_offset);
+    usb_send_pack(hseZaxiClldMoveOffsetSet,usb_data_buf);
     break;
-  case hseZaxiClCurrentRead:
-    sort_8bit(zmt_ctrl.cl_amp,dev_send_buf);
-    usb_send_pack(hseZaxiClCurrentRead, dev_send_buf);
+
+  case hseZaxiClldMoveOffsetRead:
+    zmt_param_read();
+    sort_8bit(zmt_ctrl.clld_z_axis_offset,dev_send_buf);
+    usb_send_pack(hseZaxiClldMoveOffsetRead,dev_send_buf);
     break;
+
   case hseProbePage:
     state=stStEng;
     usb_send_pack(hseProbePage, 0);
@@ -1291,6 +1297,7 @@ HAL_StatusTypeDef UART4_ReInit(void)
 
     // 초기화 성공
     HAL_UART_Receive_IT(&huart4, &mt_chr, 1);
+    dbg_serial("StepMotorX_Y_Z_UART_ReInit");
     return HAL_OK;
 }
 
@@ -1402,8 +1409,8 @@ void motor_cmd_send(byte address, byte inst, byte type ,byte bank, signed long i
     EDB_QueReset();
     HAL_GPIO_WritePin(UART4_DIR_GPIO_Port, UART4_DIR_Pin, (GPIO_PinState)SET);
     dwCheck = HAL_UART_Transmit(&huart4, EDBSendPacket, SND_EDB_MAX, EDB_COM_WAIT_TIM);
-    while (__HAL_UART_GET_FLAG(&huart4, UART_FLAG_TC) == RESET);
-    HAL_GPIO_WritePin(UART4_DIR_GPIO_Port, UART4_DIR_Pin, (GPIO_PinState)RESET);
+    //while (__HAL_UART_GET_FLAG(&huart4, UART_FLAG_TC) == RESET);
+    
     
     if(dwCheck)
     {
@@ -1414,6 +1421,9 @@ void motor_cmd_send(byte address, byte inst, byte type ,byte bank, signed long i
         while(1);
       }
     }
+
+    HAL_GPIO_WritePin(UART4_DIR_GPIO_Port, UART4_DIR_Pin, (GPIO_PinState)RESET);
+    
     for(dwCount = 0; dwCnt < 500; dwCount++)
     {
       HAL_Delay(5);
@@ -1435,6 +1445,8 @@ void motor_cmd_send(byte address, byte inst, byte type ,byte bank, signed long i
         //Error Code
       }
     }
+    
+    dbg_serial("StepMotorX_Y_Z_Receive_Retry");
     dwReTryCnt++;
     HAL_Delay(100);
     if(dwReTryCnt > EDB_RE_TRY_MAX)

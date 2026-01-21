@@ -401,14 +401,7 @@ event execute_sys_ctrl(event event)
     break;
 
   case TEST_MCU_FW_DATE_CHECK:
-    year = (uint16_t)atoi(FW_YEAR);
-    date = (uint16_t)atoi(FW_DATE);
-
-    dev_send_buf[0] = (uint8_t)((year >> 8) & 0xFF); 
-    dev_send_buf[1] = (uint8_t)(year & 0xFF);       
-    dev_send_buf[2] = (uint8_t)((date >> 8) & 0xFF); 
-    dev_send_buf[3] = (uint8_t)(date & 0xFF);      
-    usb_send_pack(TEST_MCU_FW_DATE_CHECK,dev_send_buf);
+    dbg_serial_fw_date();
     break;
 
   case TEST_LLD_FW_DATE_CHECK:

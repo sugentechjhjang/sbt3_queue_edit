@@ -193,6 +193,9 @@ enum cntrl_event
           hseProbeStripGapRead,
           hseProbeSampleGapSet,
           hseProbeSampleGapRead,
+          
+          hseZaxiClldMoveOffsetSet,
+          hseZaxiClldMoveOffsetRead,
 
           eventLLDFwDown = 0x6400,
           
@@ -237,7 +240,7 @@ enum cntrl_event
           hseClldSWSWriteResp,
           hseClldTestStop,
           hseClldTestStopResp,
-          hseClldVolH,
+          hseClldVol,
           hseClldValueSet,
           hseClldValueRead,
 
@@ -363,6 +366,11 @@ enum cntrl_event
           eventManualErrorSampBit1,
           eventManualErrorSampBit2,
           eventSqManualStart,
+          eventSqCcdBlockerCheck,
+          eventSqCcdBlockerFlagOn,
+          eventSqOpenCcdBlockerWindow, 
+          eventSqCcdBlockerStart,
+          eventSqCcdBlockerBeepControl,
           
           
           
@@ -963,6 +971,8 @@ enum cntrl_event
           hseProbeStripGapRead = 0x061A,
           hseProbeSampleGapSet = 0x061B,
           hseProbeSampleGapRead = 0x061C,
+          hseZaxiClldMoveOffsetSet=0x061D,
+          hseZaxiClldMoveOffsetRead=0x061E,
 
           eventLLDFwDown = 0x6400,
           
@@ -1007,7 +1017,7 @@ enum cntrl_event
           hseClldSWSWriteResp = 0x0814,
           hseClldTestStop = 0x0815,
           hseClldTestStopResp = 0x0816,
-          hseClldVolH = 0x0817,
+          hseClldVol = 0x0817,
           hseClldValueSet = 0x0818,
           hseClldValueRead = 0x0819,
 
@@ -1134,11 +1144,12 @@ enum cntrl_event
           eventManualErrorSampBit2 = 0x100E,
           eventSqManualStart = 0x100F,
           eventSqCcdBlockerCheck = 0x1010,
-          eventOpenCcdBlockerWindow = 0x1011,
-          eventSqCcdBlockerStart = 0x1012,
+          eventSqCcdBlockerFlagOn = 0x1011,
+          eventOpenCcdBlockerWindow = 0x1012,
+          eventSqCcdBlockerStart = 0x1013,
+          eventSqCcdBlockerBeepControl = 0x1014,
           
-          
-          
+        
           hseCamLedPramWrite = 0x1101,
           hseCamLedPramWriteResp = 0x1102,
           hseCamLedPramRead = 0x1103,
@@ -1478,7 +1489,7 @@ enum cntrl_event
           eventBarPr = 0xB020,
           eventPauseInfinRoutin = 0xB021,
           eventShakeInit = 0xB022,
-    _eventEnd = 0xB023,
+          _eventEnd = 0xB023,
 
   //0xC ~ 0xD 영역은 SW가 독립적으로 카메라 튜닝데이터를 저장하는 영역이라 사용 불가.
     //@Save  

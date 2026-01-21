@@ -128,6 +128,7 @@ HAL_StatusTypeDef UART5_ReInit(void)
 
     // 초기화 성공
     HAL_UART_Receive_IT(&huart5, &uart5_chr, 1);
+    dbg_serial("Pump_LLD_UART_ReInit");
     return HAL_OK;
 }
 
@@ -528,7 +529,7 @@ event execute_pump_ctrl(event event)
     disp_sgl.total_strip=merge_32bit(disp_sgl.total_strip,usb_data_buf);
    //give_event(eventAspIinit,0);
     disp_sgl.disp_vol=pm_pram.vol[RD_PUMP1-1];
-     give_event(eventPrimeIinit,0);
+    give_event(eventPrimeIinit,0);
    // give_event(eventDspIinit,0);
     usb_send_pack((enum cntrl_event)event, 0);
     break;
@@ -680,16 +681,20 @@ int32_t hsPump_Communication_Handle(uint16_t *p_wOriginDatBuf)
     UART5_QueReset();
     HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, (GPIO_PinState)SET);
     dwCheck = HAL_UART_Transmit(&huart5, uSendPacket, dwSendDataSZ, 100);
-    HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, (GPIO_PinState)RESET);
+    
     if(dwCheck)
     {
       dwHAL_Err_Cnt++;
       UART5_ReInit();
+      dbg_serial("PUMP_UART_ReInit");
+
       if(dwHAL_Err_Cnt > 5) 
       {
         while(1);
       }
     }
+    
+    HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, (GPIO_PinState)RESET);
     //Header Packet 수신 
     for(dwCnt = 0; dwCnt < hsPUMP_COM_RECEIV_WAIT_CNT_MAX ; dwCnt++)
     {
@@ -711,6 +716,7 @@ int32_t hsPump_Communication_Handle(uint16_t *p_wOriginDatBuf)
       break;
     }
 
+    dbg_serial("PUMP_Receive_retry");
     dwReTryCnt++;
     HAL_Delay(100);
     

@@ -46,7 +46,43 @@ void MX_I2C1_Init(void)
   hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLED;
   hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLED;
   HAL_I2C_Init(&hi2c1);
+}
 
+void I2C1_Error_Recovery(void)
+{
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    // 1. I2C 주변장치 비활성화
+    HAL_I2C_DeInit(&hi2c1);
+
+    // 2. SCL, SDA 핀을 GPIO 출력(오픈 드레인)으로 재설정
+    //    외부 풀업 저항이 없는 경우를 대비해 내부 풀업을 활성화합니다.
+    GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7; // PB6: SCL, PB7: SDA
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_LOW;
+    HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+    // 3. SDA 라인이 LOW로 고착된 경우를 대비해 SCL 클럭을 9번 토글
+    for(int i = 0; i < 9; i++)
+    {
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+        HAL_Delay(1);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+        HAL_Delay(1);
+    }
+
+    // 4. I2C 버스에 STOP 신호 생성하여 슬레이브 상태를 리셋
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
+    HAL_Delay(1);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
+    dwHsSW_Delay_ms(1);
+
+    // 5. I2C 주변장치 재초기화
+    MX_I2C1_Init();
 }
 /**
 
@@ -78,26 +114,30 @@ int32_t BSP_AT24_I2C_Write(uint16_t wDevAddr, uint16_t wMemAddr, uint16_t wMemAd
   HAL_StatusTypeDef tCheck;
   uint32_t dwCnt = 0;
   
-  while(1)
+  while(dwCnt < 5) // 5번 재시도
   {
     tCheck = HAL_I2C_Mem_Write( &hi2c1, wDevAddr, wMemAddr, wMemAddrSize, p_uData, wSize, dwTimeout);
-    
-    if( tCheck == HAL_OK ) return 0;
+
+    if( tCheck == HAL_OK )
+    {
+      return 0; // 성공
+    }
     else if( tCheck == HAL_BUSY)
     {
-      if(dwCnt > 5) return 1;
-      else
-      {
-        dwHsSW_Delay_ms(1);
-        dwCnt++;
-      }
+      // HAL_BUSY 상태는 잠시 기다린 후 재시도.
+      HAL_Delay(10);
     }
-    else break;
+    else // HAL_ERROR, HAL_TIMEOUT 등 더 심각한 에러
+    {
+      // I2C 버스 고착(Stuck) 등의 문제일 수 있으므로 버스 복구 절차를 수행.
+      dbg_serial("BSP_AT24_I2C_Write_Recovery");
+      I2C1_Error_Recovery();
+      HAL_Delay(10); // 복구 후 안정화 시간
+    }
+    dwCnt++;
   }
-  
-  return 1;
+  return 1; // 5번 시도 후에도 실패
 }
-
 
 /**
 * @brief :
@@ -109,25 +149,29 @@ int32_t BSP_AT24_I2C_Read(uint16_t wDevAddr, uint16_t wMemAddr, uint16_t wMemAdd
   HAL_StatusTypeDef tCheck;
   uint32_t dwCnt = 0;
   
-  while(1)
+  while(dwCnt < 5) // 5번 재시도
   {
     tCheck = HAL_I2C_Mem_Read( &hi2c1, wDevAddr, wMemAddr, wMemAddrSize, p_uData, wSize, dwTimeout);
 
-    if( tCheck == HAL_OK ) return 0;
+    if( tCheck == HAL_OK )
+    {
+      return 0; // 성공
+    }
     else if( tCheck == HAL_BUSY)
     {
-      if(dwCnt > 5) return 1;
-      else
-      {
-        dwHsSW_Delay_ms(1);
-        dwCnt++;
-      }
+      // HAL_BUSY 상태는 잠시 기다린 후 재시도합니다.
+      HAL_Delay(10);
     }
-    else break;
-
+    else // HAL_ERROR, HAL_TIMEOUT 등 더 심각한 에러
+    {
+      // I2C 버스 고착(Stuck) 등의 문제일 수 있으므로 버스 복구 절차를 수행합니다.
+      dbg_serial("BSP_AT24_I2C_Read_Recovery");
+      I2C1_Error_Recovery();
+      HAL_Delay(10); // 복구 후 안정화 시간
+    }
+    dwCnt++;
   }
-  
-  return 1;
+  return 1; // 5번 시도 후에도 실패
 }
 
 

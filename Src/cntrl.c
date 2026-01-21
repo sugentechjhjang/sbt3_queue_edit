@@ -103,12 +103,14 @@ event execute_main_ctrl(event event)
   case eventZHomeInitCheck:
     if(z_homeing_success){
       y_homeing();
+      z_homeing_success = false;
       set_timer_(eventShakeInit,5000,0);
     }else  set_timer_(eventZHomeInitCheck,100,0);
     break;
   case eventShakeInit:
     if(y_homeing_success)
     {
+      y_homeing_success = false;
       set_timer_(eventSpuInit,100,0);
     }
     else set_timer_(eventShakeInit,100,0);
@@ -129,7 +131,6 @@ event execute_main_ctrl(event event)
   case eventLldInit:
     hlld_send_pack(HLLD_ADD, HLLD_CLLD_VALUE_SET,0,smp_pram.clld_value_set); 
     hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
-    //set_timer_(eventSpuStnby,5000,0);
     break;
   case eventSpuInit:
     if(!home_flag){
@@ -140,7 +141,8 @@ event execute_main_ctrl(event event)
       if(x_homeing_success){
         set_timer_(eventShakeHomeInit,100,0);
         Se655_Barcode_Init();
-        home_flag=FALSE;
+        x_homeing_success = false;
+        home_flag=false;
       }else
         set_timer_(eventSpuInit,50,0);
     }
@@ -162,14 +164,26 @@ event execute_main_ctrl(event event)
     if(state!=stStby){
       #ifdef Motor_EDB
         motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,4,2, zmt_ctrl.sample_pos);
+        motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,5,2, zmt_ctrl.clld_z_axis_offset);
       #endif
+
+      #ifdef Motor_LEAD
+        motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,CLLD_Z_AXIS_OFFSET_H,zmt_ctrl.clld_z_axis_offset);
+        motor_cmd_send(ADDR_MOTOR_Z,LEAD_WRITE,CLLD_Z_AXIS_OFFSET_L,zmt_ctrl.clld_z_axis_offset);
+      #endif
+      
       set_timer_(eventDevStateRep,3000,0);
     }
     break;
+  
   case eventDevStateRep:
     state=stStby;
     beep(80, 2);
-    
+
+    if(aging_mode == true)
+    {
+      set_timer_(TEST_AGING_MODE,500,0); 
+    }
     break;
     
     // --------init------------
@@ -406,7 +420,7 @@ event execute_main_ctrl(event event)
     switch(state)
     {
     case stPause:
-      usb_send_pack(eventPauseRes,0);
+      //usb_send_pack(eventPauseRes,0);
       break;
     case stStEng:
       give_event(eventDspIinit,0);
@@ -433,7 +447,7 @@ event execute_main_ctrl(event event)
     smp_prime_pm_ch=0;
     syg_prime_oper_cnt=smpl_prime.syg_prime_cnt*2; 
     stmt_abs_move(ADDR_MOTOR_Z,Z_BATH_POS);
-    dbg_serial("(eventSmpPrimeInit)"); 
+    dbg_serial("eventSmpPrimeInit"); 
 
     set_timer_(smpl_prime.event[++smp_prime_eve_cnt],200,0);
 
@@ -448,25 +462,26 @@ event execute_main_ctrl(event event)
       #ifdef Motor_LEAD
         stmt_abs_move(ADDR_MOTOR_Y,ymt_ctrl.bath_pos);
       #endif
-      dbg_serial("(eventSmpPrimeBathMove)");
+      dbg_serial("eventSmpPrimeBathMove");
       set_timer_(smpl_prime.event[++smp_prime_eve_cnt],50,0);
     }
     else 
     {
-      //dbg_serial("(eventSmpPrimeBathMove_LOOP)");
+      dbg_serial("eventSmpPrimeBathMove_LOOP");
       set_timer_(smpl_prime.event[smp_prime_eve_cnt],50,0);
     }
     break;
  
   case eventSmpPrimeAixsCheck:
-    if(x_reach_pos&&y_reach_pos){
+    if(x_reach_pos&&y_reach_pos)
+    {
       set_timer_(smpl_prime.event[++smp_prime_eve_cnt],50,0);
-      dbg_serial("(eventSmpPrimeAixsCheck)");
-    }else{        
-      //dbg_serial("(eventSmpPrimeAixsCheck_LOOP)");
-
+      dbg_serial("eventSmpPrimeAixsCheck");
+    }
+    else
+    {        
+      dbg_serial("eventSmpPrimeAixsCheck_LOOP");
       set_timer_(smpl_prime.event[smp_prime_eve_cnt],50,0);
-
     }  
     break;
   case eventSmpPrimeStripMoveZ:
@@ -768,7 +783,7 @@ event execute_main_ctrl(event event)
       stmt_abs_move(ADDR_MOTOR_Y, ymt_ctrl.sample_pos2);
     
 
-    hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
+    //hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
     break;
     
@@ -845,7 +860,9 @@ event execute_main_ctrl(event event)
     stmt_speed_set(ADDR_MOTOR_Y,300);
     C3000_srige_oper(SYRINGE_ACCEL_SET , 20);
     C3000_srige_oper(SYRINGE_SPEED_SET , 6); //jjh
-    hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
+    //hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
+    hlld_send_pack(HLLD_ADD, HLLD_CLLD_PREVIOUS,0, 0);
+    hlld_send_pack(HLLD_ADD, HLLD_CLLD_CURRENT,0, 0);
 
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
     break;
@@ -956,12 +973,11 @@ event execute_main_ctrl(event event)
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
     break;
     
-    
-    
   case eventSmpStripDspMove:
     stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.dsp_pos);
     set_timer_(smpl_pr.event[++smple_ev_cnt],50,0);
     break;
+    
   case eventSmpSygDspOper:
     C3000_srige_oper(SYRINGE_SPEED_SET , 4);
     C3000_srige_oper(SYRINGE_MOVE_UP ,syrg_pram.vol+(syrg_pram.air_gap/2));// 400);
@@ -977,6 +993,7 @@ event execute_main_ctrl(event event)
     stmt_abs_move(ADDR_MOTOR_Z,Z_BATH_POS);
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
     break;
+
   case eventSmpFinalEnd:
     
     dSPIN_Go_To( 0);
@@ -1131,7 +1148,7 @@ event execute_main_ctrl(event event)
       }
       break;
     case stPause:
-      usb_send_pack(eventPauseRes,0);
+      //usb_send_pack(eventPauseRes,0);
       break;
       
     }
@@ -1289,7 +1306,7 @@ event execute_main_ctrl(event event)
         set_timer_(eventSqNext,100,0);
       break;
     case stPause:
-      usb_send_pack(eventPauseRes,0);
+      //usb_send_pack(eventPauseRes,0);
       break;
     case stStby:
       set_timer_(eventSqNext,100,0);
@@ -1382,7 +1399,7 @@ event execute_main_ctrl(event event)
     break;
   case eventDspAspSkAngle:
     // dSPIN_Go_To(shk_pram.up_ang_pos);
-    dbg_serial("(eventDspAspSkAngle)"); 
+    dbg_serial("eventDspAspSkAngle"); 
     dSPIN_Go_To(shk_pram.dasp_pos);
     set_timer_(diasp.event[++diasp_eve_cnt],100,0);
     break;
@@ -1603,7 +1620,7 @@ event execute_main_ctrl(event event)
         set_timer_(eventSqNext,2000,0);
       break;
     case stPause:
-      usb_send_pack(eventPauseRes,0);
+      //usb_send_pack(eventPauseRes,0);
       break;
     case stStby:
       set_timer_(eventSqNext,2000,0);
@@ -1760,7 +1777,7 @@ event execute_main_ctrl(event event)
         set_timer_(eventSqNext,100,0);
       break;
     case stPause:
-      usb_send_pack(eventPauseRes,0);
+      //usb_send_pack(eventPauseRes,0);
       break;
     }
     break;
@@ -1910,9 +1927,8 @@ event execute_main_ctrl(event event)
         if(!call_com_timeout_cnt()) 
         {
           Sample_LLD_ClearPrimeEvents();
-          dbg_serial("(eventSmpPrimeInit_Retry)");
+          dbg_serial("eventSmpPrimeInit_Retry");
           smp_prime_eve_cnt = 0;
-          motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,2,2,0);
           stm_reset();
           motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,4,2, zmt_ctrl.sample_pos);
           z_homeing();
@@ -1938,9 +1954,8 @@ event execute_main_ctrl(event event)
         if(!lld_com_timeout_cnt())
         {
           Sample_LLD_ClearEvents();
-          dbg_serial("(eventSmpInit_Retry)");
+          dbg_serial("eventSmpInit_Retry");
           smple_ev_cnt=0;
-          motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,2,2,0);
           stm_reset();
           motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,4,2, zmt_ctrl.sample_pos);
           z_homeing();
@@ -1970,7 +1985,7 @@ event execute_main_ctrl(event event)
         if(!call_com_timeout_cnt()) 
         {
           Sample_LLD_ClearPrimeEvents();
-          dbg_serial("(eventSmpPrimeInit_Retry)");
+          dbg_serial("eventSmpPrimeInit_Retry");
           smp_prime_eve_cnt = 0;
           //motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,2,2,0);
           stm_reset();
@@ -1998,7 +2013,7 @@ event execute_main_ctrl(event event)
         if(!lld_com_timeout_cnt())
         {
           Sample_LLD_ClearEvents();
-          dbg_serial("(eventSmpInit_Retry)");
+          dbg_serial("eventSmpInit_Retry");
           smple_ev_cnt=0;
           //motor_cmd_send(ADDR_MOTOR_Z,INST_SGP,2,2,0);
           stm_reset();

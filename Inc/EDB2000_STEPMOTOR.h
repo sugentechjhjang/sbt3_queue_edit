@@ -230,6 +230,9 @@ typedef enum edb2000_motor_address
 #define LEAD_HOME_OFFSET_H 0x600D
 #define LEAD_HOME_OFFSET_L 0x600E
 
+#define CLLD_Z_AXIS_OFFSET_H 0x6209
+#define CLLD_Z_AXIS_OFFSET_L 0x620A
+
 #define Servo_Address 0x0145
       #define Servo_On  0x88
       #define Servo_Off 0x08

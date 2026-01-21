@@ -11,7 +11,8 @@ unsigned char hlld_rx_index =0;
 unsigned char hlld_rx_data_buffer[100] = {0,};
 uint8_t current_uSendToPC_Buf[4];
 bool CLLD_VOL_Check = false;
-
+uint8_t LLD_VER_Buf_H[2]={0};
+uint8_t LLD_VER_Buf_L[2]={0};
 
 void  hlld_mem_init()
 {
@@ -182,8 +183,8 @@ int32_t hsCommunication_hLLD_Handle(uint8_t uAddress, uint8_t uCmd, uint16_t wCo
     UART5_QueReset();
     HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, (GPIO_PinState)SET);
     dwCheck = HAL_UART_Transmit(&huart5, hLLDSendPacket, COM_hLLD_MAX, 100);
-    while (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_TC) == RESET);
-    HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, (GPIO_PinState)RESET);
+    //while (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_TC) == RESET);
+    
     
     if(dwCheck)
     {
@@ -194,6 +195,15 @@ int32_t hsCommunication_hLLD_Handle(uint8_t uAddress, uint8_t uCmd, uint16_t wCo
       {
         while(1); 
       }
+    }
+
+    HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, (GPIO_PinState)RESET);
+
+    if(uCmd == HLLD_SYSTEM_RESET)
+    {
+      //HAL_Delay(100);  
+      err_tmout_en(FALSE);
+      break;    //리셋일 경우 응답 대기하지않음
     }
 
     for(dwCnt = 0; dwCnt < COM_hLLD_RX_MAX_WAIT_CNTMAX ; dwCnt++) 
@@ -210,6 +220,7 @@ int32_t hsCommunication_hLLD_Handle(uint8_t uAddress, uint8_t uCmd, uint16_t wCo
     dwCheck = hsGet_hLLD_ReceivPacketHandle(uAddress, hLLDReceivPacket, &tConvertCOM_Packet);
     if(dwCheck == COM_hLLD_RECV_OK) break;
 
+    dbg_serial("LLD_Receive_retry");
     dwReTrayCnt++;
     HAL_Delay(100);
     
@@ -286,8 +297,7 @@ int32_t hsGet_hLLD_ReceivPacketHandle(uint8_t uAddress, uint8_t *p_uGetPacketBuf
   return COM_hLLD_RECV_FAIL;
 }
 
-uint8_t LLD_VER_Buf_H[4] = {0};
-uint8_t LLD_VER_Buf_L[4] = {0};
+
 
 int32_t hsGet_hLLD_ReceivDataExec(hsCOM_hLLD_Cmd_t *p_tRunData)
 {
@@ -312,7 +322,13 @@ int32_t hsGet_hLLD_ReceivDataExec(hsCOM_hLLD_Cmd_t *p_tRunData)
 
   case HLLD_SYSTEM_RESET:
     break;  
-    
+  
+  case HLLD_CLLD_PREVIOUS:
+    break;  
+  
+  case HLLD_CLLD_CURRENT:
+    break;      
+
   case HLLD_CLLD_VOL:
     if(state == stBoot)
     {
@@ -333,7 +349,7 @@ int32_t hsGet_hLLD_ReceivDataExec(hsCOM_hLLD_Cmd_t *p_tRunData)
       uSendToPC_Buf[1] = p_tRunData->wContent ;
       uSendToPC_Buf[2] = p_tRunData->wData >> 8;
       uSendToPC_Buf[3] = p_tRunData->wData;
-      usb_send_pack(hseClldVolH, uSendToPC_Buf);
+      usb_send_pack(hseClldVol, uSendToPC_Buf);
       
       CLLD_VOL_Check = true;
     }
@@ -375,20 +391,16 @@ int32_t hsGet_hLLD_ReceivDataExec(hsCOM_hLLD_Cmd_t *p_tRunData)
     break;  
     
   case HLLD_DEVELOPER_VER_H:
-    //LLD_VER_Buf_H[3] = p_tRunData->wContent >> 8;
-    LLD_VER_Buf_H[2] = p_tRunData->wContent;
-    //LLD_VER_Buf_H[1] = p_tRunData->wData >> 8;
+    LLD_VER_Buf_H[1] = p_tRunData->wContent;
     LLD_VER_Buf_H[0] = p_tRunData->wData;
     break;
   case HLLD_DEVELOPER_VER_L:
-    //LLD_VER_Buf_L[3] = p_tRunData->wContent >> 8;
-    LLD_VER_Buf_L[2] = p_tRunData->wContent;
-    //LLD_VER_Buf_L[1] = p_tRunData->wData >> 8;
+    LLD_VER_Buf_L[1] = p_tRunData->wContent;
     LLD_VER_Buf_L[0] = p_tRunData->wData;
     
-    LLD_VER_Combine[3] = LLD_VER_Buf_H[2];  // H wData
+    LLD_VER_Combine[3] = LLD_VER_Buf_H[1];  // H wData
     LLD_VER_Combine[2] = LLD_VER_Buf_H[0];  // H wContent
-    LLD_VER_Combine[1] = LLD_VER_Buf_L[2];  // L wData
+    LLD_VER_Combine[1] = LLD_VER_Buf_L[1];  // L wData
     LLD_VER_Combine[0] = LLD_VER_Buf_L[0];  // L wContent
     usb_send_pack(event_Developer_LLD_VER,LLD_VER_Combine);
     break;

@@ -309,6 +309,7 @@ HAL_StatusTypeDef UART3_ReInit(void)
 
     // 초기화 성공
     HAL_UART_Receive_IT(&huart3, &syringe_chr, 1);
+    dbg_serial("Syringe_UART_ReInit");
     return HAL_OK;
 }
 
@@ -335,8 +336,8 @@ void C3000_send_command(uint8_t addr, char *pdata)
     SYRINGE_QueReset();
     Syringe_485_Direction_Set(GPIO_PIN_SET); // TX DIR ���� prime
     sy_Check=HAL_UART_Transmit(&huart3, send_data_t, i+5, 200); 
-    while (__HAL_UART_GET_FLAG(&huart3, UART_FLAG_TC) == RESET);
-    Syringe_485_Direction_Set(GPIO_PIN_RESET);  // RX DIR ����
+    //while (__HAL_UART_GET_FLAG(&huart3, UART_FLAG_TC) == RESET);
+    
    
     if(sy_Check)
     {
@@ -348,6 +349,7 @@ void C3000_send_command(uint8_t addr, char *pdata)
       }
     }
    
+    Syringe_485_Direction_Set(GPIO_PIN_RESET);  // RX DIR ����
     
     for(dwCnt = 0; dwCnt < 500; dwCnt++)
     {
@@ -369,7 +371,8 @@ void C3000_send_command(uint8_t addr, char *pdata)
         break;
       }
     }
-    
+
+    dbg_serial("Syringe_Receive_Retry");
     sy_ReTryCnt++;
     HAL_Delay(100);
     

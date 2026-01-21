@@ -216,6 +216,7 @@ HAL_StatusTypeDef UART2_ReInit(void)
     }
 
     HAL_UART_Receive_IT(&huart2, &br_chr, 1);
+    dbg_serial("Barcode_UART_ReInit");
     return HAL_OK;
 }
 
