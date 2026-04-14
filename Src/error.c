@@ -48,13 +48,23 @@ void send_error(uint16_t err)
 }
 
 #define ERR_CNT 20
+#define MOVE_ERR_CNT 300
+
 bool err_enable=FALSE;
+bool move_err_enable=FALSE;
 byte err_cnt=ERR_CNT;
+uint16_t move_err_cnt=MOVE_ERR_CNT;
 enum ERROR errs;
+enum ERROR move_errs;
 
 void err_tmout_en (bool en)
 {
   err_enable=en;
+}
+
+void move_err_tmout_en (bool en)
+{
+  move_err_enable=en;
 }
 
 void err_tmout_cnt()
@@ -62,13 +72,24 @@ void err_tmout_cnt()
   if(err_enable)
   err_cnt--;
   
-  if(!err_cnt){
+  if(!err_cnt)
+  {
     error(errs,0);
     err_tmout_en(FALSE);
   }
-    
 }
 
+void move_err_tmout_cnt()
+{
+  if(move_err_enable)
+  move_err_cnt--;
+  
+  if(!move_err_cnt)
+  {
+    error(move_errs,0);
+    move_err_tmout_en(FALSE);
+  }  
+}
 
 void err_tmout_set(enum ERROR err)
 {
@@ -82,6 +103,13 @@ void err_tmout_cnt_set(enum ERROR err,byte cnt)
   err_cnt=cnt;
   err_tmout_en(TRUE);
   errs=err;
+}
+
+void move_err_tmout_cnt_set(enum ERROR err,uint16_t cnt)
+{
+  move_err_cnt=cnt;
+  move_err_tmout_en(TRUE);
+  move_errs=err;
 }
 
 

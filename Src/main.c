@@ -177,6 +177,15 @@ int main(void)
     
     while(SUB_FW_DOWN_MODE)
     {
+      if(download_start_flag == true)
+      {
+        dSPIN_Hard_Stop();
+        hlld_send_pack(HLLD_ADD, HLLD_SYSTEM_RESET,0, 0);
+        HAL_Delay(500);
+        send_pw_message("PW");
+        download_start_flag = false;
+      }  
+
       if (PCtoSub) 
       {
           if((echoBuf[PACKET_CMD] == FIND_ADDRESS_CMD) || (echoBuf[PACKET_CMD] == END_CMD) )

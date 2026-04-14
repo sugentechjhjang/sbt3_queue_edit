@@ -61,9 +61,9 @@ void pump_mem_init();
 
 HAL_StatusTypeDef UART5_ReInit(void);
 
-extern bool SUB_FW_DOWN_MODE;
-extern bool SubToPC;
-extern bool isAckReceiving;
+extern volatile bool SUB_FW_DOWN_MODE;
+extern volatile bool SubToPC;
+extern volatile bool isAckReceiving;
 extern byte uart5_chr;
 
 #define ACK_BUF_SIZE 9

@@ -139,13 +139,16 @@ if(syrg_pram.air_gap==(~0)){
   }
   //syge_param_read();
 }
+
 void syge_init()
 {
   C3000_send_command(1, "U5R\0");
-  while(sy_state == sypm_busy )
+  move_err_tmout_cnt_set(errMoveTimeoutSyg,300);
+  while(sy_state == sypm_busy)
   {
-     C3000_srige_oper(SYRINGE_STATE_CHECK , 0);
+    C3000_srige_oper(SYRINGE_STATE_CHECK , 0);
   }       
+  move_err_tmout_en(FALSE);
   C3000_srige_oper(SYRINGE_INIT , 0);
 }
 
@@ -160,6 +163,7 @@ void C3000_srige_oper(byte cmd , uint data_value)
   char syringe_data_temp[100] = {0,};
   int8_t retry_count=0;
   //Delay Command: M
+  move_err_tmout_cnt_set(errMoveTimeoutSyg,300);
   switch(cmd)
   {
   case SYRINGE_NONE:
@@ -264,6 +268,13 @@ void C3000_srige_oper(byte cmd , uint data_value)
   case SYRINGE_STOP:  
     C3000_send_command(1, "T\0");    
     break;
+  }
+
+  move_err_tmout_en(FALSE);
+
+  if(state == stErr)
+  {
+    while(1);
   }
 }
 
@@ -396,6 +407,11 @@ void C3000_send_command(uint8_t addr, char *pdata)
   }
   
   err_tmout_en(FALSE);
+
+  if(state == stErr)
+  {
+    while(1);//Error code  
+  }
 }
 
 
@@ -470,17 +486,20 @@ int32_t Get_SYRINGE_ReceivPacketHandle(uint8_t *p_sy_GetPacketBuf)
 int32_t SYRINGE_ReceivPacketExec(uint8_t *p_sy_ReceivPacket)
 {
     
-    if(p_sy_ReceivPacket[3]==0x60){
+    if(p_sy_ReceivPacket[3]==0x60)
+    {
       sy_state=sypm_idle;
       return SY_RECV_OK;
     }
     
-    else if(p_sy_ReceivPacket[3]==0x40){
+    else if(p_sy_ReceivPacket[3]==0x40)
+    {
       sy_state=sypm_busy;
       return SY_RECV_OK;
     }
 
-    else if(p_sy_ReceivPacket[3]&0x0f){
+    else if(p_sy_ReceivPacket[3]&0x0f)
+    {
       sy_state=sypm_error;
       return SY_RECV_FAIL;
     }

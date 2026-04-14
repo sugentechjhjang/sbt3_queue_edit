@@ -307,7 +307,9 @@ void CLLD_HOME()
 }
 
 
-bool x_reach_pos = true, y_reach_pos = true, z_reach_pos = true;
+bool x_reach_pos = true, y_reach_pos = true, z_reach_pos = true,
+     prev_x_reach_pos  = true, prev_y_reach_pos  = true, prev_z_reach_pos  = true;
+
 bool x_excute_reach_error = false , y_excute_reach_error = false , z_excute_reach_error = false;
 signed long int x_prev_value = 0,y_prev_value = 0,z_prev_value = 0;
 
@@ -573,8 +575,6 @@ event execute_stepping_ctrl(event event)
     {
       z_abs_move_state = true;
       z_running_state = true;
-      motor_cmd_send(ADDR_MOTOR_Z,LEAD_READ,LEAD_RUNNING_STATE,0x01);
-      motor_cmd_send(ADDR_MOTOR_Z,LEAD_READ,LEAD_RUNNING_STATE,0x01);
       motor_cmd_send(ADDR_MOTOR_Z,LEAD_READ,LEAD_RUNNING_STATE,0x01);
       set_timer_(eventZAbsPosCk,200,0); 
     }
@@ -1432,7 +1432,7 @@ void motor_cmd_send(byte motor_address, byte fc, uint16_t rg_address ,signed lon
   LeadSendPacket[6] = modbus_send_crc16_data[0];
   LeadSendPacket[7] = modbus_send_crc16_data[1];
 
-  *gp_tStatus = busy;
+  //*gp_tStatus = busy;
   
 
   while(1)
@@ -1494,7 +1494,11 @@ void motor_cmd_send(byte motor_address, byte fc, uint16_t rg_address ,signed lon
   //HAL_Delay(100);
   //Error Count Stop
   err_tmout_en(FALSE);
-  
+
+  if(state == stErr)
+  {
+    while(1);//Error code  
+  }
 }
 
 
@@ -1608,85 +1612,115 @@ int32_t LEAD_ReceivPacketExec(uint8_t *p_LeadReceivPacket)
 }
 
 
-int32_t handleXmotorState(uint8_t val) {
-  if (x_running_state == true) {
-      if (x_abs_move_state == true && ((val >> 4) & 1)) { // command state
-          mt_xstate = stanby;
-          x_abs_move_state = false;
-          x_reach_pos = true;
-      } 
-      else if ((val >> 2) & 1) { // running state
-          mt_xstate = stanby;
-          x_reach_pos = false;
-      } 
-      else if (x_homing_state == true && ((val >> 6) & 1)) { // homing state
-          mt_xstate = stanby_home;
-          x_homing_state = false;
-          x_reach_pos = true;
-      }
-      x_running_state = false;
-      
-      if (val >> 0 & 1)
-      {
-        return LEAD_RECV_FAIL;
-      } 
-      else
-        return LEAD_RECV_OK;
+int32_t handleXmotorState(uint8_t val) 
+{
+  if (x_abs_move_state == true && ((val >> 4) & 1)) 
+  { // command state
+      mt_xstate = stanby;
+      x_abs_move_state = false;
+      x_reach_pos = true;
+      move_err_tmout_en(FALSE);
   } 
-}
+  else if ((val >> 2) & 1) 
+  { // running state
+      mt_xstate = busy;
+      x_reach_pos = false;
 
-int32_t handleYmotorState(uint8_t val) {
-  if (y_running_state == true) {
-      if (y_abs_move_state == true && ((val >> 4) & 1)) { // command state
-          mt_ystate = stanby;
-          y_abs_move_state = false;
-          y_reach_pos = true;
-      } 
-      else if ((val >> 2) & 1) { // running state
-          mt_ystate = stanby;
-          y_reach_pos = false;
-      } 
-      else if (y_homing_state == true && ((val >> 6) & 1)) { // homing state
-          mt_ystate = stanby_home;
-          y_homing_state = false;
-          y_reach_pos = true;
-      }
-        y_running_state = false;
-        if (val >> 0 & 1)
-        {
-          return LEAD_RECV_FAIL;
-        } 
-        else
-          return LEAD_RECV_OK;
-  }
-}
-
-int32_t handleZmotorState(uint8_t val) {
-  if (z_running_state == true) {
-      if (z_abs_move_state == true && ((val >> 4) & 1)) { // command state
-          mt_zstate = stanby;
-          z_abs_move_state = false;
-          z_reach_pos = true;
-      } 
-      else if ((val >> 2) & 1) { // running state
-          mt_zstate = stanby;
-          z_reach_pos = false;
-      } 
-      else if (z_homing_state == true && ((val >> 6) & 1)) { // homing state
-          mt_zstate = stanby_home;
-          z_homing_state = false;
-          z_reach_pos = true;
-          cll_state = 0;
-      }
-      
-      z_running_state = false; 
-      if (val >> 0 & 1)
+      if(!x_reach_pos && prev_x_reach_pos)
       {
-        return LEAD_RECV_FAIL;
+        move_err_tmout_cnt_set(errMoveTimeoutXaxi,300);
       } 
-      else
-        return LEAD_RECV_OK;
   }
+  else if (x_homing_state == true && ((val >> 6) & 1)) 
+  { // homing state
+      mt_xstate = stanby_home;
+      x_homing_state = false;
+      x_reach_pos = true;
+      move_err_tmout_en(FALSE);
+  }
+  x_running_state = false;
+  prev_x_reach_pos = x_reach_pos;
+  
+  if (val >> 0 & 1)
+  {
+    return LEAD_RECV_FAIL;
+  } 
+  else
+    return LEAD_RECV_OK;
+}
+
+int32_t handleYmotorState(uint8_t val) 
+{
+  if (y_abs_move_state == true && ((val >> 4) & 1)) 
+  { // command state
+      mt_ystate = stanby;
+      y_abs_move_state = false;
+      y_reach_pos = true;
+      move_err_tmout_en(FALSE);
+  } 
+  else if ((val >> 2) & 1) 
+  { // running state
+      mt_ystate = busy;
+      y_reach_pos = false;
+      if(!y_reach_pos && prev_y_reach_pos)
+      {
+        move_err_tmout_cnt_set(errMoveTimeoutYaxi,300);
+      } 
+  } 
+  else if (y_homing_state == true && ((val >> 6) & 1)) 
+  { // homing state
+      mt_ystate = stanby_home;
+      y_homing_state = false;
+      y_reach_pos = true;
+      move_err_tmout_en(FALSE);
+  }
+  y_running_state = false;
+  prev_y_reach_pos = y_reach_pos;
+
+  if (val >> 0 & 1)
+  {
+    return LEAD_RECV_FAIL;
+  } 
+  else
+    return LEAD_RECV_OK;
+}
+
+int32_t handleZmotorState(uint8_t val) 
+{
+  if (z_abs_move_state == true && ((val >> 4) & 1))
+  { // command state
+      mt_zstate = stanby;
+      z_abs_move_state = false;
+      z_reach_pos = true;
+      move_err_tmout_en(FALSE);
+  } 
+  else if ((val >> 2) & 1) 
+  { // running state
+      mt_zstate = busy;
+      z_reach_pos = false;
+      if(!z_reach_pos && prev_z_reach_pos)
+      {
+        move_err_tmout_cnt_set(errMoveTimeoutZaxi,300);
+      } 
+  } 
+  else if (z_homing_state == true && ((val >> 6) & 1)) 
+  { // homing state
+    mt_zstate = stanby_home;
+    z_homing_state = false;
+    z_reach_pos = true;
+    cll_state = 0;
+    move_err_tmout_en(FALSE);
+  }
+  z_running_state = false; 
+  prev_z_reach_pos = z_reach_pos;
+
+  if (val >> 0 & 1)
+  {
+    return LEAD_RECV_FAIL;
+  } 
+  else
+    return LEAD_RECV_OK;
+
 }
 
 

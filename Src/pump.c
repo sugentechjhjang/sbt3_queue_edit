@@ -25,9 +25,9 @@ void MX_USART5_UART_Init(void)
 
 uint8_t ACKBuf[ACK_BUF_SIZE];
 uint8_t ack_idx = 0;
-bool SUB_FW_DOWN_MODE=false;
-bool SubToPC = false;
-bool isAckReceiving = false;
+volatile bool SUB_FW_DOWN_MODE=false;
+volatile bool SubToPC = false;
+volatile bool isAckReceiving = false;
 uint16_t LLDexpectedTotalLength = 0;
 uint16_t ACK_BUF_LENGTH = 0;
 uint16_t SUB_TOTAL_LENGTH = 0;

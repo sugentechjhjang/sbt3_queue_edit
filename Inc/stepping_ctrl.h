@@ -61,6 +61,7 @@ extern byte all_home;
 void stmt_speed_set(byte adress,signed long int value);
 void stmt_accel_set(byte adress,signed long int value);
 void stmt_decel_set(byte adress,signed long int value);
+void stm_reset();
 bool stmt_abs_move(byte adress,signed long int value);
 
 
@@ -129,6 +130,7 @@ extern byte all_home;
 void stmt_speed_set(byte adress,signed long int value);
 void stmt_accel_set(byte adress,signed long int value);
 void stmt_decel_set(byte adress,signed long int value);
+void stm_reset();
 bool stmt_abs_move(byte adress,signed long int value);
 bool stmt_rel_move(byte adress,signed long int value);
 

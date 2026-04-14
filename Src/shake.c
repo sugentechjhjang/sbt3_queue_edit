@@ -62,7 +62,6 @@ void MX_SPI1_Init(void)
 void shaker_spi_handle(SPI_HandleTypeDef *hspi)
 {
   set_spi_handle(hspi);
-  
 }
 
 
@@ -159,9 +158,9 @@ void shake_mem_init()
 void shake_speed_set(uint32_t Nowspeed, uint32_t Maxspeed, uint32_t acc)
 {
   dSPIN_Set_Param(dSPIN_MAX_SPEED, MaxSpd_Steps_to_Par(Nowspeed));
-  dSPIN_Delay(50000);
+  HAL_Delay(10);
   dSPIN_Set_Param(dSPIN_ACC, AccDec_Steps_to_Par(acc));
-  dSPIN_Delay(50000);
+  HAL_Delay(10);
   dSPIN_Set_Param(dSPIN_DEC, AccDec_Steps_to_Par(acc));
 }
 
@@ -204,6 +203,9 @@ byte shake_run()
 #define SHKER_INIT_PARM 40000
 int32_t shker_parm_temp=0;
 int home_sen_polling_cnt=5;
+bool shake_timeout_flag = false;
+
+
 event execute_shake_ctrl(event event)
 {
 
@@ -231,17 +233,37 @@ event execute_shake_ctrl(event event)
     set_timer_(eventSkrRunChk,100,0);
     break;
   case eventSkrRunChk:
-    if(run_time_cnt){
-      if(!dSPIN_Busy_HW()){
+    if(run_time_cnt)
+    {
+      if(!dSPIN_Busy_HW())
+      {
+        shake_timeout_flag = false;
+        move_err_tmout_en(FALSE);
         if(angle_flg)
           set_timer_(eventSkrRunUpAngle,300,0);
         else
           set_timer_(eventSkrRunDownAngle,300,0);
-      }else
+      }
+      else
+      {
+        if(shake_timeout_flag == false)
+        {
+          move_err_tmout_cnt_set(errMoveTimeoutShaker,300);
+          shake_timeout_flag = true;
+        }  
+       
+        if(state == stErr)
+        {
+          dSPIN_Hard_Stop();
+          while(1);//Error code  
+        }
         set_timer_(eventSkrRunChk,100,0);
-    }else{
+      }  
+    }
+    else
+    {
       dSPIN_Hard_Stop();
-      dSPIN_Delay(1000000);
+      HAL_Delay(200);
       dSPIN_Go_To(0);
       sk_state=stShkrOperEnd;
       // set_timer_(eventSkrHome,100,0);
@@ -260,12 +282,14 @@ event execute_shake_ctrl(event event)
       
     }
     break;
+    
   case eventSkrRollBack:
     if(HAL_GPIO_ReadPin(SHAKE_HOME_S_GPIO_Port, SHAKE_HOME_S_Pin))
       dSPIN_Go_To(SHKER_INIT_PARM);
     
       set_timer_(eventSkrHome,1000,0);
     break;
+
   case eventSkrHome:
     if(!HAL_GPIO_ReadPin(SHAKE_HOME_S_GPIO_Port, SHAKE_HOME_S_Pin)){ // ���� check- ���� �����Ǿ��ٸ�{
       dSPIN_Run(REV, Speed_Steps_to_Par(10));  //1           
@@ -275,23 +299,41 @@ event execute_shake_ctrl(event event)
       set_timer_(eventSkAbsrHome,100,0);
     }
     break;
+
   case eventSkrHomeChk:
     if(HAL_GPIO_ReadPin(SHAKE_HOME_S_GPIO_Port, SHAKE_HOME_S_Pin)) {//���� check - �������� ���� �������� ���
+      shake_timeout_flag = false;
       dSPIN_Hard_Stop();
-      dSPIN_Delay(1000000);
+      HAL_Delay(200);
       dSPIN_Set_Param(dSPIN_ABS_POS , 0);
-      dSPIN_Delay(1000000);
+      HAL_Delay(200);
       dSPIN_Go_To(shk_pram.hoiz_pos);
       set_timer_(eventSkAbsrHome,100,0);
     }
     else
+    {
+      if(shake_timeout_flag == false)
+      {
+        move_err_tmout_cnt_set(errMoveTimeoutShaker,300);
+        shake_timeout_flag = true;
+      }  
+      
+      if(state == stErr)
+      {
+        dSPIN_Hard_Stop();
+        while(1);//Error code  
+      }
       set_timer_(eventSkrHomeChk,5,0);
+    }  
     break;
+
   case eventSkAbsrHome:
-    if(dSPIN_Busy_HW()){
-    //  dSPIN_Set_Param(dSPIN_ABS_POS , 0);
+    if(dSPIN_Busy_HW())
+    {
       set_timer_(eventSkAbsrHome,100,0);
-    }else{
+    }
+    else
+    {
       dSPIN_Set_Param(dSPIN_ABS_POS , 0);
       shker_parm_temp=shk_pram.hoiz_pos;
       sk_state=stShkrOperEnd;
@@ -333,7 +375,7 @@ event execute_shake_ctrl(event event)
     shk_pram.accel_rpm=merge_32bit( shk_pram.accel_rpm,usb_data_buf);
     shk_param_write();
     dSPIN_Set_Param(dSPIN_ACC, AccDec_Steps_to_Par(shk_pram.accel_rpm));
-    dSPIN_Delay(50000);
+    HAL_Delay(10);
     dSPIN_Set_Param(dSPIN_DEC, AccDec_Steps_to_Par(shk_pram.accel_rpm));
     usb_send_pack(hseTrayAccelSet, usb_data_buf);
     break;

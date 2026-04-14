@@ -80,6 +80,7 @@ void timer_eve()
         give_event(eventTimer1s,1);
         ad_t_cnt = TIMER0_1S_TIK;
         err_tmout_cnt();
+        move_err_tmout_cnt();
 
         if(com_tm_out_enable)
         {
@@ -130,7 +131,8 @@ void tm_execute()
                     (*channel[i].event_func)(channel[i].event);
                   else  // if not have func
                     give_event(channel[i].event,0);
-                   channel[i].event=0;
+                    
+                  channel[i].event=0;
                 }
               else
                 channel[i].delay-=timer_ticks;
@@ -246,7 +248,6 @@ void execute_timer()
 void set_timer_(uint16_t evnt, uint time, void(*event_func)(uint16_t evnt))
   {
     tm_add(evnt, time, event_func);
-
   }
 uint16_t pause_eve=0;
 uint pause_time=0;

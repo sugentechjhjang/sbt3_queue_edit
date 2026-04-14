@@ -10,16 +10,31 @@ struct smple_pram smp_pram;
 unsigned char hlld_rx_index =0;
 unsigned char hlld_rx_data_buffer[100] = {0,};
 uint8_t current_uSendToPC_Buf[4];
-bool CLLD_VOL_Check = false;
+
 uint8_t LLD_VER_Buf_H[2]={0};
 uint8_t LLD_VER_Buf_L[2]={0};
 
-void  hlld_mem_init()
+uint8_t date_buffer[4] = {0};
+
+bool CLLD_VOL_Check = false;
+bool LLD_Config_Date = false;
+
+void hlld_mem_init()
 {
   hlld_param_read();
+
+  if(smp_pram.min_std == (~0))
+  {
+    smp_pram.min_std = 12;
+    smp_pram.max_std = 50;
+
+    hlld_param_write();
+  }
+
   if(smp_pram.clld_value_set==(~0))
   {
-    smp_pram.clld_value_set = 2500;
+    smp_pram.clld_value_set = 2200;
+
     hlld_param_write();
   }  
 }
@@ -45,8 +60,8 @@ unsigned char hex2ascii(unsigned char code)
 {
   unsigned char result = 0;
   
-  result = code + 0x30;
-  if(result > 0x39)
+  result = code + '0';
+  if(result > '9')
     result += 7;
   return result;
 }
@@ -183,27 +198,32 @@ int32_t hsCommunication_hLLD_Handle(uint8_t uAddress, uint8_t uCmd, uint16_t wCo
     UART5_QueReset();
     HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, (GPIO_PinState)SET);
     dwCheck = HAL_UART_Transmit(&huart5, hLLDSendPacket, COM_hLLD_MAX, 100);
-    //while (__HAL_UART_GET_FLAG(&huart5, UART_FLAG_TC) == RESET);
-    
     
     if(dwCheck)
     {
       //Error Code
       HAL_Fail_Cnt++;
       UART5_ReInit();
+      dbg_serial("LLD_UART_ReInit");
       if(HAL_Fail_Cnt > COM_hLLD_RE_TRY_MAX)
       {
-        while(1); 
+        while(1)
+        {
+          if(SUB_FW_DOWN_MODE == true)
+          {
+            err_tmout_en(FALSE);
+            return COM_hLLD_OK;
+          } 
+        }
       }
     }
 
     HAL_GPIO_WritePin(UART5_DIR_GPIO_Port, UART5_DIR_Pin, (GPIO_PinState)RESET);
 
-    if(uCmd == HLLD_SYSTEM_RESET)
+    if(SUB_FW_DOWN_MODE)
     {
-      //HAL_Delay(100);  
       err_tmout_en(FALSE);
-      break;    //리셋일 경우 응답 대기하지않음
+      return COM_hLLD_OK;  
     }
 
     for(dwCnt = 0; dwCnt < COM_hLLD_RX_MAX_WAIT_CNTMAX ; dwCnt++) 
@@ -226,8 +246,14 @@ int32_t hsCommunication_hLLD_Handle(uint8_t uAddress, uint8_t uCmd, uint16_t wCo
     
     if(dwReTrayCnt > COM_hLLD_RE_TRY_MAX) 
     {
-      //Error Code
-      while(1);
+      while(1)
+      {
+        if(SUB_FW_DOWN_MODE == true)
+        {
+          err_tmout_en(FALSE);
+          return COM_hLLD_RECV_OK;
+        } 
+      }
     }
 
   }
@@ -288,7 +314,7 @@ int32_t hsGet_hLLD_ReceivPacketHandle(uint8_t uAddress, uint8_t *p_uGetPacketBuf
       
       ReceiveLRC = ((ReceiveLRC) &0x00FF);         
                                     
-      if(uAddress == p_tReturnConvertData->uAddress && ReceiveLRC == p_tReturnConvertData->ReceiveLRC )
+      if(uAddress == p_tReturnConvertData->uAddress && ReceiveLRC == p_tReturnConvertData->ReceiveLRC)
       {
         return COM_hLLD_RECV_OK;
       } 
@@ -328,6 +354,12 @@ int32_t hsGet_hLLD_ReceivDataExec(hsCOM_hLLD_Cmd_t *p_tRunData)
   
   case HLLD_CLLD_CURRENT:
     break;      
+
+  case HLLD_PLLD_INDEX_MIN_SET:
+    break;
+
+  case HLLD_PLLD_INDEX_MAX_SET:
+    break;
 
   case HLLD_CLLD_VOL:
     if(state == stBoot)
@@ -386,9 +418,21 @@ int32_t hsGet_hLLD_ReceivDataExec(hsCOM_hLLD_Cmd_t *p_tRunData)
     uSendToPC_Buf[3] = p_tRunData->wData;
     LLD_year = (uSendToPC_Buf[0] << 8) | uSendToPC_Buf[1]; 
     LLD_day = (uSendToPC_Buf[2] << 8) | uSendToPC_Buf[3]; 
-    snprintf((char *)formattedStr, sizeof(formattedStr), "LLD_FW_DATE_%d%04d", LLD_year, LLD_day);
-    dbg_serial((char *)formattedStr);
-    break;  
+    
+    if(LLD_Config_Date==true)
+    {
+      uSendToPC_Buf[0] = 0x00;     
+      uSendToPC_Buf[1] = LLD_year;          
+      uSendToPC_Buf[2] = (LLD_day / 100);   
+      uSendToPC_Buf[3] = (LLD_day % 100);    
+      usb_send_pack(event_LLD_Date,uSendToPC_Buf);
+    }  
+    else
+    {
+      snprintf((char *)formattedStr, sizeof(formattedStr), "LLD_FW_DATE_%d%04d", LLD_year, LLD_day);
+      dbg_serial((char *)formattedStr);
+    }  
+    break;   
     
   case HLLD_DEVELOPER_VER_H:
     LLD_VER_Buf_H[1] = p_tRunData->wContent;
@@ -432,6 +476,7 @@ event hsExec_hLLD_CTRL(event event)
     lld_fc=lldFuncClld;
     smpl_prime.pm_num=SMP_PRME_PP;
     set_timer_(eventSmpPrimeInit,10,0);
+    dbg_serial("hseClldPage"); //jjh
     usb_send_pack(hseClldPage, 0);    
     break;
     
@@ -515,6 +560,7 @@ event hsExec_hLLD_CTRL(event event)
     dw_prime_vol=4500;
     smpl_prime.pm_num=SMP_PRME_PP;
     set_timer_(eventSmpPrimeInit,10,0);
+    dbg_serial("hseLLDQcStart"); //jjh
     usb_send_pack(hseLLDQcStartResp, 0);    
     break;
     
@@ -664,6 +710,7 @@ event hsExec_hLLD_CTRL(event event)
     lld_fc=lldFuncPlld;
     smpl_prime.pm_num=SMP_PRME_PP;
     set_timer_(eventSmpPrimeInit,10,0);
+    dbg_serial("hsePlldQcStart"); //jjh
     usb_send_pack(hsePlldQcStartResp, 0);    
     break;
     
@@ -702,14 +749,15 @@ event hsExec_hLLD_CTRL(event event)
     break;
     
   case hsePlldMinPramSet:
-    smp_pram.min_std=usb_data_buf[2]<<8;
-    smp_pram.min_std|=usb_data_buf[3];
+    smp_pram.min_std=usb_data_buf[0]<<8;
+    smp_pram.min_std|=usb_data_buf[1];
     hlld_param_write();
+    hlld_send_pack(HLLD_ADD, HLLD_PLLD_INDEX_MIN_SET,0,smp_pram.min_std);
     usb_send_pack(hsePlldMinPramSetResp, usb_data_buf);  
     break;
   case hsePlldMinPramSave:  
-    smp_pram.min_std=usb_data_buf[2]<<8;
-    smp_pram.min_std|=usb_data_buf[3];
+    smp_pram.min_std=usb_data_buf[0]<<8;
+    smp_pram.min_std|=usb_data_buf[1];
     hlld_param_write();
     hlld_param_read();
     uSendToPC_Buf[0]=smp_pram.min_std>>8;
@@ -723,16 +771,18 @@ event hsExec_hLLD_CTRL(event event)
     uSendToPC_Buf[1]=smp_pram.min_std;
     usb_send_pack(hsePlldMinPramReadResp, uSendToPC_Buf); 
     break;
+  
   case hsePlldMaxPramSet:
-    smp_pram.max_std=usb_data_buf[2]<<8;
-    smp_pram.max_std|=usb_data_buf[3];
+    smp_pram.max_std=usb_data_buf[0]<<8;
+    smp_pram.max_std|=usb_data_buf[1];
     hlld_param_write();
+    hlld_send_pack(HLLD_ADD, HLLD_PLLD_INDEX_MAX_SET,0,smp_pram.max_std);
     usb_send_pack(hsePlldMaxPramSetResp, usb_data_buf); 
     break;
 
   case hsePlldMaxPramSave:
-    smp_pram.max_std=usb_data_buf[2]<<8;
-    smp_pram.max_std|=usb_data_buf[3];
+    smp_pram.max_std=usb_data_buf[0]<<8;
+    smp_pram.max_std|=usb_data_buf[1];
     hlld_param_write();
     hlld_param_read();  
     uSendToPC_Buf[0]=smp_pram.max_std>>8;
@@ -797,14 +847,6 @@ event hsExec_hLLD_CTRL(event event)
     uSendToPC_Buf[3]=smp_pram.clld_value_set;
     usb_send_pack(hseClldValueRead, uSendToPC_Buf); 
     break;   
-
-  case eventLLDFwDown:
-    SUB_FW_DOWN_MODE = true;
-    download_start_flag = true;
-    hlld_send_pack(HLLD_ADD, HLLD_SYSTEM_RESET,0, 0);
-    HAL_Delay(500);
-    send_pw_message("PW");
-    break;
 
   default:
     break;

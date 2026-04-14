@@ -175,7 +175,7 @@ void UART_PC_RxCpltCallback(UART_HandleTypeDef *huart)
       //Error Code
     }
 
-    if(download_start_flag == true)
+    if(SUB_FW_DOWN_MODE == true)
     {
       Handle_GUI_LLD_FWDownloadStream(pc_chr); // LLD_FW_DOWNLOAD
     }
@@ -830,6 +830,10 @@ int32_t dwPC_To_Dev_PacketExec(uint16_t wCmd, uint8_t *p_Data)
      HAL_NVIC_SystemReset(); 
      break;
 
+    case eventLLDFwDown:
+     SUB_FW_DOWN_MODE = true;
+     download_start_flag = true;
+     break; 
 
     case eventPause:
 

@@ -273,7 +273,8 @@ void stmt_decel_set(byte address,signed long int value)
 }
 
 
-bool x_reach_pos = true, y_reach_pos = true, z_reach_pos = true;
+bool x_reach_pos = true, y_reach_pos = true, z_reach_pos = true,
+     prev_x_reach_pos  = true, prev_y_reach_pos  = true, prev_z_reach_pos  = true;
 bool x_closeloop_state = true,y_closeloop_state = true,z_closeloop_state = true;
 
 
@@ -1357,12 +1358,7 @@ uint8_t EDBReceivPacket[RCV_EDB_MAX] = {0};
 
 void motor_cmd_send(byte address, byte inst, byte type ,byte bank, signed long int value)
 {
-
   uint32_t dwCnt = 0,dwCount = 0,dwCheck = 0, dwReTryCnt = 0,EDB_queue_size = 0, HAL_Fail_Cnt = 0;
-  //uint8_t EDBSendPacket[SND_EDB_MAX] = {0};
-  //uint8_t EDBReceivPacket[RCV_EDB_MAX] = {0};
-  
-  
   //Address�� ���� ����
   switch(address)
   {
@@ -1411,7 +1407,6 @@ void motor_cmd_send(byte address, byte inst, byte type ,byte bank, signed long i
     dwCheck = HAL_UART_Transmit(&huart4, EDBSendPacket, SND_EDB_MAX, EDB_COM_WAIT_TIM);
     //while (__HAL_UART_GET_FLAG(&huart4, UART_FLAG_TC) == RESET);
     
-    
     if(dwCheck)
     {
       HAL_Fail_Cnt++;
@@ -1423,10 +1418,10 @@ void motor_cmd_send(byte address, byte inst, byte type ,byte bank, signed long i
     }
 
     HAL_GPIO_WritePin(UART4_DIR_GPIO_Port, UART4_DIR_Pin, (GPIO_PinState)RESET);
-    
+
     for(dwCount = 0; dwCnt < 500; dwCount++)
     {
-      HAL_Delay(5);
+      HAL_Delay(5);      
       EDB_queue_size=EDB_QueueHaveSize();
       if(EDB_queue_size >= EDB_LENGTH)
       { 
@@ -1462,10 +1457,17 @@ void motor_cmd_send(byte address, byte inst, byte type ,byte bank, signed long i
   {
     while(1);//Error code  
   }
+
+
   //Error Count Stop
   memset(EDBSendPacket, 0, sizeof(EDBSendPacket));
   memset(EDBReceivPacket, 0, sizeof(EDBReceivPacket));
   err_tmout_en(FALSE); 
+
+  if(state == stErr)
+  {
+    while(1);//Error code  
+  }
 }
 
 int32_t Get_EDB_ReceivPacketHandle(uint8_t uAddress, uint8_t *p_uGetPacketBuf)
@@ -1501,9 +1503,10 @@ int32_t Get_EDB_ReceivPacketHandle(uint8_t uAddress, uint8_t *p_uGetPacketBuf)
 
 int32_t EDB_ReceivPacketExec(uint8_t *p_uReceivPacket)
 {
-  int32_t dwCheck = 0 , positionValue = 0;
+  int32_t dwCheck = 0;
   uint32_t dwReceivValue=0,rawValue=0;
   uint8_t uCmd, uAddress;
+ 
   
   uCmd = p_uReceivPacket[RCV_EDB_INST];
   uAddress = p_uReceivPacket[RCV_EDB_DEV];
@@ -1514,7 +1517,6 @@ int32_t EDB_ReceivPacketExec(uint8_t *p_uReceivPacket)
               (p_uReceivPacket[RCV_EDB_DAT3] << 8)  |
               (p_uReceivPacket[RCV_EDB_DAT4]);
    
-  positionValue = (int32_t)rawValue; 
 
   switch(uCmd)
   {
@@ -1528,18 +1530,59 @@ int32_t EDB_ReceivPacketExec(uint8_t *p_uReceivPacket)
       break;
       
     case INST_GAP:
-      *gp_tStatus = stanby;   
+       
       if(EDBSendPacket[SND_EDB_TYPE] == EDB2000_POSITION_REACHED_TYPE)
       {
-        if(uAddress == ADDR_MOTOR_X){
+        if(uAddress == ADDR_MOTOR_X)
+        {
           x_reach_pos = dwReceivValue;  
+
+          if(!x_reach_pos && prev_x_reach_pos)
+          {
+            move_err_tmout_cnt_set(errMoveTimeoutXaxi,300);
+          } 
+          if(x_reach_pos)  
+          {
+           move_err_tmout_en(FALSE);
+           mt_xstate = stanby;  
+          } 
+
+          prev_x_reach_pos = x_reach_pos;
         }
-        else if(uAddress == ADDR_MOTOR_Y){
+        else if(uAddress == ADDR_MOTOR_Y)
+        {
           y_reach_pos = dwReceivValue;  
+
+          if(!y_reach_pos && prev_y_reach_pos)
+          {
+            move_err_tmout_cnt_set(errMoveTimeoutYaxi,300);
+          } 
+          if(y_reach_pos)  
+          {
+           move_err_tmout_en(FALSE);
+           mt_ystate = stanby;  
+          } 
+
+          prev_y_reach_pos = y_reach_pos;
         }
-        else if(uAddress == ADDR_MOTOR_Z){
-          z_reach_pos = dwReceivValue;  
+        else if(uAddress == ADDR_MOTOR_Z)
+        {
+          z_reach_pos = dwReceivValue;
+
+          if(!z_reach_pos && prev_z_reach_pos)    
+          {
+            move_err_tmout_cnt_set(errMoveTimeoutZaxi, 300);
+          }
+
+          if(z_reach_pos)                        
+          {
+            move_err_tmout_en(FALSE);
+            mt_zstate = stanby;
+          }
+
+          prev_z_reach_pos = z_reach_pos;        
         }
+        return 0;
       } 
 
       else if(EDBSendPacket[SND_EDB_TYPE] == EDB2000_CL_CLOSED_LOOP_CHECK_TYPE)
@@ -1554,6 +1597,9 @@ int32_t EDB_ReceivPacketExec(uint8_t *p_uReceivPacket)
           z_closeloop_state = dwReceivValue;  
         }
       }  
+
+      *gp_tStatus = stanby;  
+
       break;
       
     case INST_SGP:
@@ -1570,12 +1616,13 @@ int32_t EDB_ReceivPacketExec(uint8_t *p_uReceivPacket)
         if(uAddress == ADDR_MOTOR_Z) *gp_tStatus = stanby;
       }
       break;
+
     case INST_GGP:
       if(dwReceivValue == 1)
       {
         *gp_tStatus = stanby_home;
       }
-      else if( (dwReceivValue == 5) || (dwReceivValue == 6) )  // Z축 CLLD  6은 일반적인 동작 종료 ,  5는 시작부터 Z축 프로브가 이동 한계점인 경우
+      else if((dwReceivValue == 5) || (dwReceivValue == 6))   // Z축 CLLD  6은 일반적인 동작 종료 ,  5는 시작부터 Z축 프로브가 이동 한계점인 경우
       {
         if(uAddress == ADDR_MOTOR_Z)
         {

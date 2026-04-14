@@ -51,6 +51,7 @@ uint32_t smp_reult_bit[2]={0,};
 
 uint dw_prime_vol=0;
 bool sq_start_dw_washing_flg=false;
+bool race_condition_flg=false; 
 byte state_time_min=60;
 event sq_ctrl(event event)
 {
@@ -147,11 +148,16 @@ event sq_ctrl(event event)
     
     //-----------------full sq ruting-------
   case eventSqFullSqAly:
+
+    full_step=sq[full_step_cnt].stNum;
+    full_pr=sq[full_step_cnt].prNum[full_pr_cnt];
+
   //////////////////////////////////////////////////////////////////////   
-    if(aging_mode == true && full_step_cnt==10)  // aging TEST
+    if(aging_mode == true && full_pr == Analy)  // aging TEST 
     {
       full_step_cnt = 0;
       full_pr_cnt = 0;
+      full_pr = 0;
       smple_rack_cnt=0;
       sq_strp_mach=0;
       sk_state=stShkrStby;
@@ -334,6 +340,7 @@ event sq_ctrl(event event)
       lld_fc=lldFuncNone;
       smple_rack_cnt=0;
       set_timer_(eventSmpPrimeInit,500,0);
+      dbg_serial("Incubation_Ws"); //jjh
       break;
 
     case Incubation_Ws2:
@@ -347,6 +354,7 @@ event sq_ctrl(event event)
       lld_fc=lldFuncNone;
       smple_rack_cnt=0;
       set_timer_(eventSmpPrimeInit,500,0);
+      dbg_serial("Incubation_Ws2"); //jjh
       break;
 
     case Sample_LLD:
@@ -378,6 +386,7 @@ event sq_ctrl(event event)
       else
       {
         set_timer_(eventSmpPrimeInit,10,0);
+        dbg_serial("Sample_LLD"); //jjh
       }
         
       beep(1000, 1);
@@ -478,6 +487,7 @@ event sq_ctrl(event event)
       else
       {
         set_timer_(eventSmpPrimeInit,100,0);
+        dbg_serial("eventSqSamplNumMach"); //jjh
       }  
     }
     else
@@ -523,6 +533,7 @@ event sq_ctrl(event event)
       if(lld_fc==lldFullFunc){
         lld_fc=lldFuncNone;
         set_timer_(eventSmpPrimeInit,100,0);
+        dbg_serial("lldFullFunc"); //jjh
       }
     }
     break;
@@ -770,7 +781,9 @@ event sq_ctrl(event event)
         lld_fc=lldFuncNone;
         probe_disp_enable=false;
         auto_prime_flg=true;
+        race_condition_flg = true;
         set_timer_(eventSmpPrimeInit,1000,0);
+        dbg_serial("eventSpuResetEnd"); //jjh
         give_event(eventAutoCleanInit,0);
        // set_timer_(eventSqFullSqAly,300,0);
       }else

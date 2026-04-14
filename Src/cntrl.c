@@ -129,7 +129,9 @@ event execute_main_ctrl(event event)
     set_timer_(eventLldInit,200,0);  
     break;
   case eventLldInit:
-    hlld_send_pack(HLLD_ADD, HLLD_CLLD_VALUE_SET,0,smp_pram.clld_value_set); 
+    hlld_send_pack(HLLD_ADD, HLLD_CLLD_VALUE_SET,0,smp_pram.clld_value_set);
+    hlld_send_pack(HLLD_ADD, HLLD_PLLD_INDEX_MIN_SET,0,smp_pram.min_std);  
+    hlld_send_pack(HLLD_ADD, HLLD_PLLD_INDEX_MAX_SET,0,smp_pram.max_std);  
     hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
     break;
   case eventSpuInit:
@@ -356,6 +358,8 @@ event execute_main_ctrl(event event)
   case eventBarScanEnd:
     barcode_flag = false;
     bar_indx_oper_flg=false;
+    bar_pr.sample_num=0;
+    bar_pm.spl_num=0;
     barcode_off();
     stmt_speed_set(ADDR_MOTOR_X,100);
     #ifdef Motor_EDB
@@ -672,8 +676,10 @@ event execute_main_ctrl(event event)
       }else{
         smpl_prime.pm_num=SMP_PRME_PP;
         auto_clean_repeat_flg=false;
-        if(!sq_start_dw_washing_flg)
+        if(!sq_start_dw_washing_flg && !race_condition_flg)
+        {
           set_timer_(eventSmpPrimeInit,500,0);
+        }  
         // else
         //  sq_start_dw_washing_flg=false;
       }
@@ -698,6 +704,7 @@ event execute_main_ctrl(event event)
     break;
   case eventSmpPrimeFinalEnd:
     com_time_out_set(DISEN); // Retry code
+    race_condition_flg = false;
     smp_prime_eve_cnt=0;
     //syg_prime_oper_cnt=0;
     syg_add_sel=0;
@@ -802,7 +809,7 @@ event execute_main_ctrl(event event)
   case eventSmpSWSInitCheck: 
     hlld_send_pack(HLLD_ADD, HLLD_CLLD_INIT,0, 0); // 새로 추가한 건.
     HAL_Delay(100);
-    hlld_send_pack(HLLD_ADD, HLLD_CLLD_RES,smp_pram.r1, smp_pram.r2);
+    //hlld_send_pack(HLLD_ADD, HLLD_CLLD_RES,smp_pram.r1, smp_pram.r2);
     hlld_send_pack(HLLD_ADD, HLLD_CLLD_RUN,0, 0);
     set_timer_(smpl_pr.event[++smple_ev_cnt],100,0);
     break;
@@ -859,8 +866,7 @@ event execute_main_ctrl(event event)
     stmt_speed_set(ADDR_MOTOR_X,300);
     stmt_speed_set(ADDR_MOTOR_Y,300);
     C3000_srige_oper(SYRINGE_ACCEL_SET , 20);
-    C3000_srige_oper(SYRINGE_SPEED_SET , 6); //jjh
-    //hlld_send_pack(HLLD_ADD, HLLD_CLLD_VOL,0, 0);
+    C3000_srige_oper(SYRINGE_SPEED_SET , 6);
     hlld_send_pack(HLLD_ADD, HLLD_CLLD_PREVIOUS,0, 0);
     hlld_send_pack(HLLD_ADD, HLLD_CLLD_CURRENT,0, 0);
 
@@ -1720,7 +1726,7 @@ event execute_main_ctrl(event event)
     break;
   case eventProbeDispProveMove:
     // stmt_abs_move(ADDR_MOTOR_Z,zmt_ctrl.dsp_pos);
-    stmt_abs_move(ADDR_MOTOR_Z,ymt_ctrl.sample_width);
+    //stmt_abs_move(ADDR_MOTOR_Z,ymt_ctrl.sample_width);
     set_timer_(probe_disp.event[++probe_disp_eve_cnt],50,0);
     break;
   case eventProbeDispZMoveCheck:
@@ -1855,7 +1861,8 @@ event execute_main_ctrl(event event)
     break;
     
   case eventAutoCleanPass:
-    if(sq_start_dw_washing_flg){
+    if(sq_start_dw_washing_flg)
+    {
       sq_start_dw_washing_flg=false;
       set_timer_(eventSpuResetEnd,100,0);
     }//else

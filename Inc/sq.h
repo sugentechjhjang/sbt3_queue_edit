@@ -108,6 +108,7 @@ void pr_incubation_time();
 extern uint dw_prime_vol;
 extern uint rbk_time;
 extern bool sq_start_dw_washing_flg;
+extern bool race_condition_flg;
 extern bool aging_mode;
 
 #endif

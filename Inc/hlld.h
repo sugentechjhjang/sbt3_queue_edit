@@ -23,6 +23,8 @@
 #define HLLD_CLLD_VALUE_SET 0x12
 #define HLLD_CLLD_PREVIOUS 0x13
 #define HLLD_CLLD_CURRENT 0x14
+#define HLLD_PLLD_INDEX_MIN_SET 0x15
+#define HLLD_PLLD_INDEX_MAX_SET 0x16
 
 #define CLLD_STANBY          0 
 #define CLLD_START           2
@@ -96,4 +98,6 @@ event execute_hlld_ctrl(event event);
 
 extern bool plld_qc;
 extern bool CLLD_VOL_Check;
+extern bool LLD_Config_Date;
+
 #endif   

@@ -11,10 +11,10 @@
 enum ERROR
   {
     errOK,                 // 0   no alarm
-    errBathFull,                // bath¿¡ ¹°ÀÌ ÀÖÀ½
+    errBathFull,                // bathï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     errTMTimeOut,
-    errRS232,             // Åë½Å ºÒ·®
-    errBoot,              //½ÃÄö
+    errRS232,             // ï¿½ï¿½ï¿½ ï¿½Ò·ï¿½
+    errBoot,              //ï¿½ï¿½ï¿½ï¿½
     errSygTimeOut,
     errShaker,
     errBarcode,
@@ -26,7 +26,12 @@ enum ERROR
     errHlld,
     errWaterLevel,
     errClld,
-   _errEnd
+   _errEnd,
+    errMoveTimeoutXaxi,   //18ë²ˆì§¸
+    errMoveTimeoutYaxi,
+    errMoveTimeoutZaxi,
+    errMoveTimeoutSyg,
+    errMoveTimeoutShaker
   };
 
 
@@ -46,6 +51,9 @@ void err_tmout_cnt_set(enum ERROR err,byte cnt);
 void err_tmout_cnt();
 void err_tmout_en (bool en);
 
+void move_err_tmout_cnt_set(enum ERROR err,uint16_t cnt);
+void move_err_tmout_cnt();
+void move_err_tmout_en (bool en);
 
 #endif
 

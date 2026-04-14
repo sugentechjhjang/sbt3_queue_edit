@@ -52,6 +52,10 @@ enum cntrl_event
           eventUSBretry,
           eventUSBcontinue,
 
+          event_MAIN_Date,
+          event_LLD_Date,
+
+
              
     
  //Control Write
@@ -99,7 +103,7 @@ enum cntrl_event
           eventDispFunc,
           eventDispAspFunc,
           eventAspFunc,
-          eventSakerFunc,
+          eventShakerFunc,
           eventSmplTotalNum,
           eventSmplPrimeFunc,
           eventAutoCleanFunc,
@@ -877,7 +881,7 @@ enum cntrl_event
           eventDispFunc = 0x0228,
           eventDispAspFunc = 0x0229,
           eventAspFunc = 0x022A,
-          eventSakerFunc = 0x022B,
+          eventShakerFunc = 0x022B,
           eventSmplTotalNum = 0x022C,
           eventSmplPrimeFunc = 0x022D,
           eventAutoCleanFunc = 0x022E,

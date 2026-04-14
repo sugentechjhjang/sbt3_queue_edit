@@ -166,8 +166,7 @@ bool usb_retry_flag = false;
 event execute_sys_ctrl(event event)
 {
   uint16_t etc_vol=0;
-  byte dev_send_buf[4]={0}; 
-  uint16_t year=0,date=0;  
+  byte dev_send_buf[4]={0};  
 
   switch(event)
   {
@@ -286,7 +285,7 @@ event execute_sys_ctrl(event event)
     give_event(eventAspIinit,0);
     usb_send_pack(eventAspFunc, usb_data_buf);
     break;
-  case eventSakerFunc:
+  case eventShakerFunc:
     shk_pram.run_time_s=merge_32bit( shk_pram.run_time_s,usb_data_buf);
     sk_state=stShkrStby;
     shake_run();
@@ -309,7 +308,9 @@ event execute_sys_ctrl(event event)
     lld_fc=lldFuncNone;
     probe_disp_enable=false;
     auto_prime_flg=true;
+    race_condition_flg = true;
     set_timer_(eventSmpPrimeInit,1000,0);
+    dbg_serial("eventAutoCleanFunc"); //jjh
     give_event(eventAutoCleanInit,0);
     usb_send_pack(eventAutoCleanFunc, 0);
     break;
@@ -321,7 +322,9 @@ event execute_sys_ctrl(event event)
     smpl_prime.pm_num=0x01<<WS_PUMP;//SMP_PRME_PP;
     smple_rack_cnt=0;
     lld_fc=lldFuncNone;
+    race_condition_flg = true;
     set_timer_(eventSmpPrimeInit,1000,0);
+    dbg_serial("eventRinseFunc"); //jjh
     give_event(eventAutoCleanInit,0);
     usb_send_pack(eventAutoCleanFunc, 0);
     break;
@@ -417,6 +420,25 @@ event execute_sys_ctrl(event event)
     hlld_send_pack(HLLD_ADD, HLLD_DEVELOPER_VER_H,0, 0); 
     hlld_send_pack(HLLD_ADD, HLLD_DEVELOPER_VER_L,0, 0);
     //usb_send_pack(event_Developer_LLD_VER,0);
+    break;
+
+  case event_MAIN_Date:
+    dev_send_buf[0] = 0x00;
+    
+    dev_send_buf[1] = (uint8_t)atoi(FW_YEAR);
+    
+    int temp_date = atoi(FW_DATE);
+
+    dev_send_buf[2] = (uint8_t)(temp_date / 100); 
+    dev_send_buf[3] = (uint8_t)(temp_date % 100); 
+    
+    usb_send_pack(event_MAIN_Date,dev_send_buf);
+    break;
+
+  case event_LLD_Date:
+    LLD_Config_Date = true;
+    hlld_send_pack(HLLD_ADD, HLLD_FW_DATE,0, 0);
+    LLD_Config_Date = false;
     break;
 
   case eventUSBreset:
